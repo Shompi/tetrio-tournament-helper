@@ -1,0 +1,21 @@
+{
+  "name": "tetrio-tournament-helper",
+  "type": "module",
+  "version": "1.0.0",
+  "description": "Bot para gestionar inscripciones para torneos en Tetris Chile y en un futuro para Tetris Moderno Latinoamérica",
+  "main": "dist/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "tsc && node dist/index.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@sapphire/framework": "^4.8.2",
+    "discord.js": "^14.14.1",
+    "dotenv": "^16.3.1"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.2"
+  }
+}
