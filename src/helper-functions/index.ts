@@ -94,11 +94,12 @@ const TETRIO_ENDPOINTS = {
 
 export const TetrioRanksArray = ["D", "D+", "C-", "C", "C+", "B-", "B", "B+", "A-", "A", "A+", "S-", "S", "S+", "SS", "U", "X"]
 
+/** Gets data of an user from the TETRIO API, calls toLowerCase() internally */
 export async function GetUserDataFromTetrio(_username: string): Promise<TetrioUserData | null> {
 	try {
 		const username = _username.toLowerCase();
 
-		const apiResponse = await request(TETRIO_BASE + TETRIO_ENDPOINTS.users + username).then(response => response.body.json()) as APIUserResponse;
+		const apiResponse = await request(TETRIO_ENDPOINTS.users + username).then(response => response.body.json()) as APIUserResponse;
 
 		if (!apiResponse.success) return null;
 
@@ -111,6 +112,19 @@ export async function GetUserDataFromTetrio(_username: string): Promise<TetrioUs
 	}
 }
 
+/** avatar_revision? (int) - This user's avatar ID.
+	* Get their avatar at https://tetr.io/user-content/avatars/{ USERID }.jpg?rv={ AVATAR_REVISION }
+	*
+		*/
+export function GenerateTetrioAvatarURL(userId: string, avatar_revision: number | undefined) {
 
-export function IsJoinableByPlayer(playerData: TetrioUserData, caps: { rank_cap: string; tr_cap: number; }) {
+	if (!avatar_revision) return null;
+	return `https://tetr.io/user-content/avatars/${userId}.jpg?rv=${avatar_revision}`
+}
+
+export function GetUserProfileURL(username: string) {
+	return `https://ch.tetr.io/u/${username}`
+}
+
+export function TournamentIsJoinableByTetrioPlayer(playerData: TetrioUserData, caps: { rank_cap?: string; tr_cap?: number; country_lock?: string }) {
 }
