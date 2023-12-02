@@ -1,6 +1,8 @@
 import { Command } from "@sapphire/framework";
-import { Locale } from "discord.js";
-
+import { EmbedBuilder, Locale, PermissionsBitField } from "discord.js";
+import { TournamentModel, TournamentStatus } from "../sequelize/index.js";
+import { TetrioRanksArray } from "../helper-functions/index.js";
+import { TournamentDetailsEmbed } from "./consult-tournament.js";
 export class CreateTournament extends Command {
 
 	public constructor(context: Command.LoaderContext, options: Command.Options) {
@@ -11,6 +13,7 @@ export class CreateTournament extends Command {
 		registry.registerChatInputCommand((builder) => {
 
 			builder.setName("crear")
+				.setDMPermission(false)
 				.setNameLocalizations({
 					"en-US": "create"
 				})
@@ -18,6 +21,7 @@ export class CreateTournament extends Command {
 				.setDescriptionLocalizations({
 					"en-US": "Create a new tournament"
 				})
+				.setDefaultMemberPermissions(PermissionsBitField.Flags.Administrator)
 				.addStringOption(name =>
 					name.setName('nombre')
 						.setNameLocalizations({
@@ -41,30 +45,42 @@ export class CreateTournament extends Command {
 						.setChoices(
 							{
 								name: "TETRIO",
-								value: "tetrio",
+								value: "TETRIO",
 							},
 							{
 								name: "Tetris Effect: Connected",
-								value: "tec",
+								value: "Tetris Effect: Connected",
 							},
 							{
 								name: "Puyo Puyo Tetris",
-								value: "ppt1"
+								value: "Puyo Puyo Tetris"
 							},
 							{
 								name: "Puyo Puyo Tetris 2",
-								value: "ppt2"
+								value: "Puyo Puyo Tetris 2"
 							}
 						)
 						.setRequired(true)
 				)
 				/** TODO: Add choices for skill cap */
-				.addStringOption(skillCap =>
-					skillCap.setName('rank-cap')
-						.setDescription('El rank máximo que pueden tener los jugadores (SOLO PARA TETRIO)')
+				.addStringOption(rankCap =>
+					rankCap.setName('rank_cap')
+						.setDescription('El rank máximo que pueden tener los jugadores (SOLO TETRIO)')
 						.setDescriptionLocalizations({
 							"en-US": "The highest rank allowed to join this tournament (TETRIO ONLY)"
 						})
+						.addChoices(...TetrioRanksArray.map(rank => ({ name: rank, value: rank })))
+				)
+				.addIntegerOption(trCap =>
+					trCap.setName('tr_cap')
+						.setDescription('El cap de TR para este torneo (1 - 25000) (SOLO TETRIO)')
+						.setMinValue(1)
+						.setMaxValue(25000)
+				)
+				.addStringOption(countryLock =>
+					countryLock.setName('pais')
+						.setDescription('El pais al cual está cerrado este torneo (ej: CL, AR, US) (TETRIO ONLY)')
+						.setMaxLength(2)
 				)
 				/** TODO: Add maximum and minimum values */
 				.addIntegerOption(maxPlayers =>
@@ -81,11 +97,45 @@ export class CreateTournament extends Command {
 	}
 
 	public async chatInputRun(interaction: Command.ChatInputCommandInteraction) {
-		switch (interaction.locale) {
-			case Locale.EnglishUS:
-				return void await interaction.reply({ content: "This command has not been implemented yet.", ephemeral: true });
-			case Locale.SpanishES:
-				return void await interaction.reply({ content: "Este comando aún no está implementado.", ephemeral: true });
+
+		/** Only accept tournament creation from guilds */
+		if (!interaction.inCachedGuild()) return;
+
+		const options = {
+			name: interaction.options.getString("nombre", true),
+			game: interaction.options.getString("juego", true),
+			rank_cap: interaction.options.getString('rank_cap', false),
+			tr_cap: interaction.options.getInteger('tr_cap', false),
+			country_lock: interaction.options.getString('pais', false),
+			max_players: interaction.options.getInteger('maximo-jugadores', false) ?? 0,
+
+
 		}
+
+		try {
+
+			/** Tournaments are only going to be either OPEN for registration or CLOSED */
+
+			const createdTournament = await TournamentModel.create({
+				organized_by: interaction.user.id,
+				guild_id: interaction.guildId,
+				name: options.name,
+				game: options.game,
+				is_rank_capped: !!options.rank_cap,
+				rank_cap: options.rank_cap,
+				is_country_locked: !!options.country_lock,
+				country_lock: options.country_lock,
+				is_tr_capped: !!options.tr_cap,
+				tr_cap: options.tr_cap,
+				max_players: options.max_players,
+				players: JSON.stringify([]),
+				status: TournamentStatus.OPEN,
+			})
+
+			return void await interaction.reply({ content: "El torneo ha sido creado exitosamente.", embeds: [TournamentDetailsEmbed(createdTournament)] })
+		} catch (e) {
+			return void await interaction.reply({ content: 'Ocurrió un error intentando crear este torneo.', ephemeral: true })
+		}
+
 	}
 }
