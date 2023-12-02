@@ -1,5 +1,6 @@
 import { Command } from "@sapphire/framework"
-import { ButtonBuilder, ButtonStyle, ChannelType, PermissionsBitField } from "discord.js"
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ChannelType, GuildTextBasedChannel, PermissionsBitField, TextBasedChannel } from "discord.js"
+import { TournamentModel, TournamentStatus } from "../sequelize/index.js";
 
 export class OpenRegistration extends Command {
 
@@ -31,18 +32,43 @@ export class OpenRegistration extends Command {
 	public async chatInputRun(interaction: Command.ChatInputCommandInteraction) {
 		// Your code goes here
 		void await interaction.deferReply()
+		const idTorneo = interaction.options.getInteger('torneo-id', true)
+		const torneo = await TournamentModel.findOne({ where: { id: idTorneo } })
+
+
+		if (!torneo) return void await interaction.editReply({ content: "El mensaje no ha sido enviado por que el torneo no existe en la base de datos." })
+
+		if (torneo.status === TournamentStatus.CLOSED)
+			return void await interaction.editReply({ content: "No se pueden abrir las inscripciones para este torneo por que está marcado como CLOSED." })
 
 
 		// Create a button that users can click to begin the registration flow
 		const CheckInButton = new ButtonBuilder()
-			.setCustomId('tournament-checkin')
+			.setCustomId(`t-checkin-${interaction.options.getInteger('torneo-id', true)}`)
 			.setLabel('Inscribete aquí')
 			.setStyle(ButtonStyle.Primary)
 			.setEmoji('✉️')
 
+		// We have to add the button to an action row
+		const ActionRow = new ActionRowBuilder<ButtonBuilder>()
+			.setComponents(CheckInButton)
+
 		// Send the message to the selected channel
 
-		// Confirm to the user that the message was succesfully sent or otherwise
+		const channel = interaction.options.getChannel('canal', true) as GuildTextBasedChannel
 
+		try {
+			void await channel.send({
+				content: `${interaction.user} ha abierto las inscripciones para el torneo \"**${torneo.name}**\". \n¡Presiona el botón de abajo para comenzar la inscripción!`,
+				components: [ActionRow]
+			})
+		} catch (e) {
+
+			console.error(e)
+			return void await interaction.editReply({ content: 'Ocurrió un error intentando enviar el mensaje en ese canal.' })
+		}
+
+		// Confirm to the user that the message was succesfully sent or otherwise
+		return void await interaction.editReply({ content: `El mensaje ha sido enviado exitosamente en el canal ${interaction.options.getChannel('canal', true)}` })
 	}
 }
