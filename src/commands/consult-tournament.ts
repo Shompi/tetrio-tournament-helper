@@ -88,14 +88,16 @@ async function SearchTournament(id: number) {
 
 export function TournamentDetailsEmbed(torneo: Tournament) {
 
-	const players = JSON.parse(torneo.players) as string[]
+	const players = torneo.players
+	console.log(`[DEBUG] PLAYERS ARRAY =>`, players);
 
 	return (
 		new EmbedBuilder()
 			/** This probably will need change if later i want to implement more statuses. */
 			.setTitle(`${torneo.name} (${torneo.status === 0 ? "CLOSED" : "OPEN"})`)
 			.setDescription(
-				`**Organizado por**: <@${torneo.organized_by}>` +
+				`**ID del torneo**: ${torneo.id}` +
+				`\n**Organizado por**: <@${torneo.organized_by}>` +
 				`\n**Juego**: ${torneo.game}` +
 				`${torneo.is_tr_capped ? `\n**TR CAP**: ${torneo.tr_cap}` : ""}` +
 				`${torneo.is_rank_capped ? `\n**RANK CAP**: ${torneo.rank_cap}` : ""}` +

@@ -1,6 +1,7 @@
 import { Command } from "@sapphire/framework"
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ChannelType, GuildTextBasedChannel, PermissionsBitField, TextBasedChannel } from "discord.js"
 import { TournamentModel, TournamentStatus } from "../sequelize/index.js";
+import { TournamentDetailsEmbed } from "./consult-tournament.js";
 
 export class OpenRegistration extends Command {
 
@@ -60,7 +61,8 @@ export class OpenRegistration extends Command {
 		try {
 			void await channel.send({
 				content: `${interaction.user} ha abierto las inscripciones para el torneo \"**${torneo.name}**\". \n¡Presiona el botón de abajo para comenzar la inscripción!`,
-				components: [ActionRow]
+				components: [ActionRow],
+				embeds:[TournamentDetailsEmbed(torneo)]
 			})
 		} catch (e) {
 

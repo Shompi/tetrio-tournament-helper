@@ -1,7 +1,8 @@
 import { InteractionHandler, InteractionHandlerTypes } from '@sapphire/framework';
 import { ActionRowBuilder, ButtonBuilder, ButtonInteraction, ButtonStyle, Colors, ComponentType, EmbedBuilder, ModalBuilder, TextInputBuilder, TextInputStyle } from "discord.js"
-import { PlayerModel, Tournament, TournamentModel, TournamentStatus } from '../sequelize/index.js';
-import { GenerateTetrioAvatarURL, GetUserDataFromTetrio, GetUserProfileURL } from '../helper-functions/index.js';
+import { Player, PlayerModel, Tournament, TournamentModel, TournamentStatus } from '../sequelize/index.js';
+import { GenerateTetrioAvatarURL, GetUserDataFromTetrio, GetUserProfileURL, TetrioRanksArray, TetrioUserData } from '../helper-functions/index.js';
+import { TournamentDetailsEmbed } from '../commands/consult-tournament.js';
 
 export class ParseExampleInteractionHandler extends InteractionHandler {
 	public constructor(ctx: InteractionHandler.LoaderContext, options: InteractionHandler.Options) {
@@ -46,9 +47,16 @@ async function HandleTetrioRegistration(interaction: ButtonInteraction, torneo: 
 		}
 	})
 
-	if (!playerData)
-		return void await HandleNewPlayerRegistration(interaction, torneo)
+	if (!playerData) {
+		void await HandleNewPlayerRegistration(interaction, torneo)
+	} else {
+		void await ContinuePlayerRegistration(interaction, playerData.data, torneo)
+	}
 
+	// Update the message with the new details
+	return void await interaction.message.edit({
+		embeds: [TournamentDetailsEmbed(torneo)]
+	})
 }
 
 async function HandleNewPlayerRegistration(interaction: ButtonInteraction, torneo: Tournament): Promise<void> {
@@ -114,25 +122,33 @@ async function HandleNewPlayerRegistration(interaction: ButtonInteraction, torne
 		.setEmoji("✅")
 		.setStyle(ButtonStyle.Secondary)
 
-	const cancelButton = new ButtonBuilder()
-		.setCustomId(`t-profile-cancel`)
+	const retryButton = new ButtonBuilder()
+		.setCustomId(`t-profile-retry`)
 		.setLabel("No")
 		.setEmoji("❌")
 		.setStyle(ButtonStyle.Secondary)
 
+	const cancelButton = new ButtonBuilder()
+		.setCustomId(`t-profile-cancel`)
+		.setLabel("Cancelar inscripción")
+		.setStyle(ButtonStyle.Danger)
+
 	const confirmOrDenyRow = new ActionRowBuilder<ButtonBuilder>()
-		.setComponents(confirmButton, cancelButton)
+		.setComponents(confirmButton, retryButton)
+
+	const cancelRow = new ActionRowBuilder<ButtonBuilder>()
+		.setComponents(cancelButton)
 
 	// Interaction is deferred at this point
 	const profileReply = await modalSubmition.editReply({
 		content: '¿Es este tu perfil de TETRIO?',
 		embeds: [profileEmbed],
-		components: [confirmOrDenyRow]
+		components: [confirmOrDenyRow, cancelRow]
 	})
 
 	const pressedButton = await profileReply.awaitMessageComponent({
 		componentType: ComponentType.Button,
-		filter: (bInteraction) => bInteraction.message.id === profileReply.id && ["t-profile-confirm", "t-profile-cancel"].includes(bInteraction.customId),
+		filter: (bInteraction) => bInteraction.message.id === profileReply.id && ["t-profile-confirm", "t-profile-retry", "t-profile-cancel"].includes(bInteraction.customId),
 		time: 60_000 * 2,
 
 	}).catch(() => null);
@@ -144,15 +160,147 @@ async function HandleNewPlayerRegistration(interaction: ButtonInteraction, torne
 	})
 
 	if (pressedButton.customId === "t-profile-cancel") {
+		return void await pressedButton.update({
+			content: 'La interacción ha sido cancelada.\nSi quieres comenzar le proceso de inscripción de nuevo, debes presionar nuevamente el botón.',
+			components: [],
+			embeds: []
+		})
+	}
+
+	if (pressedButton.customId === "t-profile-retry") {
 		// We basically need to run all this process again.
 		return void HandleNewPlayerRegistration(pressedButton, torneo)
 	}
 
 	if (pressedButton.customId === 't-profile-confirm') {
-		return void await pressedButton.update({
-			content: 'Te has registrado en el torneo exitosamente! (Mentira, aun no está implementado)',
+
+		void await AddTetrioPlayerToDatabase({ discordId: interaction.user.id, tetrioId: userData.user.username }, userData)
+
+		return void await ContinuePlayerRegistration(pressedButton, userData, torneo)
+
+	}
+}
+
+async function ContinuePlayerRegistration(interaction: ButtonInteraction, userData: TetrioUserData, torneo: Tournament) {
+
+	const result = await RunTetrioTournamentRegistrationChecks(userData, torneo, interaction.user.id)
+
+	if (!result.allowed) {
+		if (!interaction.replied) {
+			return void await interaction.reply({
+				content: `No puedes inscribirte en este torneo.\nRazón: ${result.reason}`,
+				ephemeral: true,
+			})
+		}
+
+		return void await interaction.update({
+			content: `No puedes inscribirte en este torneo.\nRazón: ${result.reason}`,
 			components: [],
 			embeds: []
 		})
 	}
+
+	// Add player to the tournament
+	console.log("[DEBUG] Añadiendo jugador a la lista de players del torneo...");
+
+	const playerList = Array.from(torneo.players)
+
+	playerList.push(interaction.user.id)
+
+	console.log("[DEBUG] Lista de jugadores: ", playerList);
+
+	await torneo.update({
+		players: playerList
+	})
+
+	await torneo.save()
+	console.log("[DEBUG] El torneo ha sido guardado");
+
+	/** ESTO SE TIENE QUE BORRAR MAS TARDE, POR AHORA FORZAREMOS LA ASIGNACION DE ROLES POR ID DE TORNEO */
+
+	if (interaction.inCachedGuild()) {
+		if (torneo.id === 1) {
+			// Torneo avanzado Role Torneo Chile
+			await interaction.member.roles.add("1180723107145723934")
+		}
+
+		if (torneo.id === 2) {
+			// Torneo Amateur
+			await interaction.member.roles.add("1180723237399834715")
+		}
+	}
+
+	/** ----------------------- */
+
+	if (!interaction.replied) {
+		return void await interaction.reply({
+			ephemeral: true,
+			content: `¡Te has inscrito exitósamente al torneo **${torneo.name}**!`,
+		})
+	}
+
+	return void await interaction.update({
+		content: `Te has inscrito en el torneo **${torneo.name}** exitósamente!`,
+		components: [],
+		embeds: []
+	})
+}
+
+async function RunTetrioTournamentRegistrationChecks(userData: TetrioUserData, torneo: Tournament, discordId: string): Promise<{ allowed: boolean, reason?: string }> {
+	// In here we have to check for Tetrio caps like rank, rating and country lock and if the player is already on the tournament.
+
+	if (torneo.players.includes(discordId)) {
+		return ({ allowed: false, reason: "Ya te encuentras en la lista de participantes de este torneo." })
+	}
+
+	if (torneo.is_country_locked && torneo.country_lock?.toUpperCase() !== userData.user.country?.toUpperCase()) {
+		// The country of the player doesn't match the tournament country lock
+		return ({ allowed: false, reason: "El pais del jugador es distinto al pais del torneo." })
+	}
+
+	if (torneo.is_tr_capped) {
+		if (userData.user.league.rank === 'z')
+			return ({ allowed: false, reason: "El jugador no posee un rank actualmente." })
+
+
+		if (userData.user.league.rating > torneo.tr_cap!) {
+			return ({ allowed: false, reason: "El rating del jugador está por sobre el limite de TR del torneo." })
+		}
+	}
+
+	if (torneo.is_rank_capped) {
+
+		if (userData.user.league.rank === 'z')
+			return ({ allowed: false, reason: "El jugador es actualmente UNRANKED en Tetra League." })
+
+		const tournamentRankIndex = TetrioRanksArray.findIndex((rank) => rank === torneo.rank_cap)
+		const userRankIndex = TetrioRanksArray.findIndex((rank) => rank === userData.user.league.rank)
+
+		if (tournamentRankIndex < userRankIndex)
+			return ({ allowed: false, reason: "El rank del jugador está por sobre el límite de rank impuesto por el torneo." })
+	}
+
+	if (torneo.max_players && torneo.players.length >= torneo.max_players) {
+		return ({ allowed: false, reason: "El torneo ha alcanzado el máximo de participantes." })
+	}
+
+	return { allowed: true }
+}
+
+export async function AddTetrioPlayerToDatabase({ discordId, tetrioId }: { discordId: string, tetrioId: string }, userData: TetrioUserData) {
+
+	if (!discordId || !tetrioId)
+		throw new Error(`Missing one of the arguments. dId: ${discordId}, tId: ${tetrioId}`)
+
+
+	console.log("[DEBUG] Añadiendo nuevo PLAYER a la base de datos...");
+
+	await PlayerModel.create({
+		discord_id: discordId,
+		tetrio_id: tetrioId,
+		data: userData
+	})
+
+	console.log(`[PLAYERS DATABASE] => Player (${discordId}) - ${tetrioId} se ha guardado en la base de datos.`);
+
 }

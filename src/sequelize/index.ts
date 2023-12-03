@@ -1,5 +1,6 @@
 import { Sequelize, DataTypes, InferAttributes, InferCreationAttributes, CreationOptional, Model } from 'sequelize'
 import { TetrioUserData } from '../helper-functions/index.js';
+import { Snowflake } from 'discord.js';
 
 const sequelize = new Sequelize({
 	dialect: "sqlite",
@@ -24,11 +25,11 @@ export interface Tournament extends Model<InferAttributes<Tournament>, InferCrea
 	name: string;
 	game: string;
 
-	max_players: number;
+	max_players: CreationOptional<number | null>;
 	/** Should be open by default */
 	status: CreationOptional<TournamentStatus>;
 	/** Stringified array with discord IDs */
-	players: string;
+	players: Snowflake[];
 
 	/** This probably will need to be replaced by a TETR.io rank enum */
 	is_rank_capped: CreationOptional<boolean>;
@@ -85,9 +86,15 @@ const TournamentModel = sequelize.define<Tournament>('Tournament', {
 		defaultValue: TournamentStatus.OPEN,
 	},
 
-	/** Array of Player Objects, it needs to be parsed as json before operating on it */
+	/** Array of Discord IDs, it needs to be parsed as json before operating on it */
 	players: {
 		type: DataTypes.TEXT,
+		get() {
+			return JSON.parse((this.getDataValue('players') as unknown as string)) as Snowflake[];
+		},
+		set(value) {
+			return this.setDataValue('players', JSON.stringify(value) as unknown as Snowflake[])
+		}
 	},
 
 	is_rank_capped: {
@@ -108,7 +115,7 @@ const TournamentModel = sequelize.define<Tournament>('Tournament', {
 
 	tr_cap: {
 		type: DataTypes.INTEGER,
-		defaultValue: null,
+		defaultValue: 0,
 		allowNull: true
 	},
 
@@ -149,7 +156,10 @@ const PlayerModel = sequelize.define<Player>('Player', {
 		allowNull: false,
 		defaultValue: "{}",
 		get() {
-			return JSON.parse((this.getDataValue('data') as unknown as string)) as TetrioUserData;
+			return JSON.parse(this.getDataValue('data') as unknown as string) as TetrioUserData;
+		},
+		set(value) {
+			this.setDataValue('data', JSON.stringify(value) as unknown as TetrioUserData);
 		}
 	}
 })

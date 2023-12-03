@@ -69,7 +69,7 @@ export class CreateTournament extends Command {
 						.setDescriptionLocalizations({
 							"en-US": "The highest rank allowed to join this tournament (TETRIO ONLY)"
 						})
-						.addChoices(...TetrioRanksArray.map(rank => ({ name: rank, value: rank })))
+						.addChoices(...TetrioRanksArray.map(rank => ({ name: rank.toUpperCase(), value: rank })))
 				)
 				.addIntegerOption(trCap =>
 					trCap.setName('tr_cap')
@@ -107,9 +107,7 @@ export class CreateTournament extends Command {
 			rank_cap: interaction.options.getString('rank_cap', false),
 			tr_cap: interaction.options.getInteger('tr_cap', false),
 			country_lock: interaction.options.getString('pais', false),
-			max_players: interaction.options.getInteger('maximo-jugadores', false) ?? 0,
-
-
+			max_players: interaction.options.getInteger('maximo-jugadores', false),
 		}
 
 		try {
@@ -128,7 +126,7 @@ export class CreateTournament extends Command {
 				is_tr_capped: !!options.tr_cap,
 				tr_cap: options.tr_cap,
 				max_players: options.max_players,
-				players: JSON.stringify([]),
+				players: [],
 				status: TournamentStatus.OPEN,
 			})
 

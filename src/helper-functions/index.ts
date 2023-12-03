@@ -80,19 +80,12 @@ interface APIUserResponse {
 	data?: TetrioUserData;
 }
 
-enum TetrioRanks {
-	UNRANKED = 0,
-	D,
-	D_PLUS,
-
-}
-
 const TETRIO_BASE = "https://ch.tetr.io/api"
 const TETRIO_ENDPOINTS = {
 	users: TETRIO_BASE + "/users/",
 }
 
-export const TetrioRanksArray = ["D", "D+", "C-", "C", "C+", "B-", "B", "B+", "A-", "A", "A+", "S-", "S", "S+", "SS", "U", "X"]
+export const TetrioRanksArray = ["d", "d+", "c-", "c", "c+", "b-", "b", "b+", "a-", "a", "a+", "s-", "s", "s+", "ss", "u", "x"]
 
 /** Gets data of an user from the TETRIO API, calls toLowerCase() internally */
 export async function GetUserDataFromTetrio(_username: string): Promise<TetrioUserData | null> {
@@ -115,7 +108,7 @@ export async function GetUserDataFromTetrio(_username: string): Promise<TetrioUs
 /** avatar_revision? (int) - This user's avatar ID.
 	* Get their avatar at https://tetr.io/user-content/avatars/{ USERID }.jpg?rv={ AVATAR_REVISION }
 	*
-		*/
+	*/
 export function GenerateTetrioAvatarURL(userId: string, avatar_revision: number | undefined) {
 
 	if (!avatar_revision) return null;
