@@ -181,16 +181,14 @@ async function SendTableASCII(interaction: Subcommand.ChatInputCommandInteractio
 
 	for (let i = 0; i < orderedPlayerList.length; i++) {
 		table.addRow(
-			[
-				i + 1, // Posicion en la lista
-				orderedPlayerList[i].discordId,
-				orderedPlayerList[i].data.user.username,
-				orderedPlayerList[i].data.user.country?.toUpperCase() ?? "OCULTO",
-				orderedPlayerList[i].data.user.league.rank.toUpperCase(),
-				orderedPlayerList[i].data.user.league.rating.toFixed(2),
-				orderedPlayerList[i].data.user.league.apm ?? "0.00",
-				orderedPlayerList[i].data.user.league.pps ?? "0.00",
-			]
+			i + 1, // Posicion en la lista
+			orderedPlayerList[i].discordId,
+			orderedPlayerList[i].data.user.username,
+			orderedPlayerList[i].data.user.country?.toUpperCase() ?? "OCULTO",
+			orderedPlayerList[i].data.user.league.rank.toUpperCase(),
+			orderedPlayerList[i].data.user.league.rating.toFixed(2),
+			orderedPlayerList[i].data.user.league.apm ?? "0.00",
+			orderedPlayerList[i].data.user.league.pps ?? "0.00",
 		)
 	}
 
