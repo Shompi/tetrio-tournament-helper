@@ -26,7 +26,7 @@ export class OpenRegistration extends Command {
 						.setDescription('La id del torneo al cualquier quieres abrir las inscripciones')
 						.setRequired(true)
 				)
-		}, { idHints: [""] })
+		}, { idHints: ["1181535689226063924"] })
 	}
 
 	public async chatInputRun(interaction: Command.ChatInputCommandInteraction) {
