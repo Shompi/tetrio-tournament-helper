@@ -3,7 +3,7 @@ import { PlayerModel, Tournament } from "../sequelize/index.js"
 import { TetrioUserData, TournamentDetailsEmbed } from "../helper-functions/index.js"
 import { SearchTournamentByNameAutocomplete, SearchTournamentById } from "../helper-functions/index.js"
 import { AsciiTable3, AlignmentEnum } from "ascii-table3"
-import { Colors, EmbedBuilder, codeBlock } from "discord.js"
+import { Attachment, AttachmentBuilder, Colors, EmbedBuilder, codeBlock } from "discord.js"
 
 export class TournamentCommands extends Subcommand {
 
@@ -194,13 +194,13 @@ async function SendTableASCII(interaction: Subcommand.ChatInputCommandInteractio
 		)
 	}
 
-	const TableEmbed = new EmbedBuilder()
-		.setColor(Colors.White)
-		.setDescription(codeBlock(table.toString()))
+	const TableFile = new AttachmentBuilder(Buffer.from(table.toString()))
+		.setName('playersTable.txt')
+		.setDescription(`Tabla de jugadores del torneo ${tournament.name}`)
 
 	return void interaction.editReply({
 		content: `Aquí está la lista de jugadores del torneo **${tournament.name}**`,
-		embeds: [TableEmbed]
+		files: [TableFile]
 	})
 }
 
