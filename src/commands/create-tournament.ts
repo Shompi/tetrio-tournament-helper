@@ -2,7 +2,7 @@ import { Command } from "@sapphire/framework";
 import { EmbedBuilder, Locale, PermissionsBitField } from "discord.js";
 import { TournamentModel, TournamentStatus } from "../sequelize/index.js";
 import { TetrioRanksArray } from "../helper-functions/index.js";
-import { TournamentDetailsEmbed } from "./consult-tournament.js";
+import { TournamentDetailsEmbed } from "../helper-functions/index.js";
 export class CreateTournament extends Command {
 
 	public constructor(context: Command.LoaderContext, options: Command.Options) {
