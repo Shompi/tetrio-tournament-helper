@@ -174,8 +174,15 @@ async function SendTableASCII(interaction: Subcommand.ChatInputCommandInteractio
 	const table = new AsciiTable3(tournament.name)
 		.setTitleAlignCenter()
 		.setHeadingAlignCenter()
-		.setHeading("Posición", "DISCORD", "TETRIO ID", "PAIS", "RANK", "TR", "APM", "PPS")
+		.setHeading("POSICION", "DISCORD", "TETRIO ID", "PAIS", "RANK", "TR", "APM", "PPS")
 		.setAlignCenter(1)
+		.setAlignCenter(2)
+		.setAlignCenter(3)
+		.setAlignCenter(4)
+		.setAlignCenter(5)
+		.setAlignCenter(6)
+		.setAlignCenter(7)
+		.setAlignCenter(8)
 
 	// Good old for loop
 
