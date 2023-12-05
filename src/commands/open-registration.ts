@@ -1,7 +1,7 @@
 import { Command } from "@sapphire/framework"
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ChannelType, GuildTextBasedChannel, PermissionsBitField, TextBasedChannel } from "discord.js"
 import { TournamentModel, TournamentStatus } from "../sequelize/index.js";
-import { TournamentDetailsEmbed } from "./consult-tournament.js";
+import { TournamentDetailsEmbed } from "../helper-functions/index.js";
 
 export class OpenRegistration extends Command {
 
@@ -12,7 +12,7 @@ export class OpenRegistration extends Command {
 
 	public override registerApplicationCommands(registry: Command.Registry) {
 		registry.registerChatInputCommand((builder) => {
-			builder.setName("open-checkin")
+			builder.setName("open-registration")
 				.setDefaultMemberPermissions(PermissionsBitField.Flags.Administrator)
 				.setDescription("Abre el proceso de check in para un torneo")
 				.addChannelOption(channel =>
@@ -26,7 +26,6 @@ export class OpenRegistration extends Command {
 						.setDescription('La id del torneo al cualquier quieres abrir las inscripciones')
 						.setRequired(true)
 				)
-
 		}, { idHints: [""] })
 	}
 

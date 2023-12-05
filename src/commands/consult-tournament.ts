@@ -1,6 +1,9 @@
 import { Subcommand } from "@sapphire/plugin-subcommands"
-import { Tournament, TournamentModel, TournamentStatus } from "../sequelize/index.js"
-import { Colors, EmbedBuilder } from "discord.js"
+import { PlayerModel, Tournament } from "../sequelize/index.js"
+import { TetrioUserData, TournamentDetailsEmbed } from "../helper-functions/index.js"
+import { SearchTournamentByNameAutocomplete, SearchTournamentById } from "../helper-functions/index.js"
+import { AsciiTable3, AlignmentEnum } from "ascii-table3"
+import { Colors, EmbedBuilder, codeBlock } from "discord.js"
 
 export class TournamentCommands extends Subcommand {
 
@@ -13,6 +16,10 @@ export class TournamentCommands extends Subcommand {
 					name: "detalles",
 					chatInputRun: "chatInputDetalles"
 				},
+				{
+					name: "lista-jugadores",
+					chatInputRun: "chatInputListaJugadores"
+				}
 			]
 		})
 	}
@@ -28,8 +35,8 @@ export class TournamentCommands extends Subcommand {
 						.setDescription('Ve la información de un torneo')
 						.addIntegerOption(id =>
 							id.setName('id-torneo')
-								.setDescription('La id numérica del torneo')
-								.setMaxValue(100000)
+								.setDescription('La ID numérica del torneo')
+								.setMaxValue(100_000)
 								.setMinValue(1)
 						)
 						.addStringOption(name =>
@@ -39,79 +46,190 @@ export class TournamentCommands extends Subcommand {
 								.setMaxLength(255)
 						)
 				)
+				.addSubcommand(list =>
+					list.setName('lista-jugadores')
+						.setDescription('Obtén una lista con los jugadores inscritos en este torneo')
+						.addIntegerOption(idTorneo =>
+							idTorneo.setName('id-torneo')
+								.setMinValue(1)
+								.setMaxValue(100_000)
+								.setDescription('La ID numérica del torneo')
+						)
+						.addStringOption(name =>
+							name.setName('nombre-torneo')
+								.setDescription("El nombre del torneo")
+								.setAutocomplete(true)
+						)
+						.addStringOption(order =>
+							order.setName('ordenar-por')
+								.setDescription('El tipo de ordenamiento de los jugadores en la tabla (SOLO TETRIO)')
+								.setChoices(
+									{
+										name: 'Inscripción',
+										value: "default",
+									},
+									{
+										name: 'Ataque Por Minuto (APM)',
+										value: 'apm',
+									},
+									{
+										name: 'Piezas Por Segundo (PPS)',
+										value: 'pps',
+									},
+									{
+										name: 'Tetra Rating',
+										value: 'tr',
+									},
+									{
+										name: 'Rank (e.g: S, S+, SS, X)',
+										value: 'rank',
+									}
+								)
+
+						)
+						.addStringOption(format =>
+							format.setName('formato')
+								.setChoices(
+									{
+										name: "CSV",
+										value: "cvs",
+									},
+									{
+										name: 'JSON',
+										value: 'json',
+									},
+									{
+										name: 'ASCII',
+										value: 'ascii',
+									}
+								)
+								.setDescription('El formato en el que quieres exportar la lista de jugadores')
+						)
+
+				)
 		}, { idHints: ["1179715303735832646"] })
-
-
 	}
+
 	public async chatInputDetalles(interaction: Subcommand.ChatInputCommandInteraction) {
 		// Your code goes here
-
 		const idTorneo = interaction.options.getInteger('id-torneo') ?? interaction.options.getString('nombre-torneo');
 
 		if (!idTorneo) return void await interaction.reply({ content: "Debes usar este comando con almenos un argumento, la id numérica o el nombre del torneo.\nLa id tiene prioridad por sobre el nombre.\nSi intentaste buscar un torneo por su nombre, asegurate de esperar a que se muestren las opciones en la opción `nombre-torneo` y escogerla desde las opciones, ya que la búsqueda se hará con el nombre completo del torneo.", ephemeral: true })
 
-		const torneo = await SearchTournament(+idTorneo)
 
+		const torneo = await SearchTournamentById(+idTorneo)
 		if (!torneo) return void await interaction.reply({ content: 'No se encontró ningun torneo en la base de datos con los datos ingresados.', ephemeral: true })
 
 		return void await SendDetails(interaction, torneo);
+	}
 
-	} // End ChatInputRun
+	public async chatInputListaJugadores(interaction: Subcommand.ChatInputCommandInteraction) {
+		const idTorneo = interaction.options.getInteger('id-torneo') ?? interaction.options.getString('nombre-torneo');
+		if (!idTorneo) return void await interaction.reply({ content: "Debes usar este comando con almenos un argumento, la id numérica o el nombre del torneo.\nLa id tiene prioridad por sobre el nombre.\nSi intentaste buscar un torneo por su nombre, asegurate de esperar a que se muestren las opciones en la opción `nombre-torneo` y escogerla desde las opciones, ya que la búsqueda se hará con el nombre completo del torneo.", ephemeral: true })
+		const torneo = await SearchTournamentById(+idTorneo)
+		if (!torneo) return void await interaction.reply({ content: 'No se encontró ningun torneo en la base de datos con los datos ingresados.', ephemeral: true })
+
+
+		const format = interaction.options.getString('formato', false) ?? "ascii" // default ascii
+
+		if (torneo.game !== "TETRIO") return void await interaction.reply({ content: 'El listado de jugadores para torneos que no son de tetrio se implementará prontamente.', ephemeral: true })
+		// We basically need to skip all the code below if the tournament is not a TETRIO tournament
+
+		if (format === 'ascii') SendTableASCII(interaction, torneo)
+
+		if (format === 'csv') void await interaction.reply({ content: 'Este formato aún no está implementado.', ephemeral: true })
+
+		if (format === 'json') void await interaction.reply({ content: 'Este formato aún no está implementado.', ephemeral: true })
+
+	}
 
 	public async autocompleteRun(interaction: Subcommand.AutocompleteInteraction) {
 
-		const subcommand = interaction.options.getSubcommand()
-
-		if (subcommand === 'detalles') return void await detallesAutocomplete(interaction)
+		if (interaction.options.getFocused(true).name === 'nombre-torneo') {
+			return void await SearchTournamentByNameAutocomplete(interaction)
+		}
 	}
 }
 
-async function detallesAutocomplete(interaction: Subcommand.AutocompleteInteraction) {
-	const focusedOption = interaction.options.getFocused(true)
+async function SendDetails(interaction: Subcommand.ChatInputCommandInteraction, tournament: Tournament) {
+	return void await interaction.reply({
+		content: `Aquí está la información del torneo **${tournament.name}**`,
+		embeds: [TournamentDetailsEmbed(tournament)]
+	})
+}
 
-	if (focusedOption.name === 'nombre-torneo') {
-		/** This should be okay for now, since we will probably not have too many tournaments stored */
-		const torneos = await TournamentModel.findAll()
+type OrderBy = "default" | "apm" | "pps" | "tr" | "rank" | null
 
-		return void await interaction.respond(
-			torneos.filter(torneo => torneo.name.toLowerCase().includes(
-				focusedOption.value.toLowerCase()
-			)).map(torneo => ({ name: torneo.name, value: torneo.id.toString() }))
+async function SendTableASCII(interaction: Subcommand.ChatInputCommandInteraction, tournament: Tournament) {
+
+	void await interaction.deferReply()
+
+	const { players } = tournament
+	const orderBy = interaction.options.getString('ordenar-por', false) as OrderBy ?? 'default'
+
+	const orderedPlayerList = await OrderPlayerListBy(players, orderBy)
+
+	// Now we need to build the table
+
+	const table = new AsciiTable3(tournament.name)
+		.setTitleAlignCenter()
+		.setHeadingAlignCenter()
+		.setHeading("Posición", "DISCORD", "TETRIO ID", "PAIS", "RANK", "TR", "APM", "PPS")
+		.setAlignCenter(1)
+
+	// Good old for loop
+
+	for (let i = 0; i < orderedPlayerList.length; i++) {
+		table.addRow(
+			[
+				i + 1, // Posicion en la lista
+				orderedPlayerList[i].discordId,
+				orderedPlayerList[i].data.user.username,
+				orderedPlayerList[i].data.user.country?.toUpperCase() ?? "OCULTO",
+				orderedPlayerList[i].data.user.league.rank.toUpperCase(),
+				orderedPlayerList[i].data.user.league.rating.toFixed(2),
+				orderedPlayerList[i].data.user.league.apm ?? "0.00",
+				orderedPlayerList[i].data.user.league.pps ?? "0.00",
+			]
 		)
 	}
 
-}
+	const TableEmbed = new EmbedBuilder()
+		.setColor(Colors.White)
+		.setDescription(codeBlock(table.toString()))
 
-async function SearchTournament(id: number) {
-	return await TournamentModel.findOne({ where: { id } })
-}
-
-export function TournamentDetailsEmbed(torneo: Tournament) {
-
-	const players = torneo.players
-	console.log(`[DEBUG] PLAYERS ARRAY =>`, players);
-
-	return (
-		new EmbedBuilder()
-			/** This probably will need change if later i want to implement more statuses. */
-			.setTitle(`${torneo.name} (${torneo.status === 0 ? "CLOSED" : "OPEN"})`)
-			.setDescription(
-				`**ID del torneo**: ${torneo.id}` +
-				`\n**Organizado por**: <@${torneo.organized_by}>` +
-				`\n**Juego**: ${torneo.game}` +
-				`${torneo.is_tr_capped ? `\n**TR CAP**: ${torneo.tr_cap}` : ""}` +
-				`${torneo.is_rank_capped ? `\n**RANK CAP**: ${torneo.rank_cap}` : ""}` +
-				`${torneo.is_country_locked ? `\n**COUNTRY LOCK**: ${torneo.country_lock}` : ""}` +
-				`\n**Jugadores registrados**: ${players.length}`
-			)
-			.setColor(Colors.White)
-			.setTimestamp()
-	)
-}
-
-async function SendDetails(interaction: Subcommand.ChatInputCommandInteraction, torneo: Tournament) {
-	return void await interaction.reply({
-		content: `Aquí está la información del torneo **${torneo.name}**`,
-		embeds: [TournamentDetailsEmbed(torneo)]
+	return void interaction.editReply({
+		content: `Aquí está la lista de jugadores del torneo **${tournament.name}**`,
+		embeds: [TableEmbed]
 	})
+}
+
+interface PlayerDataOrdered {
+	discordId: string,
+	data: TetrioUserData
+}
+
+async function OrderPlayerListBy(playerIds: string[], orderBy: OrderBy = "default"): Promise<PlayerDataOrdered[]> {
+	// We start by getting all the players we need from the database
+	const PlayersArray: PlayerDataOrdered[] = []
+
+	for (const id of playerIds) {
+		const playerData = await PlayerModel.findByPk(id)
+
+		if (!playerData) {
+			console.log(`[DEBUG] Los datos del usuario ${id} no están en la base de datos PLAYER`)
+			continue
+		}
+
+		PlayersArray.push({ discordId: id, data: playerData.data })
+	}
+
+	// At this point we should have a list of players
+
+
+	if (orderBy === 'default') {
+		return PlayersArray
+	}
+
+	return PlayersArray
 }

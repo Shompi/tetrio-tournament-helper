@@ -134,7 +134,6 @@ export interface Player extends Model<InferAttributes<Player>, InferCreationAttr
 	// Some fields are optional when calling UserModel.create() or UserModel.build()
 	discord_id: string;
 	tetrio_id: string;
-	/** Stringified  */
 	data: TetrioUserData;
 }
 
@@ -150,7 +149,7 @@ const PlayerModel = sequelize.define<Player>('Player', {
 		allowNull: false,
 		unique: true
 	},
-	/** Tetrio user data */
+	/** The last updated data of the user */
 	data: {
 		type: DataTypes.TEXT,
 		allowNull: false,
