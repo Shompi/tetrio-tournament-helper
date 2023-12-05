@@ -190,7 +190,7 @@ async function SendTableASCII(interaction: Subcommand.ChatInputCommandInteractio
 		table.addRow(
 			i + 1, // Posicion en la lista
 			orderedPlayerList[i].discordId,
-			orderedPlayerList[i].data.user.username,
+			orderedPlayerList[i].data.user.username.toUpperCase(),
 			orderedPlayerList[i].data.user.country?.toUpperCase() ?? "OCULTO",
 			orderedPlayerList[i].data.user.league.rank.toUpperCase(),
 			orderedPlayerList[i].data.user.league.rating.toFixed(2),
