@@ -26,7 +26,6 @@ export class OpenRegistration extends Command {
 						.setDescription('La id del torneo al cualquier quieres abrir las inscripciones')
 						.setRequired(true)
 				)
-
 		}, { idHints: [""] })
 	}
 

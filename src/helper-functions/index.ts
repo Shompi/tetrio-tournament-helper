@@ -6,6 +6,8 @@ import { EmbedBuilder, Colors } from "discord.js";
 import { request } from "undici"
 import { Tournament } from "../sequelize/index.js";
 import { PlayerModel } from "../sequelize/index.js";
+import { Subcommand } from "@sapphire/plugin-subcommands";
+import { TournamentModel } from "../sequelize/index.js";
 
 export type TetrioApiCacheStatus = "hit" | "miss" | "awaited"
 export type TetrioUserRole = "anon" | "user" | "bot" | "halfmod" | "mod" | "admin" | "sysop" | "banned"
@@ -203,5 +205,24 @@ export async function RunTetrioTournamentRegistrationChecks(userData: TetrioUser
 	}
 
 	return { allowed: true };
+}
+
+export async function SearchTournamentByNameAutocomplete(interaction: Subcommand.AutocompleteInteraction) {
+	const focusedOption = interaction.options.getFocused(true)
+
+	if (focusedOption.name === 'nombre-torneo') {
+		/** This should be okay for now, since we will probably not have too many tournaments stored */
+		const torneos = await TournamentModel.findAll()
+
+		return void await interaction.respond(
+			torneos.filter(torneo => torneo.name.toLowerCase().includes(
+				focusedOption.value.toLowerCase()
+			)).map(torneo => ({ name: torneo.name, value: torneo.id.toString() }))
+		)
+	}
+}
+
+export async function SearchTournamentById(id: number) {
+	return await TournamentModel.findOne({ where: { id } })
 }
 
