@@ -1,6 +1,6 @@
 import { Subcommand } from "@sapphire/plugin-subcommands"
-import { Tournament, TournamentModel, TournamentStatus } from "../sequelize/index.js"
-import { Colors, EmbedBuilder } from "discord.js"
+import { Tournament, TournamentModel } from "../sequelize/index.js"
+import { TournamentDetailsEmbed } from "../helper-functions/index.js"
 
 export class TournamentCommands extends Subcommand {
 
@@ -84,29 +84,6 @@ async function detallesAutocomplete(interaction: Subcommand.AutocompleteInteract
 
 async function SearchTournament(id: number) {
 	return await TournamentModel.findOne({ where: { id } })
-}
-
-export function TournamentDetailsEmbed(torneo: Tournament) {
-
-	const players = torneo.players
-	console.log(`[DEBUG] PLAYERS ARRAY =>`, players);
-
-	return (
-		new EmbedBuilder()
-			/** This probably will need change if later i want to implement more statuses. */
-			.setTitle(`${torneo.name} (${torneo.status === 0 ? "CLOSED" : "OPEN"})`)
-			.setDescription(
-				`**ID del torneo**: ${torneo.id}` +
-				`\n**Organizado por**: <@${torneo.organized_by}>` +
-				`\n**Juego**: ${torneo.game}` +
-				`${torneo.is_tr_capped ? `\n**TR CAP**: ${torneo.tr_cap}` : ""}` +
-				`${torneo.is_rank_capped ? `\n**RANK CAP**: ${torneo.rank_cap}` : ""}` +
-				`${torneo.is_country_locked ? `\n**COUNTRY LOCK**: ${torneo.country_lock}` : ""}` +
-				`\n**Jugadores registrados**: ${players.length}`
-			)
-			.setColor(Colors.White)
-			.setTimestamp()
-	)
 }
 
 async function SendDetails(interaction: Subcommand.ChatInputCommandInteraction, torneo: Tournament) {
