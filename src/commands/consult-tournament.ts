@@ -5,6 +5,8 @@ import { SearchTournamentByNameAutocomplete, SearchTournamentById } from "../hel
 import { AsciiTable3, AlignmentEnum } from "ascii-table3"
 import { Attachment, AttachmentBuilder, Colors, EmbedBuilder, codeBlock } from "discord.js"
 
+type OrderBy = "default" | "apm" | "pps" | "tr" | "rank" | "embed" | null
+
 export class TournamentCommands extends Subcommand {
 
 	public constructor(context: Subcommand.LoaderContext, options: Subcommand.Options) {
@@ -101,7 +103,11 @@ export class TournamentCommands extends Subcommand {
 									{
 										name: 'ASCII',
 										value: 'ascii',
-									}
+									},
+									{
+										name: 'Embed',
+										value: 'embed'
+									},
 								)
 								.setDescription('El formato en el que quieres exportar la lista de jugadores')
 						)
@@ -137,6 +143,8 @@ export class TournamentCommands extends Subcommand {
 
 		if (format === 'ascii') SendTableASCII(interaction, torneo)
 
+		if (format === 'embed') SendListOfPlayersEmbed(interaction, torneo)
+
 		if (format === 'csv') void await interaction.reply({ content: 'Este formato aún no está implementado.', ephemeral: true })
 
 		if (format === 'json') void await interaction.reply({ content: 'Este formato aún no está implementado.', ephemeral: true })
@@ -158,7 +166,17 @@ async function SendDetails(interaction: Subcommand.ChatInputCommandInteraction, 
 	})
 }
 
-type OrderBy = "default" | "apm" | "pps" | "tr" | "rank" | null
+async function SendListOfPlayersEmbed(interaction: Subcommand.ChatInputCommandInteraction, tournament: Tournament) {
+	void await interaction.deferReply()
+
+	const { players } = tournament
+	const orderBy = interaction.options.getString('ordenar-por', false) as OrderBy ?? 'default'
+
+	const orderedPlayerList = await OrderPlayerListBy(players, orderBy)
+
+
+
+}
 
 async function SendTableASCII(interaction: Subcommand.ChatInputCommandInteraction, tournament: Tournament) {
 
