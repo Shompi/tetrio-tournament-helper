@@ -4,7 +4,7 @@
 */
 import { EmbedBuilder, Colors } from "discord.js";
 import { request } from "undici"
-import { Tournament } from "../sequelize/index.js";
+import { Tournament, TournamentStatus } from "../sequelize/index.js";
 import { PlayerModel } from "../sequelize/index.js";
 import { Subcommand } from "@sapphire/plugin-subcommands";
 import { TournamentModel } from "../sequelize/index.js";
@@ -168,6 +168,11 @@ export async function AddTetrioPlayerToDatabase({ discordId, tetrioId }: { disco
 
 }
 export async function RunTetrioTournamentRegistrationChecks(userData: TetrioUserData, torneo: Tournament, discordId: string): Promise<{ allowed: boolean; reason?: string; }> {
+
+	if (torneo.status === TournamentStatus.CLOSED) {
+		return ({ allowed: false, reason: "Las inscripciones para este torneo no se encuentran abiertas." })
+	}
+
 	// In here we have to check for Tetrio caps like rank, rating and country lock and if the player is already on the tournament.
 	if (torneo.players.includes(discordId)) {
 		return ({ allowed: false, reason: "Ya te encuentras en la lista de participantes de este torneo." });
@@ -207,6 +212,7 @@ export async function RunTetrioTournamentRegistrationChecks(userData: TetrioUser
 	return { allowed: true };
 }
 
+/** This function handles the autocomplete entirely */
 export async function SearchTournamentByNameAutocomplete(interaction: Subcommand.AutocompleteInteraction) {
 	const focusedOption = interaction.options.getFocused(true)
 
