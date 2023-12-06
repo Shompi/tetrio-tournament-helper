@@ -29,11 +29,11 @@ export class TournamentCommands extends Subcommand {
 
 	public override registerApplicationCommands(registry: Subcommand.Registry) {
 		registry.registerChatInputCommand((builder) => {
-			builder.setName("torneo")
+			builder.setName("info-torneo")
 				.setDescription('Varios comandos relacionados con los torneos')
 				.setDMPermission(false)
 				.addSubcommand(details =>
-					details.setName('detalles')
+					details.setName('general')
 						.setDescription('Ve la información de un torneo')
 						.addIntegerOption(id =>
 							id.setName('id-torneo')
@@ -118,19 +118,16 @@ export class TournamentCommands extends Subcommand {
 
 	public async chatInputDetalles(interaction: Subcommand.ChatInputCommandInteraction) {
 		// Your code goes here
-		const idTorneo = interaction.options.getInteger('id-torneo') ?? interaction.options.getString('nombre-torneo');
-
+		const idTorneo = interaction.options.getInteger('id-torneo') ?? interaction.options.getString('nombre-torneo')
 		if (!idTorneo) return void await interaction.reply({ content: "Debes usar este comando con almenos un argumento, la id numérica o el nombre del torneo.\nLa id tiene prioridad por sobre el nombre.\nSi intentaste buscar un torneo por su nombre, asegurate de esperar a que se muestren las opciones en la opción `nombre-torneo` y escogerla desde las opciones, ya que la búsqueda se hará con el nombre completo del torneo.", ephemeral: true })
-
-
 		const torneo = await SearchTournamentById(+idTorneo)
 		if (!torneo) return void await interaction.reply({ content: 'No se encontró ningun torneo en la base de datos con los datos ingresados.', ephemeral: true })
 
-		return void await SendDetails(interaction, torneo);
+		return void await SendDetails(interaction, torneo)
 	}
 
 	public async chatInputListaJugadores(interaction: Subcommand.ChatInputCommandInteraction) {
-		const idTorneo = interaction.options.getInteger('id-torneo') ?? interaction.options.getString('nombre-torneo');
+		const idTorneo = interaction.options.getInteger('id-torneo') ?? interaction.options.getString('nombre-torneo')
 		if (!idTorneo) return void await interaction.reply({ content: "Debes usar este comando con almenos un argumento, la id numérica o el nombre del torneo.\nLa id tiene prioridad por sobre el nombre.\nSi intentaste buscar un torneo por su nombre, asegurate de esperar a que se muestren las opciones en la opción `nombre-torneo` y escogerla desde las opciones, ya que la búsqueda se hará con el nombre completo del torneo.", ephemeral: true })
 		const torneo = await SearchTournamentById(+idTorneo)
 		if (!torneo) return void await interaction.reply({ content: 'No se encontró ningun torneo en la base de datos con los datos ingresados.', ephemeral: true })
@@ -187,8 +184,22 @@ async function SendTableASCII(interaction: Subcommand.ChatInputCommandInteractio
 
 	const orderedPlayerList = await OrderPlayerListBy(players, orderBy)
 
+	const table = BuildTableFromPlayerList(tournament, orderedPlayerList)
+
+	const TableFile = new AttachmentBuilder(Buffer.from(table.toString()))
+		.setName('playersTable.txt')
+		.setDescription(`Tabla de jugadores del torneo ${tournament.name}`)
+
+	return void interaction.editReply({
+		content: `Aquí está la lista de jugadores del torneo **${tournament.name}**`,
+		files: [TableFile]
+	})
+}
+
+function BuildTableFromPlayerList(tournament: Tournament, playerList: PlayerDataOrdered[]) {
 	// Now we need to build the table
 
+	// We need to check whether or not this is a TETRIO tournament so we can build different tables for other games.
 	const table = new AsciiTable3(tournament.name)
 		.setTitleAlignCenter()
 		.setHeadingAlignCenter()
@@ -204,27 +215,20 @@ async function SendTableASCII(interaction: Subcommand.ChatInputCommandInteractio
 
 	// Good old for loop
 
-	for (let i = 0; i < orderedPlayerList.length; i++) {
+	for (let i = 0; i < playerList.length; i++) {
 		table.addRow(
 			i + 1, // Posicion en la lista
-			orderedPlayerList[i].discordId,
-			orderedPlayerList[i].data.user.username.toUpperCase(),
-			orderedPlayerList[i].data.user.country?.toUpperCase() ?? "OCULTO",
-			orderedPlayerList[i].data.user.league.rank.toUpperCase(),
-			orderedPlayerList[i].data.user.league.rating.toFixed(2),
-			orderedPlayerList[i].data.user.league.apm ?? "0.00",
-			orderedPlayerList[i].data.user.league.pps ?? "0.00",
+			playerList[i].discordId,
+			playerList[i].data.user.username.toUpperCase(),
+			playerList[i].data.user.country?.toUpperCase() ?? "OCULTO",
+			playerList[i].data.user.league.rank.toUpperCase(),
+			playerList[i].data.user.league.rating.toFixed(2),
+			playerList[i].data.user.league.apm ?? "0.00",
+			playerList[i].data.user.league.pps ?? "0.00",
 		)
 	}
 
-	const TableFile = new AttachmentBuilder(Buffer.from(table.toString()))
-		.setName('playersTable.txt')
-		.setDescription(`Tabla de jugadores del torneo ${tournament.name}`)
-
-	return void interaction.editReply({
-		content: `Aquí está la lista de jugadores del torneo **${tournament.name}**`,
-		files: [TableFile]
-	})
+	return table
 }
 
 interface PlayerDataOrdered {
