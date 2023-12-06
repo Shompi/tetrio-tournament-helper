@@ -30,7 +30,7 @@ export class CloseRegistrations extends Command {
 						.setMaxLength(255)
 				)
 
-		}, { idHints: [""] })
+		}, { idHints: ["1181882581931786280"] })
 
 
 	}
