@@ -253,9 +253,6 @@ async function OrderPlayerListBy(playerIds: string[], orderBy: OrderBy): Promise
 		PlayersArray.push({ discordId: id, data: playerData.data })
 	}
 
-	console.log("[DEBUG] TETRIO RANKS MAP:", TetrioRanksMap);
-
-
 	// At this point we should have a list of players
 	if (orderBy === "rank") {
 
