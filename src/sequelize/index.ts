@@ -164,6 +164,6 @@ const PlayerModel = sequelize.define<Player>('Player', {
 })
 
 
-await sequelize.sync({ alter: true });
+// await sequelize.sync({ alter: true });
 
 export { TournamentModel, PlayerModel }
