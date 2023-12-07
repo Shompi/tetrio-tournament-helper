@@ -261,10 +261,10 @@ async function OrderPlayerListBy(playerIds: string[], orderBy: OrderBy): Promise
 			if (playerA.data.user.league.rank === playerB.data.user.league.rank)
 				return 0
 
-			if (TetrioRanksMap.get(playerA.data.user.league.rank)! < TetrioRanksMap.get(playerB.data.user.league.rank)!)
-				return -1
+			const rankA = TetrioRanksMap.get(playerA.data.user.league.rank)!
+			const rankB = TetrioRanksMap.get(playerB.data.user.league.rank)!
 
-			return 1
+			return rankB - rankA
 		})
 	}
 
