@@ -236,7 +236,7 @@ interface PlayerDataOrdered {
 	data: TetrioUserData
 }
 
-async function OrderPlayerListBy(playerIds: string[], orderBy: OrderBy = "default"): Promise<PlayerDataOrdered[]> {
+async function OrderPlayerListBy(playerIds: string[], orderBy: OrderBy): Promise<PlayerDataOrdered[]> {
 	// We start by getting all the players we need from the database
 	const PlayersArray: PlayerDataOrdered[] = []
 
@@ -252,12 +252,6 @@ async function OrderPlayerListBy(playerIds: string[], orderBy: OrderBy = "defaul
 	}
 
 	// At this point we should have a list of players
-
-
-	if (orderBy === 'default') {
-		return PlayersArray
-	}
-
 	if (orderBy === "rank") {
 
 		// We need to remember that ranks are letters here.
@@ -272,8 +266,6 @@ async function OrderPlayerListBy(playerIds: string[], orderBy: OrderBy = "defaul
 
 			return 1
 		})
-
-		return PlayersArray
 	}
 
 	return PlayersArray
