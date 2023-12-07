@@ -1,11 +1,11 @@
 import { Subcommand } from "@sapphire/plugin-subcommands"
 import { PlayerModel, Tournament } from "../sequelize/index.js"
-import { TetrioUserData, TournamentDetailsEmbed } from "../helper-functions/index.js"
+import { TetrioRanksMap, TetrioUserData, TournamentDetailsEmbed } from "../helper-functions/index.js"
 import { SearchTournamentByNameAutocomplete, SearchTournamentById } from "../helper-functions/index.js"
 import { AsciiTable3, AlignmentEnum } from "ascii-table3"
 import { Attachment, AttachmentBuilder, Colors, EmbedBuilder, codeBlock } from "discord.js"
 
-type OrderBy = "default" | "apm" | "pps" | "tr" | "rank" | "embed" | null
+type OrderBy = "default" | "apm" | "pps" | "tr" | "rank" | null
 
 export class TournamentCommands extends Subcommand {
 
@@ -255,6 +255,24 @@ async function OrderPlayerListBy(playerIds: string[], orderBy: OrderBy = "defaul
 
 
 	if (orderBy === 'default') {
+		return PlayersArray
+	}
+
+	if (orderBy === "rank") {
+
+		// We need to remember that ranks are letters here.
+		// Sort is INPLACE
+		PlayersArray.sort((playerA, playerB) => {
+
+			if (playerA.data.user.league.rank === playerB.data.user.league.rank)
+				return 0
+
+			if (TetrioRanksMap.get(playerA.data.user.league.rank)! < TetrioRanksMap.get(playerB.data.user.league.rank)!)
+				return -1
+
+			return 1
+		})
+
 		return PlayersArray
 	}
 
