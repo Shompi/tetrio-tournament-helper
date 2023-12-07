@@ -260,13 +260,37 @@ async function OrderPlayerListBy(playerIds: string[], orderBy: OrderBy): Promise
 		// Sort is INPLACE
 		PlayersArray.sort((playerA, playerB) => {
 
-			if (playerA.data.user.league.rank === playerB.data.user.league.rank)
-				return 0
-
 			const rankA = TetrioRanksMap.get(playerA.data.user.league.rank)!
 			const rankB = TetrioRanksMap.get(playerB.data.user.league.rank)!
 
 			return rankB - rankA
+		})
+	}
+
+	if (orderBy === 'tr') {
+		PlayersArray.sort((playerA, playerB) => {
+			const ratingA = playerA.data.user.league.rating
+			const ratingB = playerB.data.user.league.rating
+
+			return ratingB - ratingA
+		})
+	}
+
+	if (orderBy === 'apm') {
+		PlayersArray.sort((playerA, playerB) => {
+			const apmA = playerA.data.user.league.apm ?? 0.00
+			const apmB = playerB.data.user.league.apm ?? 0.00
+
+			return apmB - apmA
+		})
+	}
+
+	if (orderBy === 'pps') {
+		PlayersArray.sort((playerA, playerB) => {
+			const apmA = playerA.data.user.league.pps ?? 0.00
+			const apmB = playerB.data.user.league.pps ?? 0.00
+
+			return apmB - apmA
 		})
 	}
 

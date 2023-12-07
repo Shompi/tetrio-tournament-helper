@@ -96,7 +96,7 @@ const CreateRanksMap = (ranks: typeof TetrioRanksArray) => {
 	const tempMap = new Map<string, number>()
 	for (const rank of ranks) {
 		tempMap.set(rank, i)
-		i++
+		i++ // This was a bug before lol I forgot to add this
 	}
 
 	return tempMap
