@@ -90,7 +90,18 @@ const TETRIO_ENDPOINTS = {
 	users: TETRIO_BASE + "/users/",
 }
 
-export const TetrioRanksArray = ["d", "d+", "c-", "c", "c+", "b-", "b", "b+", "a-", "a", "a+", "s-", "s", "s+", "ss", "u", "x"]
+const CreateRanksMap = (ranks: typeof TetrioRanksArray) => {
+	let i = 0;
+	const tempMap = new Map<string, number>()
+	for (const rank of ranks) {
+		tempMap.set(rank, i)
+	}
+
+	return tempMap
+}
+
+export const TetrioRanksArray = ["z", "d", "d+", "c-", "c", "c+", "b-", "b", "b+", "a-", "a", "a+", "s-", "s", "s+", "ss", "u", "x"] as const
+export const TetrioRanksMap: Map<string, number> = CreateRanksMap(TetrioRanksArray)
 
 /** Gets data of an user from the TETRIO API, calls toLowerCase() internally */
 export async function GetUserDataFromTetrio(_username: string): Promise<TetrioUserData | null> {
