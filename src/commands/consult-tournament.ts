@@ -238,6 +238,9 @@ interface PlayerDataOrdered {
 
 async function OrderPlayerListBy(playerIds: string[], orderBy: OrderBy): Promise<PlayerDataOrdered[]> {
 	// We start by getting all the players we need from the database
+
+	console.log("[DEBUG] ORDERING PLAYER LIST BY: ", orderBy);
+
 	const PlayersArray: PlayerDataOrdered[] = []
 
 	for (const id of playerIds) {
@@ -253,6 +256,7 @@ async function OrderPlayerListBy(playerIds: string[], orderBy: OrderBy): Promise
 
 	// At this point we should have a list of players
 	if (orderBy === "rank") {
+		console.log("[DEBUG] ENTERED RANK IF STATEMENT");
 
 		// We need to remember that ranks are letters here.
 		// Sort is INPLACE
@@ -267,6 +271,9 @@ async function OrderPlayerListBy(playerIds: string[], orderBy: OrderBy): Promise
 			return rankB - rankA
 		})
 	}
+
+	console.log('[DEBUG] PLAYERS ARRAY:', PlayersArray.map(player => ({ username: player.data.user.username, rank: player.data.user.league.rank })));
+
 
 	return PlayersArray
 }
