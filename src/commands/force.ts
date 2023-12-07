@@ -84,7 +84,9 @@ export class ForceCommands extends Subcommand {
 		const filteredPlayers = playerIds.filter(id => id !== playerId)
 
 		try {
-			await torneo.update('players', filteredPlayers)
+			await torneo.update({
+				players: filteredPlayers
+			})
 
 			return void await interaction.reply({ content: `✅ El jugador <@${playerId}> ha sido quitado del torneo.` })
 		} catch (e) {
