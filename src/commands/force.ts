@@ -88,6 +88,8 @@ export class ForceCommands extends Subcommand {
 				players: filteredPlayers
 			})
 
+			await torneo.save()
+
 			return void await interaction.reply({ content: `✅ El jugador <@${playerId}> ha sido quitado del torneo.` })
 		} catch (e) {
 			console.log(e);
