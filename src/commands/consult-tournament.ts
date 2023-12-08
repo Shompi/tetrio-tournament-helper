@@ -171,19 +171,23 @@ async function SendListOfPlayersEmbed(interaction: Subcommand.ChatInputCommandIn
 
 	const orderedPlayerList = await OrderPlayerListBy(players, orderBy)
 
+	const table = new AsciiTable3()
+		.setHeading("POS", "USERNAME", "RANK", "RATING")
+		.setAlignCenter(1)
+		.setAlignCenter(2)
+		.setAlignCenter(3)
+
+	let pos = 1
+	for (const player of orderedPlayerList) {
+		table.addRow(pos, player.data.user.username, player.data.user.league.rank.toUpperCase(), player.data.user.league.rating)
+		pos++
+	}
+
 	const playersEmbed = new EmbedBuilder()
 		.setTitle(tournament.name)
 		.setDescription(
 			codeBlock(
-				new AsciiTable3()
-					.setHeading("USERNAME", "RANK", "RATING")
-					.setAlignCenter(1)
-					.setAlignCenter(2)
-					.setAlignCenter(3)
-					.addRowMatrix([
-						orderedPlayerList.map(player => ([player.data.user.username, player.data.user.league.rank.toUpperCase(), player.data.user.league.rating]))
-					])
-					.toString()
+				table.toString()
 			)
 		)
 
