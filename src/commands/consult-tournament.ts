@@ -180,7 +180,7 @@ async function SendListOfPlayersEmbed(interaction: Subcommand.ChatInputCommandIn
 					.setAlignCenter(1)
 					.setAlignCenter(2)
 					.setAlignCenter(3)
-					.addRow([
+					.addRowMatrix([
 						orderedPlayerList.map(player => ([player.data.user.username, player.data.user.league.rank.toUpperCase(), player.data.user.league.rating]))
 					])
 					.toString()
