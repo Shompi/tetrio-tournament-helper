@@ -171,8 +171,23 @@ async function SendListOfPlayersEmbed(interaction: Subcommand.ChatInputCommandIn
 
 	const orderedPlayerList = await OrderPlayerListBy(players, orderBy)
 
+	const playersEmbed = new EmbedBuilder()
+		.setTitle(tournament.name)
+		.setDescription(
+			codeBlock(
+				new AsciiTable3()
+					.setHeading("USERNAME", "RANK", "RATING")
+					.setAlignCenter(1)
+					.setAlignCenter(2)
+					.setAlignCenter(3)
+					.addRow([
+						orderedPlayerList.map(player => ([player.data.user.username, player.data.user.league.rank.toUpperCase(), player.data.user.league.rating]))
+					])
+					.toString()
+			)
+		)
 
-
+	return void await interaction.editReply({ content: 'Aquí está la lista de jugadores', embeds: [playersEmbed] })
 }
 
 async function SendTableASCII(interaction: Subcommand.ChatInputCommandInteraction, tournament: Tournament) {
