@@ -179,7 +179,7 @@ async function SendListOfPlayersEmbed(interaction: Subcommand.ChatInputCommandIn
 
 	let pos = 1
 	for (const player of orderedPlayerList) {
-		table.addRow(pos, player.data.user.username, player.data.user.league.rank.toUpperCase(), player.data.user.league.rating)
+		table.addRow(pos, player.data.user.username, player.data.user.league.rank.toUpperCase(), player.data.user.league.rating.toFixed(2))
 		pos++
 	}
 
