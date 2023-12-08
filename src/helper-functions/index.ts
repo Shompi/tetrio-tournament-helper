@@ -153,8 +153,8 @@ export function TournamentDetailsEmbed(torneo: Tournament) {
 				`\n**Organizado por**: <@${torneo.organized_by}>` +
 				`\n**Juego**: ${torneo.game}` +
 				`${torneo.is_tr_capped ? `\n**TR CAP**: ${torneo.tr_cap}` : ""}` +
-				`${torneo.is_rank_capped ? `\n**RANK CAP**: ${torneo.rank_cap}` : ""}` +
-				`${torneo.is_country_locked ? `\n**COUNTRY LOCK**: ${torneo.country_lock}` : ""}` +
+				`${torneo.is_rank_capped ? `\n**RANK CAP**: ${torneo.rank_cap?.toUpperCase()}` : ""}` +
+				`${torneo.is_country_locked ? `\n**COUNTRY LOCK**: ${torneo.country_lock?.toUpperCase()}` : ""}` +
 				`\n**Jugadores registrados**: ${players.length}`
 			)
 			.setColor(Colors.White)

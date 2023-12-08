@@ -71,6 +71,14 @@ export class TournamentCommands extends Subcommand {
 										value: "default",
 									},
 									{
+										name: 'Rank (e.g: S, S+, SS, X)',
+										value: 'rank',
+									},
+									{
+										name: 'Tetra Rating',
+										value: 'tr',
+									},
+									{
 										name: 'Ataque Por Minuto (APM)',
 										value: 'apm',
 									},
@@ -78,14 +86,6 @@ export class TournamentCommands extends Subcommand {
 										name: 'Piezas Por Segundo (PPS)',
 										value: 'pps',
 									},
-									{
-										name: 'Tetra Rating',
-										value: 'tr',
-									},
-									{
-										name: 'Rank (e.g: S, S+, SS, X)',
-										value: 'rank',
-									}
 								)
 
 						)
@@ -93,20 +93,20 @@ export class TournamentCommands extends Subcommand {
 							format.setName('formato')
 								.setChoices(
 									{
-										name: "CSV",
-										value: "cvs",
-									},
-									{
-										name: 'JSON',
-										value: 'json',
+										name: 'Embed',
+										value: 'embed'
 									},
 									{
 										name: 'ASCII',
 										value: 'ascii',
 									},
 									{
-										name: 'Embed',
-										value: 'embed'
+										name: "CSV",
+										value: "cvs",
+									},
+									{
+										name: 'JSON',
+										value: 'json',
 									},
 								)
 								.setDescription('El formato en el que quieres exportar la lista de jugadores')
