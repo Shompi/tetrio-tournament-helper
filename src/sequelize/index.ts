@@ -1,5 +1,5 @@
 import { Sequelize, DataTypes, InferAttributes, InferCreationAttributes, CreationOptional, Model } from 'sequelize'
-import { TetrioUserData } from '../helper-functions/index.js';
+import { GameName, TetrioUserData } from '../helper-functions/index.js';
 import { Snowflake } from 'discord.js';
 
 const sequelize = new Sequelize({
@@ -23,7 +23,7 @@ export interface Tournament extends Model<InferAttributes<Tournament>, InferCrea
 	/** Discord ID of the organizer */
 	organized_by: string;
 	name: string;
-	game: string;
+	game: GameName;
 
 	max_players: CreationOptional<number | null>;
 	/** Should be open by default */
