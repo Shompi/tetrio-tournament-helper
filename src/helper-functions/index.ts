@@ -4,10 +4,10 @@
 */
 import { EmbedBuilder, Colors } from "discord.js";
 import { request } from "undici"
-import { Tournament, TournamentStatus } from "../sequelize/index.js";
-import { PlayerModel } from "../sequelize/index.js";
+import { Tournament } from "../sequelize/index.js";
 import { Subcommand } from "@sapphire/plugin-subcommands";
-import { TournamentModel } from "../sequelize/index.js";
+import { TournamentModel, TournamentStatus } from "../sequelize/index.js";
+import { PlayerModel } from "../sequelize/index.js";
 
 export type TetrioApiCacheStatus = "hit" | "miss" | "awaited"
 export type TetrioUserRole = "anon" | "user" | "bot" | "halfmod" | "mod" | "admin" | "sysop" | "banned"
@@ -89,6 +89,15 @@ const TETRIO_BASE = "https://ch.tetr.io/api"
 const TETRIO_ENDPOINTS = {
 	users: TETRIO_BASE + "/users/",
 }
+
+export enum AllowedGames {
+	TETRIO = "TETRIO",
+	TETRISEFFECT = "Tetris Effect: Connected",
+	PuyoTetris = "Puyo Puyo Tetris",
+	PuyoTetrisTwo = "Puyo Puyo Tetris 2"
+}
+
+export type GameName = typeof AllowedGames[keyof typeof AllowedGames]
 export const TetrioRanksArray = ["z", "d", "d+", "c-", "c", "c+", "b-", "b", "b+", "a-", "a", "a+", "s-", "s", "s+", "ss", "u", "x"] as const
 
 const CreateRanksMap = (ranks: typeof TetrioRanksArray) => {
@@ -244,3 +253,58 @@ export async function SearchTournamentById(id: number) {
 	return await TournamentModel.findOne({ where: { id } })
 }
 
+export async function RemovePlayerFromTournament(torneo: Tournament, discord_id: string) {
+
+	const playerIds = Array.from(torneo.players);
+	const playerId = discord_id;
+	const filteredPlayers = playerIds.filter(id => id !== playerId);
+
+	await torneo.update({
+		players: filteredPlayers
+	});
+
+	await torneo.save();
+}
+
+/** This function will unregister this player from every OPEN tournament they are registered for. */
+export async function DeletePlayerFromTournaments(discord_id: string) {
+
+	const tournaments = await TournamentModel.findAll({
+		where: {
+			status: TournamentStatus.OPEN
+		}
+	});
+
+	if (tournaments.length === 0) return 0;
+
+	let removedFrom = 0;
+
+	for (const tournament of tournaments) {
+
+		if (tournament.players.includes(discord_id)) {
+			await tournament.update('players', tournament.players.filter(id => id !== discord_id));
+			await tournament.save();
+			removedFrom++;
+		}
+	}
+
+	return removedFrom;
+}
+
+/** This function takes a discord_id and deletes the row from the PLAYERS database */
+export async function DeletePlayerFromDatabase(discord_id: string) {
+	console.log(`[DEBUG: Database PLAYERS] Borrando al usuario ${discord_id} de la base de datos..`);
+
+	const deleted = await PlayerModel.destroy({
+		where: {
+			discord_id: discord_id
+		}
+	});
+
+	console.log(`[DEBUG: Database PLAYERS] Se borraron ${deleted} jugadores de la base de datos.`);
+	const removedFromTournaments = await DeletePlayerFromTournaments(discord_id);
+	return {
+		count: deleted,
+		removed_from_tournaments: removedFromTournaments
+	};
+}
