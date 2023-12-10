@@ -29,6 +29,7 @@ export class ForceCommands extends Subcommand {
 			builder.setName("forzar")
 				.setDescription('Comandos de administrador para forzar acciones en algunas situaciones')
 				.setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
+				.setDMPermission(false)
 				.addSubcommand(register =>
 					register.setName('inscripcion')
 						.setDescription('Forza la inscripción de un jugador en un torneo (TETRIO)')

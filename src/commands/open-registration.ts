@@ -15,6 +15,7 @@ export class OpenRegistration extends Command {
 		registry.registerChatInputCommand((builder) => {
 			builder.setName("open-registration")
 				.setDefaultMemberPermissions(PermissionsBitField.Flags.Administrator)
+				.setDMPermission(false)
 				.setDescription("Abre el proceso de check in para un torneo")
 				.addIntegerOption(id =>
 					id.setName('torneo-id')

@@ -16,6 +16,7 @@ export class CloseRegistrations extends Command {
 		registry.registerChatInputCommand((builder) => {
 			builder.setName("close-registration")
 				.setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
+				.setDMPermission(false)
 				.setDescription('Cierra las inscripciones de un torneo')
 				.addIntegerOption(idTorneo =>
 					idTorneo.setName('id-torneo')
