@@ -161,9 +161,11 @@ export function TournamentDetailsEmbed(torneo: Tournament) {
 				`**ID del torneo**: ${torneo.id}` +
 				`\n**Organizado por**: <@${torneo.organized_by}>` +
 				`\n**Juego**: ${torneo.game}` +
+				`\n**Descripción**: ${torneo.description ?? "N/A"}` +
 				`${torneo.is_tr_capped ? `\n**TR CAP**: ${torneo.tr_cap}` : ""}` +
 				`${torneo.is_rank_capped ? `\n**RANK CAP**: ${torneo.rank_cap?.toUpperCase()}` : ""}` +
 				`${torneo.is_country_locked ? `\n**COUNTRY LOCK**: ${torneo.country_lock?.toUpperCase()}` : ""}` +
+				`\n**Máximo de jugadores**: ${torneo.max_players ?? "Sin límite"}` +
 				`\n**Jugadores registrados**: ${players.length}`
 			)
 			.setColor(Colors.White)
