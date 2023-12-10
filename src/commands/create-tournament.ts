@@ -13,6 +13,7 @@ export class CreateTournament extends Command {
 		registry.registerChatInputCommand((builder) => {
 
 			builder.setName("crear")
+				.setDefaultMemberPermissions(PermissionsBitField.Flags.Administrator)
 				.setDMPermission(false)
 				.setNameLocalizations({
 					"en-US": "create"
@@ -21,7 +22,6 @@ export class CreateTournament extends Command {
 				.setDescriptionLocalizations({
 					"en-US": "Create a new tournament"
 				})
-				.setDefaultMemberPermissions(PermissionsBitField.Flags.Administrator)
 				.addStringOption(name =>
 					name.setName('nombre')
 						.setNameLocalizations({
@@ -61,6 +61,11 @@ export class CreateTournament extends Command {
 							}
 						)
 						.setRequired(true)
+				)
+				.addStringOption(description =>
+					description.setName('descripcion')
+						.setDescription('La descripción de este torneo (Máximo 2000 caracteres)')
+						.setMaxLength(2000)
 				)
 				/** TODO: Add choices for skill cap */
 				.addStringOption(rankCap =>
@@ -104,6 +109,7 @@ export class CreateTournament extends Command {
 		const options = {
 			name: interaction.options.getString("nombre", true),
 			game: interaction.options.getString("juego", true) as GameName,
+			description: interaction.options.getString('descripcion', false),
 			rank_cap: interaction.options.getString('rank_cap', false),
 			tr_cap: interaction.options.getInteger('tr_cap', false),
 			country_lock: interaction.options.getString('pais', false),
@@ -119,6 +125,7 @@ export class CreateTournament extends Command {
 				guild_id: interaction.guildId,
 				name: options.name,
 				game: options.game,
+				description: options.description,
 				is_rank_capped: !!options.rank_cap,
 				rank_cap: options.rank_cap,
 				is_country_locked: !!options.country_lock,
