@@ -24,6 +24,8 @@ export interface Tournament extends Model<InferAttributes<Tournament>, InferCrea
 	organized_by: string;
 	name: string;
 	game: GameName;
+	/** The description of this tournament, if any */
+	description: CreationOptional<string | null>;
 
 	max_players: CreationOptional<number | null>;
 	/** Should be open by default */
@@ -73,6 +75,12 @@ const TournamentModel = sequelize.define<Tournament>('Tournament', {
 	game: {
 		type: DataTypes.STRING,
 		allowNull: false,
+	},
+
+	description: {
+		type: DataTypes.STRING,
+		allowNull: true,
+		defaultValue: null
 	},
 
 	max_players: {
@@ -164,6 +172,8 @@ const PlayerModel = sequelize.define<Player>('Player', {
 })
 
 
-// await sequelize.sync({ alter: true });
+console.log("[DEBUG] Sincronizando tablas en sequelize...");
+await sequelize.sync({ alter: true });
+console.log("[DEBUG] La sincronización ha terminado!");
 
 export { TournamentModel, PlayerModel }
