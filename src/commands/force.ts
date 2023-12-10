@@ -55,17 +55,17 @@ export class ForceCommands extends Subcommand {
 				.addSubcommand(unregister =>
 					unregister.setName('desinscripcion')
 						.setDescription('Elimina la inscripción de un jugador de un torneo')
-						.addUserOption(dId =>
-							dId.setName('discord-id')
-								.setDescription('ID de Discord del jugador que quieres quitar del torneo')
-								.setRequired(true)
-						)
 						.addStringOption(nameOrId =>
 							nameOrId.setName('torneo-id')
 								.setDescription('ID del torneo (Puedes usar las opciones del autocompletado)')
 								.setRequired(true)
 								.setMaxLength(255)
 								.setAutocomplete(true)
+						)
+						.addUserOption(dId =>
+							dId.setName('discord-id')
+								.setDescription('ID de Discord del jugador que quieres quitar del torneo')
+								.setRequired(true)
 						)
 				)
 
