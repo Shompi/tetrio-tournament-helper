@@ -1,7 +1,7 @@
 import { Command } from "@sapphire/framework";
-import { EmbedBuilder, Locale, PermissionsBitField } from "discord.js";
+import { PermissionsBitField } from "discord.js";
 import { TournamentModel, TournamentStatus } from "../sequelize/index.js";
-import { TetrioRanksArray } from "../helper-functions/index.js";
+import { GameName, TetrioRanksArray } from "../helper-functions/index.js";
 import { TournamentDetailsEmbed } from "../helper-functions/index.js";
 export class CreateTournament extends Command {
 
@@ -103,7 +103,7 @@ export class CreateTournament extends Command {
 
 		const options = {
 			name: interaction.options.getString("nombre", true),
-			game: interaction.options.getString("juego", true),
+			game: interaction.options.getString("juego", true) as GameName,
 			rank_cap: interaction.options.getString('rank_cap', false),
 			tr_cap: interaction.options.getInteger('tr_cap', false),
 			country_lock: interaction.options.getString('pais', false),
