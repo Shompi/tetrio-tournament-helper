@@ -2,6 +2,7 @@ import { Subcommand } from "@sapphire/plugin-subcommands"
 import { PermissionFlagsBits } from "discord.js"
 import { SearchTournamentById, SearchTournamentByNameAutocomplete } from "../helper-functions/index.js";
 import { TournamentStatus } from "../sequelize/index.js";
+import { RemovePlayerFromTournament } from "../helper-functions/index.js";
 
 export class ForceCommands extends Subcommand {
 
@@ -31,26 +32,37 @@ export class ForceCommands extends Subcommand {
 				.addSubcommand(register =>
 					register.setName('inscripcion')
 						.setDescription('Forza la inscripción de un jugador en un torneo (TETRIO)')
-
-
+						.addStringOption(nameOrId =>
+							nameOrId.setName('torneo-id')
+								.setDescription('ID del torneo (Puedes usar las opciones del autocompletado)')
+								.setRequired(true)
+								.setMaxLength(255)
+								.setAutocomplete(true)
+						)
+						.addUserOption(discordid =>
+							discordid.setName('discord-id')
+								.setDescription('La id de Discord del jugador que estás inscribiendo')
+								.setRequired(true)
+						)
+						.addStringOption(tetrioId =>
+							tetrioId.setName('tetrio-id')
+								.setDescription('La id o username de un jugador de TETRIO')
+								.setMaxLength(100)
+								.setRequired(true)
+						)
 				)
 				.addSubcommand(unregister =>
 					unregister.setName('desinscripcion')
 						.setDescription('Elimina la inscripción de un jugador de un torneo')
-						.addStringOption(dId =>
+						.addUserOption(dId =>
 							dId.setName('discord-id')
 								.setDescription('ID de Discord del jugador que quieres quitar del torneo')
 								.setRequired(true)
 						)
-						.addIntegerOption(torneoId =>
-							torneoId.setName('id-torneo')
-								.setDescription('ID del torneo')
-								.setMinValue(1)
-								.setMaxValue(100_000)
-						)
-						.addStringOption(tournamentName =>
-							tournamentName.setName('nombre-torneo')
-								.setDescription('El nombre del torneo')
+						.addStringOption(nameOrId =>
+							nameOrId.setName('torneo-id')
+								.setDescription('ID del torneo (Puedes usar las opciones del autocompletado)')
+								.setRequired(true)
 								.setMaxLength(255)
 								.setAutocomplete(true)
 						)
@@ -63,34 +75,31 @@ export class ForceCommands extends Subcommand {
 
 	public async chatInputForzarInscripcion(interaction: Subcommand.ChatInputCommandInteraction) {
 		// Your code goes here
-		return void await interaction.reply({ content: 'Este comando aún no está implementado.', ephemeral: true })
-
+		const options = {
+			user: interaction.options.getUser('discord-id', true),
+			tetrioId: interaction.options.getString('tetrio-id', true),
+			idTorneo: +interaction.options.getString('torneo-id', true)
+		}
 	}
 
 	public async chatInputForzarDesinscripcion(interaction: Subcommand.ChatInputCommandInteraction) {
 		// Your code goes here
-		const idTorneo = interaction.options.getInteger('id-torneo', false) ?? interaction.options.getString('nombre-torneo', false)
+		const idTorneo = +interaction.options.getString('torneo-id', true)
 
 		if (!idTorneo) return void await interaction.reply({ content: 'Debes ingresar la id o el nombre de algun torneo (usando las opciones del autocompletado)', ephemeral: true })
 
-		const torneo = await SearchTournamentById(+idTorneo)
+		const torneo = await SearchTournamentById(idTorneo)
 
 		if (!torneo) return void await interaction.reply({ content: 'No encontré ningun torneo.', ephemeral: true })
 		if (torneo.status === TournamentStatus.CLOSED)
 			return void await interaction.reply({ content: 'No puedes desinscribir a un jugador de un torneo que está marcado como **CLOSED**', ephemeral: true })
 
-		const playerIds = Array.from(torneo.players)
-		const playerId = interaction.options.getString('discord-id', true)
-		const filteredPlayers = playerIds.filter(id => id !== playerId)
+
 
 		try {
-			await torneo.update({
-				players: filteredPlayers
-			})
+			await RemovePlayerFromTournament(torneo, interaction.options.getUser('discord-id', true).id);
 
-			await torneo.save()
-
-			return void await interaction.reply({ content: `✅ El jugador <@${playerId}> ha sido quitado del torneo.` })
+			return void await interaction.reply({ content: `✅ El jugador ${interaction.options.getUser('discord-id', true)} ha sido quitado del torneo.` })
 		} catch (e) {
 			console.log(e);
 
@@ -100,7 +109,7 @@ export class ForceCommands extends Subcommand {
 	}
 
 	public async autocompleteRun(interaction: Subcommand.AutocompleteInteraction) {
-		if (interaction.options.getFocused(true).name === 'nombre-torneo')
+		if (interaction.options.getFocused(true).name === 'torneo-id')
 			return void await SearchTournamentByNameAutocomplete(interaction)
 	}
 }
