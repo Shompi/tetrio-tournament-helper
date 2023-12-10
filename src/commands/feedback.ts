@@ -22,7 +22,7 @@ export class FeedbackCommand extends Command {
 						.setMaxLength(2000)
 				)
 
-		}, { idHints: [""] })
+		}, { idHints: ["1183537281387204728"] })
 
 
 	}

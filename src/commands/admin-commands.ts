@@ -36,8 +36,7 @@ export class MySlashCommand extends Subcommand {
 								.setRequired(true)
 						)
 				)
-
-		}, { idHints: [""] })
+		}, { idHints: ["1183537285761859665"] })
 	}
 	public async chatInputDeletePlayer(interaction: Subcommand.ChatInputCommandInteraction) {
 		// Your code goes here
