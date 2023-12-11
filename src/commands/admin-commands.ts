@@ -1,5 +1,5 @@
 import { Subcommand } from "@sapphire/plugin-subcommands"
-import { PlayerModel } from "../sequelize/index.js";
+import { PlayerModel } from "../sequelize/Tournaments.js";
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, Colors, ComponentType, EmbedBuilder, PermissionFlagsBits } from "discord.js";
 import { GenerateTetrioAvatarURL } from "../helper-functions/index.js";
 import { DeletePlayerFromDatabase } from "../helper-functions/index.js";
@@ -15,7 +15,7 @@ export class MySlashCommand extends Subcommand {
 				{
 					name: 'eliminar-jugador',
 					chatInputRun: 'chatInputDeletePlayer'
-				}
+				},
 			]
 		});
 	}
