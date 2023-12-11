@@ -1,6 +1,6 @@
 import { InteractionHandler, InteractionHandlerTypes } from '@sapphire/framework';
 import { ActionRowBuilder, ButtonBuilder, ButtonInteraction, ButtonStyle, Colors, ComponentType, EmbedBuilder, ModalBuilder, TextInputBuilder, TextInputStyle } from "discord.js"
-import { Player, PlayerModel, Tournament, TournamentModel, TournamentStatus } from '../sequelize/index.js';
+import { PlayerModel, Tournament, TournamentModel, TournamentStatus } from '../sequelize/Tournaments.js';
 import { GenerateTetrioAvatarURL, GetUserDataFromTetrio, GetUserProfileURL, TetrioUserData } from '../helper-functions/index.js';
 import { TournamentDetailsEmbed } from "../helper-functions/index.js";
 import { AddTetrioPlayerToDatabase } from '../helper-functions/index.js';
@@ -35,7 +35,7 @@ export class ParseExampleInteractionHandler extends InteractionHandler {
 		if (interaction.customId.startsWith('t-register-')) {
 			return this.some(interaction.customId.split("-")[2]);
 		}
-		
+
 		return this.none();
 	}
 }
@@ -204,20 +204,21 @@ async function ContinuePlayerRegistration(interaction: ButtonInteraction, userDa
 	}
 
 	// Add player to the tournament
-	console.log("[DEBUG] Añadiendo jugador a la lista de players del torneo...");
+	console.log(`[TOURNAMENT] Añadiendo nuevo jugador ${interaction.user.id} (${interaction.user.username}) al torneo ${torneo.name}`);
 
 	const playerList = Array.from(torneo.players)
 
 	playerList.push(interaction.user.id)
 
-	console.log("[DEBUG] Lista de jugadores: ", playerList);
-
 	await torneo.update({
 		players: playerList
 	})
 
+	console.log("[TOURNAMENT] El jugador ha sido añadido a la lista");
+
+
 	await torneo.save()
-	console.log("[DEBUG] El torneo ha sido guardado");
+	console.log("[TOURNAMENT] El torneo ha sido guardado");
 
 	/** ESTO SE TIENE QUE BORRAR MAS TARDE, POR AHORA FORZAREMOS LA ASIGNACION DE ROLES POR ID DE TORNEO */
 
