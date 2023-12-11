@@ -1,6 +1,6 @@
 import { Command } from "@sapphire/framework";
 import { PermissionsBitField } from "discord.js";
-import { TournamentModel, TournamentStatus } from "../sequelize/index.js";
+import { TournamentModel, TournamentStatus } from "../sequelize/Tournaments.js";
 import { GameName, TetrioRanksArray } from "../helper-functions/index.js";
 import { TournamentDetailsEmbed } from "../helper-functions/index.js";
 export class CreateTournament extends Command {
