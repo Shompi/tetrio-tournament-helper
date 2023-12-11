@@ -1,7 +1,7 @@
 import { Command } from "@sapphire/framework"
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ChannelType, GuildTextBasedChannel, PermissionsBitField, TextBasedChannel } from "discord.js"
-import { TournamentModel, TournamentStatus } from "../sequelize/index.js";
-import { TournamentDetailsEmbed } from "../helper-functions/index.js";
+import { TournamentModel, TournamentStatus } from "../sequelize/Tournaments.js";
+import { SearchTournamentByNameAutocomplete, TournamentDetailsEmbed } from "../helper-functions/index.js";
 
 const DefaultMessage = `{userid} ha abierto las inscripciones para el torneo \"**{nombre_torneo}**\". \n¡Presiona el botón de abajo para comenzar la inscripción!`
 export class OpenRegistration extends Command {
@@ -16,10 +16,10 @@ export class OpenRegistration extends Command {
 			builder.setName("open-registration")
 				.setDefaultMemberPermissions(PermissionsBitField.Flags.Administrator)
 				.setDMPermission(false)
-				.setDescription("Abre el proceso de check in para un torneo")
-				.addIntegerOption(id =>
-					id.setName('torneo-id')
-						.setDescription('La id del torneo que quieres abrir las inscripciones')
+				.setDescription("Abre las inscripciones para un torneo")
+				.addStringOption(id =>
+					id.setName('nombre-id')
+						.setDescription('La id numérica o el nombre del torneo que quieres abrir las inscripciones')
 						.setRequired(true)
 				)
 				.addChannelOption(channel =>
@@ -40,7 +40,11 @@ export class OpenRegistration extends Command {
 	public async chatInputRun(interaction: Command.ChatInputCommandInteraction) {
 		// Your code goes here
 		void await interaction.deferReply({ ephemeral: true })
-		const idTorneo = interaction.options.getInteger('torneo-id', true)
+		const idTorneo = +interaction.options.getString('nombre-id', true)
+
+		if (isNaN(idTorneo))
+			return void await interaction.reply({ content: 'Debes ingresar la id numérica de un torneo o **usar una de las opciones del autocompletado**.' })
+
 		const torneo = await TournamentModel.findOne({ where: { id: idTorneo } })
 
 
@@ -86,5 +90,10 @@ export class OpenRegistration extends Command {
 
 		// Confirm to the user that the message was succesfully sent or otherwise
 		return void await interaction.editReply({ content: `El mensaje ha sido enviado exitosamente en el canal ${interaction.options.getChannel('canal', true)}` })
+	}
+
+	public async autocompleteRun(interaction: Command.AutocompleteInteraction) {
+		if (interaction.options.getFocused(true).name === 'nombre-id')
+			return void await SearchTournamentByNameAutocomplete(interaction)
 	}
 }

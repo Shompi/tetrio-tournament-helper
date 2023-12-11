@@ -1,7 +1,7 @@
 import { Command } from "@sapphire/framework"
 import { SearchTournamentById, SearchTournamentByNameAutocomplete } from "../helper-functions/index.js";
 import { PermissionFlagsBits } from "discord.js";
-import { TournamentStatus } from "../sequelize/index.js";
+import { TournamentStatus } from "../sequelize/Tournaments.js";
 
 
 export class CloseRegistrations extends Command {
@@ -18,15 +18,9 @@ export class CloseRegistrations extends Command {
 				.setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
 				.setDMPermission(false)
 				.setDescription('Cierra las inscripciones de un torneo')
-				.addIntegerOption(idTorneo =>
-					idTorneo.setName('id-torneo')
-						.setDescription('La id del torneo que quieres cerrar')
-						.setMinValue(1)
-						.setMaxValue(100_000)
-				)
 				.addStringOption(nameTorneo =>
-					nameTorneo.setName('nombre-torneo')
-						.setDescription('Nombre del torneo que quieres cerrar')
+					nameTorneo.setName('nombre-id')
+						.setDescription('Nombre o id del torneo que quieres cerrar')
 						.setAutocomplete(true)
 						.setMaxLength(255)
 				)
@@ -37,11 +31,12 @@ export class CloseRegistrations extends Command {
 	}
 	public async chatInputRun(interaction: Command.ChatInputCommandInteraction) {
 		// Your code goes here
-		const tournamentId = interaction.options.getInteger('id-torneo', false) ?? interaction.options.getString('nombre-torneo', false)
+		const tournamentId = +interaction.options.getString('nombre-id', true)
 
-		if (!tournamentId) return void await interaction.reply({ content: 'Debes ingresar al menos una opción para usar este comando.' })
+		if (isNaN(tournamentId))
+			return void await interaction.reply({ content: 'Debes ingresar la id numérica de un torneo o **usar una de las opciones del autocompletado**.' })
 
-		const torneo = await SearchTournamentById(+tournamentId)
+		const torneo = await SearchTournamentById(tournamentId)
 		if (!torneo) return void await interaction.reply({ content: "El torneo no existe.", ephemeral: true })
 
 		await torneo.update({
@@ -54,7 +49,7 @@ export class CloseRegistrations extends Command {
 	}
 
 	public async autocompleteRun(interaction: Command.AutocompleteInteraction) {
-		if (interaction.options.getFocused(true).name === 'nombre-torneo') {
+		if (interaction.options.getFocused(true).name === 'nombre-id') {
 			return void await SearchTournamentByNameAutocomplete(interaction)
 		}
 	}

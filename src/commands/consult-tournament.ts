@@ -1,9 +1,9 @@
 import { Subcommand } from "@sapphire/plugin-subcommands"
-import { PlayerModel, Tournament } from "../sequelize/index.js"
+import { PlayerModel, Tournament } from "../sequelize/Tournaments.js"
 import { TetrioRanksMap, TetrioUserData, TournamentDetailsEmbed } from "../helper-functions/index.js"
 import { SearchTournamentByNameAutocomplete, SearchTournamentById } from "../helper-functions/index.js"
-import { AsciiTable3, AlignmentEnum } from "ascii-table3"
-import { Attachment, AttachmentBuilder, Colors, EmbedBuilder, codeBlock } from "discord.js"
+import { AsciiTable3 } from "ascii-table3"
+import { AttachmentBuilder, Colors, EmbedBuilder, codeBlock } from "discord.js"
 
 type OrderBy = "default" | "apm" | "pps" | "tr" | "rank" | null
 
@@ -35,15 +35,9 @@ export class TournamentCommands extends Subcommand {
 				.addSubcommand(details =>
 					details.setName('general')
 						.setDescription('Ve la información de un torneo')
-						.addIntegerOption(id =>
-							id.setName('id-torneo')
-								.setDescription('La ID numérica del torneo')
-								.setMaxValue(100_000)
-								.setMinValue(1)
-						)
 						.addStringOption(name =>
-							name.setName('nombre-torneo')
-								.setDescription('El nombre del torneo')
+							name.setName('nombre-id')
+								.setDescription('El nombre o la Id numérica del torneo')
 								.setAutocomplete(true)
 								.setMaxLength(255)
 						)
@@ -51,15 +45,10 @@ export class TournamentCommands extends Subcommand {
 				.addSubcommand(list =>
 					list.setName('lista-jugadores')
 						.setDescription('Obtén una lista con los jugadores inscritos en este torneo')
-						.addIntegerOption(idTorneo =>
-							idTorneo.setName('id-torneo')
-								.setMinValue(1)
-								.setMaxValue(100_000)
-								.setDescription('La ID numérica del torneo')
-						)
 						.addStringOption(name =>
-							name.setName('nombre-torneo')
-								.setDescription("El nombre del torneo")
+							name.setName('nombre-id')
+								.setDescription("El nombre o la Id numérica del torneo")
+								.setRequired(true)
 								.setAutocomplete(true)
 						)
 						.addStringOption(order =>
@@ -118,18 +107,24 @@ export class TournamentCommands extends Subcommand {
 
 	public async chatInputDetalles(interaction: Subcommand.ChatInputCommandInteraction) {
 		// Your code goes here
-		const idTorneo = interaction.options.getInteger('id-torneo') ?? interaction.options.getString('nombre-torneo')
-		if (!idTorneo) return void await interaction.reply({ content: "Debes usar este comando con almenos un argumento, la id numérica o el nombre del torneo.\nLa id tiene prioridad por sobre el nombre.\nSi intentaste buscar un torneo por su nombre, asegurate de esperar a que se muestren las opciones en la opción `nombre-torneo` y escogerla desde las opciones, ya que la búsqueda se hará con el nombre completo del torneo.", ephemeral: true })
-		const torneo = await SearchTournamentById(+idTorneo)
+		const idTorneo = +interaction.options.getString('nombre-id', true)
+
+		if (isNaN(idTorneo))
+			return void await interaction.reply({ content: 'Debes ingresar la id numérica de un torneo o **usar una de las opciones del autocompletado**.' })
+
+		const torneo = await SearchTournamentById(idTorneo)
 		if (!torneo) return void await interaction.reply({ content: 'No se encontró ningun torneo en la base de datos con los datos ingresados.', ephemeral: true })
 
 		return void await SendDetails(interaction, torneo)
 	}
 
 	public async chatInputListaJugadores(interaction: Subcommand.ChatInputCommandInteraction) {
-		const idTorneo = interaction.options.getInteger('id-torneo') ?? interaction.options.getString('nombre-torneo')
-		if (!idTorneo) return void await interaction.reply({ content: "Debes usar este comando con almenos un argumento, la id numérica o el nombre del torneo.\nLa id tiene prioridad por sobre el nombre.\nSi intentaste buscar un torneo por su nombre, asegurate de esperar a que se muestren las opciones en la opción `nombre-torneo` y escogerla desde las opciones, ya que la búsqueda se hará con el nombre completo del torneo.", ephemeral: true })
-		const torneo = await SearchTournamentById(+idTorneo)
+		const idTorneo = +interaction.options.getString('nombre-id', true)
+
+		if (isNaN(idTorneo))
+			return void await interaction.reply({ content: 'Debes ingresar la id numérica de un torneo o **usar una de las opciones del autocompletado**.' })
+
+		const torneo = await SearchTournamentById(idTorneo)
 		if (!torneo) return void await interaction.reply({ content: 'No se encontró ningun torneo en la base de datos con los datos ingresados.', ephemeral: true })
 
 
@@ -150,7 +145,7 @@ export class TournamentCommands extends Subcommand {
 
 	public async autocompleteRun(interaction: Subcommand.AutocompleteInteraction) {
 
-		if (interaction.options.getFocused(true).name === 'nombre-torneo') {
+		if (interaction.options.getFocused(true).name === 'nombre-id') {
 			return void await SearchTournamentByNameAutocomplete(interaction)
 		}
 	}
