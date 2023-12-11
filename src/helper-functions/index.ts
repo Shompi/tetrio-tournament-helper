@@ -4,10 +4,10 @@
 */
 import { EmbedBuilder, Colors } from "discord.js";
 import { request } from "undici"
-import { Tournament } from "../sequelize/index.js";
+import { Tournament } from "../sequelize/Tournaments.js";
 import { Subcommand } from "@sapphire/plugin-subcommands";
-import { TournamentModel, TournamentStatus } from "../sequelize/index.js";
-import { PlayerModel } from "../sequelize/index.js";
+import { TournamentModel, TournamentStatus } from "../sequelize/Tournaments.js";
+import { PlayerModel } from "../sequelize/Tournaments.js";
 
 export type TetrioApiCacheStatus = "hit" | "miss" | "awaited"
 export type TetrioUserRole = "anon" | "user" | "bot" | "halfmod" | "mod" | "admin" | "sysop" | "banned"
@@ -151,7 +151,6 @@ export function TournamentIsJoinableByTetrioPlayer(playerData: TetrioUserData, c
 export function TournamentDetailsEmbed(torneo: Tournament) {
 
 	const players = torneo.players
-	console.log(`[DEBUG] PLAYERS ARRAY =>`, players)
 
 	return (
 		new EmbedBuilder()
@@ -261,7 +260,7 @@ export async function RemovePlayerFromTournament(torneo: Tournament, discord_id:
 	const playerId = discord_id;
 	const filteredPlayers = playerIds.filter(id => id !== playerId);
 
-	console.log(`[DEBUG] Quitando al jugador ${discord_id} del torneo ${torneo.name}`);
+	console.log(`[TOURNAMENT] Quitando al jugador ${discord_id} del torneo ${torneo.name}`);
 
 	await torneo.update({
 		players: filteredPlayers
@@ -269,7 +268,7 @@ export async function RemovePlayerFromTournament(torneo: Tournament, discord_id:
 
 	await torneo.save();
 
-	console.log(`[DEBUG] El jugador ${discord_id} ha sido desinscrito.`);
+	console.log(`[TOURNAMENT] El jugador ${discord_id} ha sido desinscrito.`);
 
 }
 
