@@ -1,6 +1,6 @@
 import { InteractionHandler, InteractionHandlerTypes } from "@sapphire/framework"
 import { ButtonInteraction } from "discord.js"
-import { TournamentModel, TournamentStatus } from "../sequelize/index.js";
+import { TournamentModel, TournamentStatus } from "../sequelize/Tournaments.js";
 import { RemovePlayerFromTournament, TournamentDetailsEmbed } from "../helper-functions/index.js";
 
 
