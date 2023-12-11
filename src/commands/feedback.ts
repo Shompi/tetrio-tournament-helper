@@ -1,5 +1,6 @@
 import { Command } from "@sapphire/framework"
 import { Colors, EmbedBuilder, GuildTextBasedChannel } from "discord.js";
+import { BlocklistModel } from "../sequelize/Blocklist.js";
 
 
 export class FeedbackCommand extends Command {
@@ -27,6 +28,11 @@ export class FeedbackCommand extends Command {
 	}
 	public async chatInputRun(interaction: Command.ChatInputCommandInteraction) {
 		// Your code goes here
+		const isBlocked = await BlocklistModel.findOne({ where: { discord_id: interaction.user.id } })
+
+		if (isBlocked && isBlocked.isBlacklisted)
+			return void await interaction.reply({ content: 'No puedes usar este comando.', ephemeral: true })
+
 		await interaction.deferReply({ ephemeral: true })
 		const feedbackChannel = interaction.client.channels.cache.get(process.env.FEEDBACK_CHANNEL!) as GuildTextBasedChannel
 
