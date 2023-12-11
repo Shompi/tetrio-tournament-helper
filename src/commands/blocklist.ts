@@ -53,7 +53,7 @@ export class MySlashCommand extends Subcommand {
 								.setRequired(true)
 						)
 				)
-		}, { idHints: [""] })
+		}, { idHints: ["1183583868750659596"] })
 
 
 	}
