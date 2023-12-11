@@ -29,6 +29,6 @@ const BlocklistModel = sequelize.define<BlocklistedUser>('Blocklist', {
 	}
 })
 
-await sequelize.sync();
+// await sequelize.sync();
 
 export { BlocklistModel }
