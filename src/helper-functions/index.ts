@@ -237,17 +237,12 @@ export async function RunTetrioTournamentRegistrationChecks(userData: TetrioUser
 /** This function handles the autocomplete entirely */
 export async function SearchTournamentByNameAutocomplete(interaction: Subcommand.AutocompleteInteraction) {
 	const focusedOption = interaction.options.getFocused(true)
-
-	if (focusedOption.name === 'nombre-torneo') {
-		/** This should be okay for now, since we will probably not have too many tournaments stored */
-		const torneos = await TournamentModel.findAll()
-
-		return void await interaction.respond(
-			torneos.filter(torneo => torneo.name.toLowerCase().includes(
-				focusedOption.value.toLowerCase()
-			)).map(torneo => ({ name: torneo.name, value: torneo.id.toString() }))
-		)
-	}
+	const torneos = await TournamentModel.findAll()
+	return void await interaction.respond(
+		torneos.filter(torneo => torneo.name.toLowerCase().includes(
+			focusedOption.value.toLowerCase()
+		)).map(torneo => ({ name: torneo.name, value: torneo.id.toString() }))
+	)
 }
 
 export async function SearchTournamentById(id: number) {
