@@ -8,7 +8,6 @@ const sequelize = new Sequelize({
 
 export interface BlocklistedUser extends Model<InferAttributes<BlocklistedUser>, InferCreationAttributes<BlocklistedUser>> {
 	discord_id: string;
-	warnings: Array<string>
 	isBlacklisted: CreationOptional<boolean>
 	reason: CreationOptional<string | null>
 }
@@ -18,15 +17,6 @@ const BlocklistModel = sequelize.define<BlocklistedUser>('Blocklist', {
 		type: DataTypes.STRING,
 		unique: true,
 		primaryKey: true
-	},
-	warnings: {
-		type: DataTypes.TEXT,
-		get() {
-			return JSON.parse((this.getDataValue('warnings') as unknown) as string) as string[]
-		},
-		set(val) {
-			return this.setDataValue('warnings', JSON.stringify(val) as unknown as string[])
-		},
 	},
 	isBlacklisted: {
 		type: DataTypes.BOOLEAN,
@@ -41,4 +31,4 @@ const BlocklistModel = sequelize.define<BlocklistedUser>('Blocklist', {
 
 await sequelize.sync();
 
-export { BlocklistModel as BlacklistModel }
+export { BlocklistModel }
