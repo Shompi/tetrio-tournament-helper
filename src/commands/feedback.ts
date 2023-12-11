@@ -1,4 +1,5 @@
 import { Command } from "@sapphire/framework"
+import { Colors, EmbedBuilder, GuildTextBasedChannel } from "discord.js";
 
 
 export class FeedbackCommand extends Command {
@@ -16,18 +17,32 @@ export class FeedbackCommand extends Command {
 				.setDescription('Envia una sugerencia respecto al bot!')
 				.addStringOption(message =>
 					message.setName('mensaje')
-						.setDescription('El mensaje que quieres enviar a los desarrolladores')
+						.setDescription('El mensaje que quieres enviar a los desarrolladores (2000 caracteres max)')
 						.setRequired(true)
 						.setMinLength(10)
 						.setMaxLength(2000)
 				)
 
 		}, { idHints: ["1183537281387204728"] })
-
-
 	}
 	public async chatInputRun(interaction: Command.ChatInputCommandInteraction) {
 		// Your code goes here
-		return void await interaction.reply({ content: 'Este comando aún no está implementado.', ephemeral: true })
+		await interaction.deferReply({ ephemeral: true })
+		const feedbackChannel = interaction.client.channels.cache.get(process.env.FEEDBACK_CHANNEL!) as GuildTextBasedChannel
+
+		const feedbackEmbed = new EmbedBuilder()
+			.setTitle(`Feedback de ${interaction.user.username}`)
+			.setFooter({
+				text: interaction.user.id
+			})
+			.setTimestamp()
+			.setDescription(interaction.options.getString('mensaje', true))
+			.setColor(Colors.Blue)
+
+
+		void await feedbackChannel.send({ embeds: [feedbackEmbed] })
+		return void await interaction.editReply({
+			content: '¡Tu feedback ha sido recibido con éxito y enviado a los desarrolladores!\nTe recordamos que abusar de este comando podría resultar en la imposibilidad de utilizar este comando en el futuro.'
+		})
 	}
 }
