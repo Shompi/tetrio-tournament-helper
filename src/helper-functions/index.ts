@@ -2,9 +2,9 @@
 * This file will contain tetrio api function calls
 * and maybe other stuff.
 */
-import { EmbedBuilder, Colors } from "discord.js";
+import { EmbedBuilder, Colors, Snowflake } from "discord.js";
 import { request } from "undici"
-import { Tournament } from "../sequelize/Tournaments.js";
+import { Tournament, TournamentStatusStrings } from "../sequelize/Tournaments.js";
 import { Subcommand } from "@sapphire/plugin-subcommands";
 import { TournamentModel, TournamentStatus } from "../sequelize/Tournaments.js";
 import { PlayerModel } from "../sequelize/Tournaments.js";
@@ -97,47 +97,52 @@ export enum AllowedGames {
 	PuyoTetrisTwo = "Puyo Puyo Tetris 2"
 }
 
-/** Emojis object, they are preformated for discord compatibility */
-export const Emojis = {
-	TETRIO: {
-		RANKS: {
-			DRANK: "<:rankD:884557291121180754>",
-			DPLUS: "<:rankDplus:884557291116957726>",
-			CMINUS: "<:rankCminus:884557291112787998>",
-			CRANK: "<:rankC:884557290777227315>",
-			CPLUS: "<:rankCplus:884557291095994369>",
-			BMINUS: "<:rankBminus:884557290714316801>",
-			BRANK: "<:rankB:884557291234422804>",
-			BPLUS: "<:rankBplus:884557291205066773>",
-			AMINUS: "<:rankAminus:884557290907250761>",
-			ARANK: "<:rankA:884557291200851979>",
-			APLUS: "<:rankAplus:884557291356049459>",
-			SMINUS: "<:rankSminus:884557290970153012>",
-			SRANK: "<:rankS:884557291515424769>",
-			SPLUS: "<:rankSplus:884557291788058664>",
-			SS: "<:rankSS:884557291465084929>",
-			URANK: "<:rankU:884557290756276225>",
-			XRANK: "<:rankX:884557291016319078>",
-			UNRANKED: "UNRANKED"
-		}
-	}
-} as const
-
 export type GameName = typeof AllowedGames[keyof typeof AllowedGames]
+
 export const TetrioRanksArray = ["z", "d", "d+", "c-", "c", "c+", "b-", "b", "b+", "a-", "a", "a+", "s-", "s", "s+", "ss", "u", "x"] as const
 
+/** Your are not supposed to use this, use TetrioRanksMap instead */
+const TetrioRanksEmojis = [
+	"UNRANKED",
+	"<:rankD:884557291121180754>",
+	"<:rankDplus:884557291116957726>",
+	"<:rankCminus:884557291112787998>",
+	"<:rankC:884557290777227315>",
+	"<:rankCplus:884557291095994369>",
+	"<:rankBminus:884557290714316801>",
+	"<:rankB:884557291234422804>",
+	"<:rankBplus:884557291205066773>",
+	"<:rankAminus:884557290907250761>",
+	"<:rankA:884557291200851979>",
+	"<:rankAplus:884557291356049459>",
+	"<:rankSminus:884557290970153012>",
+	"<:rankS:884557291515424769>",
+	"<:rankSplus:884557291788058664>",
+	"<:rankSS:884557291465084929>",
+	"<:rankU:884557290756276225>",
+	"<:rankX:884557291016319078>",
+] as const
+
+type EmojiString = `<:${string}:${Snowflake}>` | "UNRANKED";
+
+type TetrioRankObject = {
+	index: number,
+	emoji: EmojiString,
+}
+
+/** This function creates a map for the ranks, so we can have a numeric value for comparisons */
 const CreateRanksMap = (ranks: typeof TetrioRanksArray) => {
 	let i = 0;
-	const tempMap = new Map<string, number>()
+	const tempMap = new Map<string, TetrioRankObject>()
 	for (const rank of ranks) {
-		tempMap.set(rank, i)
+		tempMap.set(rank, { index: i, emoji: TetrioRanksEmojis[i] })
 		i++ // This was a bug before lol I forgot to add this
 	}
 
 	return tempMap
 }
 
-export const TetrioRanksMap: Map<string, number> = CreateRanksMap(TetrioRanksArray)
+export const TetrioRanksMap: Map<string, TetrioRankObject> = CreateRanksMap(TetrioRanksArray)
 
 /** Gets data of an user from the TETRIO API, calls toLowerCase() internally */
 export async function GetUserDataFromTetrio(_username: string): Promise<TetrioUserData | null> {
@@ -181,14 +186,14 @@ export function TournamentDetailsEmbed(torneo: Tournament) {
 	return (
 		new EmbedBuilder()
 			/** This probably will need change if later i want to implement more statuses. */
-			.setTitle(`${torneo.name} (${torneo.status === 0 ? "CLOSED" : "OPEN"})`)
+			.setTitle(`${torneo.name} (${TournamentStatusStrings[torneo.status]})`)
 			.setDescription(
 				`**ID del torneo**: ${torneo.id}` +
 				`\n**Organizado por**: <@${torneo.organized_by}>` +
 				`\n**Juego**: ${torneo.game}` +
 				`\n**Descripción**: ${torneo.description ?? "N/A"}` +
 				`${torneo.is_tr_capped ? `\n**TR CAP**: ${torneo.tr_cap}` : ""}` +
-				`${torneo.is_rank_capped ? `\n**RANK CAP**: ${torneo.rank_cap?.toUpperCase()}` : ""}` +
+				`${torneo.is_rank_capped ? `\n**RANK CAP**: ${TetrioRanksMap.get(torneo.rank_cap!)?.emoji}` : ""}` +
 				`${torneo.is_country_locked ? `\n**COUNTRY LOCK**: ${torneo.country_lock?.toUpperCase()}` : ""}` +
 				`\n**Máximo de jugadores**: ${torneo.max_players ?? "Sin límite"}` +
 				`\n**Jugadores registrados**: ${players.length}`
@@ -272,10 +277,11 @@ export async function SearchTournamentByNameAutocomplete(interaction: Subcommand
 			guild_id: interaction.guildId
 		}
 	})
+
 	return void await interaction.respond(
 		torneos.filter(torneo => torneo.name.toLowerCase().includes(
 			focusedOption.value.toLowerCase()
-		)).map(torneo => ({ name: torneo.name, value: torneo.id.toString() }))
+		)).map(torneo => ({ name: torneo.name.slice(0, 50), value: torneo.id.toString() }))
 	)
 }
 
@@ -344,7 +350,7 @@ export async function DeletePlayerFromDatabase(discord_id: string) {
 	};
 }
 
-export async function GetGuildTournaments(guild_id: string) {
+export async function GetTournamentsFromGuild(guild_id: string) {
 
 	return await TournamentModel.findAll({
 		where: {
@@ -353,10 +359,7 @@ export async function GetGuildTournaments(guild_id: string) {
 	})
 }
 
-/**
-*	This function checks whether or not a tournament is from the same guild the command is being ran
-*	to avoid users editing tournaments from different guilds
-*/
+/** Gets a single tournament from a guild */
 export async function GetTournamentFromGuild(guild_id: string, tournament_id: number) {
 
 	return await TournamentModel.findOne({
