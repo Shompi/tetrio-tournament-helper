@@ -1,5 +1,5 @@
 import { Command } from "@sapphire/framework"
-import { SearchTournamentById, SearchTournamentByNameAutocomplete } from "../helper-functions/index.js";
+import { GetTournamentFromGuild, SearchTournamentById, SearchTournamentByNameAutocomplete } from "../helper-functions/index.js";
 import { PermissionFlagsBits } from "discord.js";
 import { TournamentStatus } from "../sequelize/Tournaments.js";
 
@@ -29,14 +29,14 @@ export class CloseRegistrations extends Command {
 
 
 	}
-	public async chatInputRun(interaction: Command.ChatInputCommandInteraction) {
+	public async chatInputRun(interaction: Command.ChatInputCommandInteraction<'cached'>) {
 		// Your code goes here
 		const tournamentId = +interaction.options.getString('nombre-id', true)
 
 		if (isNaN(tournamentId))
 			return void await interaction.reply({ content: 'Debes ingresar la id numérica de un torneo o **usar una de las opciones del autocompletado**.' })
 
-		const torneo = await SearchTournamentById(tournamentId)
+		const torneo = await GetTournamentFromGuild(interaction.guildId, tournamentId)
 		if (!torneo) return void await interaction.reply({ content: "El torneo no existe.", ephemeral: true })
 
 		await torneo.update({
