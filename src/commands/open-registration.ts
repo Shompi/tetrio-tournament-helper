@@ -1,7 +1,7 @@
 import { Command } from "@sapphire/framework"
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ChannelType, GuildTextBasedChannel, PermissionsBitField, TextBasedChannel } from "discord.js"
-import { TournamentModel, TournamentStatus } from "../sequelize/Tournaments.js";
-import { SearchTournamentByNameAutocomplete, TournamentDetailsEmbed } from "../helper-functions/index.js";
+import { TournamentStatus } from "../sequelize/Tournaments.js";
+import { GetTournamentFromGuild, SearchTournamentByNameAutocomplete, TournamentDetailsEmbed } from "../helper-functions/index.js";
 
 const DefaultMessage = `{userid} ha abierto las inscripciones para el torneo \"**{nombre_torneo}**\". \n¡Presiona el botón de abajo para comenzar la inscripción!`
 export class OpenRegistration extends Command {
@@ -37,7 +37,7 @@ export class OpenRegistration extends Command {
 		}, { idHints: ["1181535689226063924"] })
 	}
 
-	public async chatInputRun(interaction: Command.ChatInputCommandInteraction) {
+	public async chatInputRun(interaction: Command.ChatInputCommandInteraction<'cached'>) {
 		// Your code goes here
 		void await interaction.deferReply({ ephemeral: true })
 		const idTorneo = +interaction.options.getString('nombre-id', true)
@@ -45,14 +45,17 @@ export class OpenRegistration extends Command {
 		if (isNaN(idTorneo))
 			return void await interaction.reply({ content: 'Debes ingresar la id numérica de un torneo o **usar una de las opciones del autocompletado**.' })
 
-		const torneo = await TournamentModel.findOne({ where: { id: idTorneo } })
+		const torneo = await GetTournamentFromGuild(interaction.guildId, idTorneo)
 
+		if (!torneo) return void await interaction.editReply({ content: "El mensaje no ha sido enviado por que el torneo no existe." })
 
-		if (!torneo) return void await interaction.editReply({ content: "El mensaje no ha sido enviado por que el torneo no existe en la base de datos." })
+		if (torneo.status === TournamentStatus.FINISHED)
+			return void await interaction.editReply({ content: "No se pueden abrir las inscripciones para este torneo por que está marcado como **TERMINADO**." })
 
-		if (torneo.status === TournamentStatus.CLOSED)
-			return void await interaction.editReply({ content: "No se pueden abrir las inscripciones para este torneo por que está marcado como **CLOSED**." })
-
+		if (torneo.status === TournamentStatus.CLOSED) {
+			// Reopen this tournament registrations if it was closed
+			await torneo.update('status', TournamentStatus.OPEN)
+		}
 
 		// Create a button that users can click to begin the registration flow
 		const RegisterButton = new ButtonBuilder()
