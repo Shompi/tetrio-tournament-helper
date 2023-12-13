@@ -341,3 +341,9 @@ export async function GetTournamentFromGuild(guild_id: string, tournament_id: nu
 	})
 
 }
+
+/** Wether or not this tournament can be edited (Is not FINISHED) */
+
+export function IsTournamentEditable(tournament: Tournament) {
+	return tournament.status !== TournamentStatus.FINISHED
+}
