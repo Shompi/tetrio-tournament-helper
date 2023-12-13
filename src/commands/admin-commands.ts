@@ -1,7 +1,7 @@
 import { Subcommand } from "@sapphire/plugin-subcommands"
 import { PlayerModel } from "../sequelize/Tournaments.js";
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, Colors, ComponentType, EmbedBuilder, PermissionFlagsBits } from "discord.js";
-import { GenerateTetrioAvatarURL, GetTournamentFromGuild, SearchTournamentByNameAutocomplete, TetrioRanksArray } from "../helper-functions/index.js";
+import { GenerateTetrioAvatarURL, GetTournamentFromGuild, IsTournamentEditable, SearchTournamentByNameAutocomplete, TetrioRanksArray } from "../helper-functions/index.js";
 import { DeletePlayerFromDatabase } from "../helper-functions/index.js";
 
 
@@ -154,8 +154,10 @@ export class MySlashCommand extends Subcommand {
 				ephemeral: true
 			})
 
+
 		// Get all tournaments from this guild
 		const tournament = await GetTournamentFromGuild(interaction.guildId, tournamentId)
+
 
 		if (!tournament) {
 			return void await interaction.reply({
@@ -163,6 +165,12 @@ export class MySlashCommand extends Subcommand {
 				ephemeral: true
 			})
 		}
+		
+		if (!IsTournamentEditable(tournament))
+			return void await interaction.reply({
+				content:'No puedes editar la información de este torneo por que está marcado como **TERMINADO**',
+				ephemeral: true
+			})
 
 		const options = {
 			name: interaction.options.getString('nombre', false),
