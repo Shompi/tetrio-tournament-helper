@@ -70,6 +70,8 @@ export interface Tournament extends Model<InferAttributes<Tournament>, InferCrea
 	/** The Discord ID of the winner of this tournament, if any. */
 	winner_id: CreationOptional<string | null>;
 
+	/** Roles to add to the member that registers to this tournament */
+	add_roles: CreationOptional<Snowflake[]>
 }
 
 const TournamentModel = sequelize.define<Tournament>('Tournament', {
@@ -178,6 +180,16 @@ const TournamentModel = sequelize.define<Tournament>('Tournament', {
 		type: DataTypes.STRING,
 		defaultValue: null,
 		allowNull: true,
+	},
+	add_roles: {
+		type: DataTypes.STRING,
+		defaultValue: "[]",
+		get() {
+			return JSON.parse((this.getDataValue('add_roles') as unknown as string)) as Snowflake[]
+		},
+		set(val) {
+			return this.setDataValue('add_roles', JSON.stringify(val) as unknown as Snowflake[])
+		},
 	}
 });
 
