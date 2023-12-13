@@ -44,6 +44,9 @@ export interface Tournament extends Model<InferAttributes<Tournament>, InferCrea
 	is_tr_capped: CreationOptional<boolean>;
 	/** 25_000 max */
 	tr_cap: CreationOptional<number | null>;
+
+	/** The winner of this tournament, if any. */
+	winner_id: CreationOptional<string | null>;
 }
 
 const TournamentModel = sequelize.define<Tournament>('Tournament', {
@@ -135,6 +138,11 @@ const TournamentModel = sequelize.define<Tournament>('Tournament', {
 		type: DataTypes.STRING,
 		defaultValue: null,
 		allowNull: true
+	},
+	winner_id: {
+		type: DataTypes.STRING,
+		defaultValue: null,
+		allowNull: true,
 	}
 });
 
