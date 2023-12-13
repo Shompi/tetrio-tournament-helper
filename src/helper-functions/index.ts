@@ -97,6 +97,32 @@ export enum AllowedGames {
 	PuyoTetrisTwo = "Puyo Puyo Tetris 2"
 }
 
+/** Emojis object, they are preformated for discord compatibility */
+export const Emojis = {
+	TETRIO: {
+		RANKS: {
+			DRANK: "<:rankD:884557291121180754>",
+			DPLUS: "<:rankDplus:884557291116957726>",
+			CMINUS: "<:rankCminus:884557291112787998>",
+			CRANK: "<:rankC:884557290777227315>",
+			CPLUS: "<:rankCplus:884557291095994369>",
+			BMINUS: "<:rankBminus:884557290714316801>",
+			BRANK: "<:rankB:884557291234422804>",
+			BPLUS: "<:rankBplus:884557291205066773>",
+			AMINUS: "<:rankAminus:884557290907250761>",
+			ARANK: "<:rankA:884557291200851979>",
+			APLUS: "<:rankAplus:884557291356049459>",
+			SMINUS: "<:rankSminus:884557290970153012>",
+			SRANK: "<:rankS:884557291515424769>",
+			SPLUS: "<:rankSplus:884557291788058664>",
+			SS: "<:rankSS:884557291465084929>",
+			URANK: "<:rankU:884557290756276225>",
+			XRANK: "<:rankX:884557291016319078>",
+			UNRANKED: "UNRANKED"
+		}
+	}
+} as const
+
 export type GameName = typeof AllowedGames[keyof typeof AllowedGames]
 export const TetrioRanksArray = ["z", "d", "d+", "c-", "c", "c+", "b-", "b", "b+", "a-", "a", "a+", "s-", "s", "s+", "ss", "u", "x"] as const
 
@@ -189,6 +215,7 @@ export async function AddTetrioPlayerToDatabase({ discordId, tetrioId }: { disco
 	console.log(`[PLAYERS DATABASE] => Player (${discordId}) - ${tetrioId} se ha guardado en la base de datos.`);
 
 }
+
 export async function RunTetrioTournamentRegistrationChecks(userData: TetrioUserData, torneo: Tournament, discordId: string): Promise<{ allowed: boolean; reason?: string; }> {
 
 	if (torneo.status === TournamentStatus.CLOSED) {
@@ -330,7 +357,6 @@ export async function GetGuildTournaments(guild_id: string) {
 *	This function checks whether or not a tournament is from the same guild the command is being ran
 *	to avoid users editing tournaments from different guilds
 */
-
 export async function GetTournamentFromGuild(guild_id: string, tournament_id: number) {
 
 	return await TournamentModel.findOne({
@@ -343,7 +369,6 @@ export async function GetTournamentFromGuild(guild_id: string, tournament_id: nu
 }
 
 /** Wether or not this tournament can be edited (Is not FINISHED) */
-
 export function IsTournamentEditable(tournament: Tournament) {
 	return tournament.status !== TournamentStatus.FINISHED
 }
