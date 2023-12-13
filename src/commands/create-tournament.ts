@@ -3,6 +3,7 @@ import { PermissionsBitField } from "discord.js";
 import { TournamentModel, TournamentStatus } from "../sequelize/Tournaments.js";
 import { GameName, TetrioRanksArray } from "../helper-functions/index.js";
 import { TournamentDetailsEmbed } from "../helper-functions/index.js";
+import { GetRolesToAddArray } from "../helper-functions/index.js";
 export class CreateTournament extends Command {
 
 	public constructor(context: Command.LoaderContext, options: Command.Options) {
@@ -96,6 +97,20 @@ export class CreateTournament extends Command {
 						.setDescriptionLocalizations({
 							"en-US": "Maximum number of players that can join this tournament"
 						})
+						.setMinValue(8)
+						.setMaxValue(256)
+				)
+				.addRoleOption(role =>
+					role.setName('role-1')
+						.setDescription('Rol que quieres añadir a los miembros que se unan a este torneo')
+				)
+				.addRoleOption(role =>
+					role.setName('role-2')
+						.setDescription('Rol que quieres añadir a los miembros que se unan a este torneo')
+				)
+				.addRoleOption(role =>
+					role.setName('role-3')
+						.setDescription('Rol que quieres añadir a los miembros que se unan a este torneo')
 				)
 		}, { idHints: ["1178881110046941236"] })
 	}
@@ -117,8 +132,6 @@ export class CreateTournament extends Command {
 
 		try {
 
-			/** Tournaments are only going to be either OPEN for registration or CLOSED */
-
 			const createdTournament = await TournamentModel.create({
 				organized_by: interaction.user.id,
 				guild_id: interaction.guildId,
@@ -133,8 +146,9 @@ export class CreateTournament extends Command {
 				tr_cap: options.tr_cap,
 				max_players: options.max_players,
 				players: [],
+				// We create this tournament open by default
 				status: TournamentStatus.OPEN,
-				add_roles: []
+				add_roles: GetRolesToAddArray(interaction)
 			})
 
 			return void await interaction.reply({ content: "El torneo ha sido creado exitosamente.", embeds: [TournamentDetailsEmbed(createdTournament)] })

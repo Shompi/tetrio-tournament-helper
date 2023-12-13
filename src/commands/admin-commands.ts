@@ -1,7 +1,7 @@
 import { Subcommand } from "@sapphire/plugin-subcommands"
 import { PlayerModel } from "../sequelize/Tournaments.js";
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, Colors, ComponentType, EmbedBuilder, PermissionFlagsBits } from "discord.js";
-import { GenerateTetrioAvatarURL, GetTournamentFromGuild, IsTournamentEditable, SearchTournamentByNameAutocomplete, TetrioRanksArray } from "../helper-functions/index.js";
+import { GenerateTetrioAvatarURL, GetRolesToAddArray, GetTournamentFromGuild, IsTournamentEditable, SearchTournamentByNameAutocomplete, TetrioRanksArray } from "../helper-functions/index.js";
 import { DeletePlayerFromDatabase } from "../helper-functions/index.js";
 
 
@@ -81,6 +81,18 @@ export class MySlashCommand extends Subcommand {
 								.setDescriptionLocalizations({
 									"en-US": "Maximum number of players that can join this tournament"
 								})
+						)
+						.addRoleOption(role =>
+							role.setName('role-1')
+								.setDescription('Rol que quieres añadir a los miembros que se unan a este torneo')
+						)
+						.addRoleOption(role =>
+							role.setName('role-2')
+								.setDescription('Rol que quieres añadir a los miembros que se unan a este torneo')
+						)
+						.addRoleOption(role =>
+							role.setName('role-3')
+								.setDescription('Rol que quieres añadir a los miembros que se unan a este torneo')
 						)
 				)
 				.addSubcommand(list =>
@@ -224,10 +236,10 @@ export class MySlashCommand extends Subcommand {
 				ephemeral: true
 			})
 		}
-		
+
 		if (!IsTournamentEditable(tournament))
 			return void await interaction.reply({
-				content:'No puedes editar la información de este torneo por que está marcado como **TERMINADO**',
+				content: 'No puedes editar la información de este torneo por que está marcado como **TERMINADO**',
 				ephemeral: true
 			})
 
@@ -253,6 +265,14 @@ export class MySlashCommand extends Subcommand {
 		}
 
 		if (options.maxPlayers) tournament.max_players = options.maxPlayers
+
+		const newRoles = GetRolesToAddArray(interaction)
+
+		if (newRoles.length > 0) {
+			// We are just gonna replace the old roles with the new ones
+			tournament.add_roles = newRoles
+		}
+
 
 		// Update the tournament in the database
 		await tournament.save()
