@@ -274,8 +274,8 @@ async function OrderPlayerListBy(playerIds: string[], orderBy: OrderBy): Promise
 		// Sort is INPLACE
 		PlayersArray.sort((playerA, playerB) => {
 
-			const rankA = TetrioRanksMap.get(playerA.data.user.league.rank)!
-			const rankB = TetrioRanksMap.get(playerB.data.user.league.rank)!
+			const rankA = TetrioRanksMap.get(playerA.data.user.league.rank)!.index
+			const rankB = TetrioRanksMap.get(playerB.data.user.league.rank)!.index
 
 			return rankB - rankA
 		})
