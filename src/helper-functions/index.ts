@@ -2,16 +2,18 @@
 * This file will contain tetrio api function calls
 * and maybe other stuff.
 */
-import { EmbedBuilder, Colors, Snowflake } from "discord.js";
-import { request } from "undici"
-import { Tournament, TournamentStatusStrings } from "../sequelize/Tournaments.js";
-import { Subcommand } from "@sapphire/plugin-subcommands";
-import { TournamentModel, TournamentStatus } from "../sequelize/Tournaments.js";
-import { PlayerModel } from "../sequelize/Tournaments.js";
+import { AttachmentBuilder, EmbedBuilder, Colors, Snowflake } from "discord.js";
+import { AsciiTable3 } from "ascii-table3";
 import { Command } from "@sapphire/framework";
+import { Subcommand } from "@sapphire/plugin-subcommands";
+import { TournamentModel, TournamentStatus, Tournament, TournamentStatusStrings } from "../sequelize/Tournaments.js";
+import { PlayerModel } from "../sequelize/Tournaments.js";
+import { request } from "undici"
 
 export type TetrioApiCacheStatus = "hit" | "miss" | "awaited"
 export type TetrioUserRole = "anon" | "user" | "bot" | "halfmod" | "mod" | "admin" | "sysop" | "banned"
+export type OrderBy = "default" | "apm" | "pps" | "tr" | "rank" | null
+
 
 export interface TetrioUserData {
 	user: {
@@ -388,4 +390,117 @@ export function GetRolesToAddArray(interaction: Command.ChatInputCommandInteract
 	if (role3) roles.push(role3.id);
 
 	return roles;
+}interface PlayerDataOrdered {
+	discordId: string;
+	data: TetrioUserData;
 }
+export function BuildTableFromPlayerList(tournament: Tournament, playerList: PlayerDataOrdered[]) {
+	// Now we need to build the table
+	// We need to check whether or not this is a TETRIO tournament so we can build different tables for other games.
+	const table = new AsciiTable3(tournament.name)
+		.setTitleAlignCenter()
+		.setHeadingAlignCenter()
+		.setHeading("POSICION", "DISCORD", "TETRIO ID", "PAIS", "RANK", "TR", "APM", "PPS")
+		.setAlignCenter(1)
+		.setAlignCenter(2)
+		.setAlignCenter(3)
+		.setAlignCenter(4)
+		.setAlignCenter(5)
+		.setAlignCenter(6)
+		.setAlignCenter(7)
+		.setAlignCenter(8);
+
+	// Good old for loop
+	for (let i = 0; i < playerList.length; i++) {
+		table.addRow(
+			i + 1,
+			playerList[i].discordId,
+			playerList[i].data.user.username.toUpperCase(),
+			playerList[i].data.user.country?.toUpperCase() ?? "OCULTO",
+			playerList[i].data.user.league.rank.toUpperCase(),
+			playerList[i].data.user.league.rating.toFixed(2),
+			playerList[i].data.user.league.apm ?? "0.00",
+			playerList[i].data.user.league.pps ?? "0.00"
+		);
+	}
+
+	return table;
+}
+export async function OrderPlayerListBy(playerIds: string[], orderBy: OrderBy): Promise<PlayerDataOrdered[]> {
+	// We start by getting all the players we need from the database
+	const PlayersArray: PlayerDataOrdered[] = [];
+
+	for (const id of playerIds) {
+		const playerData = await PlayerModel.findByPk(id);
+
+		if (!playerData) {
+			console.log(`[DEBUG] Los datos del usuario ${id} no están en la base de datos PLAYER`);
+			continue;
+		}
+
+		PlayersArray.push({ discordId: id, data: playerData.data });
+	}
+
+	// At this point we should have a list of players
+	if (orderBy === "rank") {
+
+		// We need to remember that ranks are letters here.
+		// Sort is INPLACE
+		PlayersArray.sort((playerA, playerB) => {
+
+			const rankA = TetrioRanksMap.get(playerA.data.user.league.rank)!.index;
+			const rankB = TetrioRanksMap.get(playerB.data.user.league.rank)!.index;
+
+			return rankB - rankA;
+		});
+	}
+
+	if (orderBy === 'tr') {
+		PlayersArray.sort((playerA, playerB) => {
+			const ratingA = playerA.data.user.league.rating;
+			const ratingB = playerB.data.user.league.rating;
+
+			return ratingB - ratingA;
+		});
+	}
+
+	if (orderBy === 'apm') {
+		PlayersArray.sort((playerA, playerB) => {
+			const apmA = playerA.data.user.league.apm ?? 0;
+			const apmB = playerB.data.user.league.apm ?? 0;
+
+			return apmB - apmA;
+		});
+	}
+
+	if (orderBy === 'pps') {
+		PlayersArray.sort((playerA, playerB) => {
+			const apmA = playerA.data.user.league.pps ?? 0;
+			const apmB = playerB.data.user.league.pps ?? 0;
+
+			return apmB - apmA;
+		});
+	}
+
+
+
+	return PlayersArray;
+}
+export async function BuildASCIITableAttachment(interaction: Subcommand.ChatInputCommandInteraction, tournament: Tournament) {
+
+	void await interaction.deferReply();
+
+	const { players } = tournament;
+	const orderBy = interaction.options.getString('ordenar-por', false) as OrderBy ?? 'default';
+
+	const orderedPlayerList = await OrderPlayerListBy(players, orderBy);
+
+	const table = BuildTableFromPlayerList(tournament, orderedPlayerList);
+
+	const TableFile = new AttachmentBuilder(Buffer.from(table.toString()))
+		.setName('playersTable.txt')
+		.setDescription(`Tabla de jugadores del torneo ${tournament.name}`);
+
+	return TableFile;
+}
+
