@@ -11,7 +11,7 @@ export class ParseExampleInteractionHandler extends InteractionHandler {
 		super(ctx, { interactionHandlerType: InteractionHandlerTypes.Button });
 	}
 
-	public async run(interaction: ButtonInteraction, tournamentId: string) {
+	public async run(interaction: ButtonInteraction<'cached'>, tournamentId: string) {
 
 
 		const torneo = await TournamentModel.findOne({
@@ -41,7 +41,7 @@ export class ParseExampleInteractionHandler extends InteractionHandler {
 }
 
 
-async function HandleTetrioRegistration(interaction: ButtonInteraction, torneo: Tournament) {
+async function HandleTetrioRegistration(interaction: ButtonInteraction<'cached'>, torneo: Tournament) {
 
 	// Check if the player is already in our database
 	const playerData = await PlayerModel.findOne({
@@ -53,7 +53,7 @@ async function HandleTetrioRegistration(interaction: ButtonInteraction, torneo: 
 	if (!playerData) {
 		void await HandleNewPlayerRegistration(interaction, torneo)
 	} else {
-		void await ContinuePlayerRegistration(interaction, playerData.data, torneo)
+		void await AddPlayerIdToTournamentPlayerList(interaction, torneo)
 	}
 
 	// Update the message with the new details
@@ -62,7 +62,7 @@ async function HandleTetrioRegistration(interaction: ButtonInteraction, torneo: 
 	})
 }
 
-async function HandleNewPlayerRegistration(interaction: ButtonInteraction, torneo: Tournament): Promise<void> {
+async function HandleNewPlayerRegistration(interaction: ButtonInteraction<'cached'>, torneo: Tournament): Promise<void> {
 
 	/** Interaction has not been deferred at this point */
 
@@ -77,9 +77,16 @@ async function HandleNewPlayerRegistration(interaction: ButtonInteraction, torne
 						.setStyle(TextInputStyle.Short)
 						.setCustomId('tetrio-username')
 						.setLabel("Tu username de TETRIO")
-						.setPlaceholder("username")
+						.setPlaceholder("USERNAME")
 						.setMaxLength(50)
 						.setMinLength(1)
+						.setRequired(true),
+					new TextInputBuilder()
+						.setStyle(TextInputStyle.Short)
+						.setCustomId('challonge-username')
+						.setLabel('Tu username de challonge (Opcional)')
+						.setPlaceholder("TetrisMaster_123")
+						.setMaxLength(50)
 				)
 		)
 
@@ -98,6 +105,7 @@ async function HandleNewPlayerRegistration(interaction: ButtonInteraction, torne
 	await modalSubmition.deferReply({ ephemeral: true })
 
 	const tetrioUsername = modalSubmition.fields.getTextInputValue('tetrio-username')
+	const challongeUsername = modalSubmition.fields.getTextInputValue('challonge-username')
 
 	const userData = await GetUserDataFromTetrio(tetrioUsername)
 
@@ -111,7 +119,7 @@ async function HandleNewPlayerRegistration(interaction: ButtonInteraction, torne
 			+ `\n**Rank**: ${userData.user.league.rank.toUpperCase()}`
 			+ `\n**Rating**: ${userData.user.league.rating.toFixed(2)}`
 			+ `\n**Bio**: ${userData.user.bio ?? "No bio."}`
-			+ `\n\n**Enlace al perfil**: ${GetUserProfileURL(userData.user.username)}`
+			+ `\n\n[Enlace al perfil](${GetUserProfileURL(userData.user.username)})`
 		)
 		.setColor(Colors.Blue)
 
@@ -179,72 +187,80 @@ async function HandleNewPlayerRegistration(interaction: ButtonInteraction, torne
 
 		void await AddTetrioPlayerToDatabase({ discordId: interaction.user.id, tetrioId: userData.user.username }, userData)
 
-		return void await ContinuePlayerRegistration(pressedButton, userData, torneo)
+		const result = await RunTetrioTournamentRegistrationChecks(userData, torneo, interaction.user.id)
 
-	}
-}
+		if (!result.allowed) {
+			if (!interaction.replied) {
+				return void await interaction.reply({
+					content: `No puedes inscribirte en este torneo.\nRazón: ${result.reason}`,
+					ephemeral: true,
+				})
+			}
 
-async function ContinuePlayerRegistration(interaction: ButtonInteraction, userData: TetrioUserData, torneo: Tournament) {
-
-	const result = await RunTetrioTournamentRegistrationChecks(userData, torneo, interaction.user.id)
-
-	if (!result.allowed) {
-		if (!interaction.replied) {
-			return void await interaction.reply({
+			return void await interaction.update({
 				content: `No puedes inscribirte en este torneo.\nRazón: ${result.reason}`,
-				ephemeral: true,
+				components: [],
+				embeds: []
 			})
 		}
 
-		return void await interaction.update({
-			content: `No puedes inscribirte en este torneo.\nRazón: ${result.reason}`,
-			components: [],
-			embeds: []
-		})
+		return void await AddPlayerIdToTournamentPlayerList(pressedButton, torneo)
 	}
+}
+
+async function AddPlayerIdToTournamentPlayerList(interaction: ButtonInteraction<'cached'>, tournament: Tournament) {
+
 
 	// Add player to the tournament
-	console.log(`[TOURNAMENT] Añadiendo nuevo jugador ${interaction.user.id} (${interaction.user.username}) al torneo ${torneo.name}`);
+	console.log(`[TOURNAMENT] Añadiendo nuevo jugador ${interaction.user.id} (${interaction.user.username}) al torneo ${tournament.name}`);
 
-	const playerList = Array.from(torneo.players)
+	const playerList = Array.from(tournament.players)
 
 	playerList.push(interaction.user.id)
 
-	await torneo.update({
+	await tournament.update({
 		players: playerList
 	})
 
 	console.log("[TOURNAMENT] El jugador ha sido añadido a la lista");
-
-
-	await torneo.save()
 	console.log("[TOURNAMENT] El torneo ha sido guardado");
+	console.log("[ACTION ON PLAYER] Chequeando si hay roles para agregar...");
+
+	if (tournament.add_roles.length > 0) {
+		await interaction.member.roles.add(tournament.add_roles)
+		console.log(`[ACTION ON PLAYER] Se le agregaron ${tournament.add_roles.length} roles al jugador ${interaction.user.id}`);
+	}
+
 
 	/** ESTO SE TIENE QUE BORRAR MAS TARDE, POR AHORA FORZAREMOS LA ASIGNACION DE ROLES POR ID DE TORNEO */
 
-	if (interaction.inCachedGuild()) {
-		if (torneo.id === 1) {
-			// Torneo avanzado Role Torneo Chile
-			await interaction.member.roles.add("1180723107145723934")
-		}
+	// if (interaction.inCachedGuild()) {
+	// 	if (torneo.id === 1) {
+	// 		// Torneo avanzado Role Torneo Chile
+	// 		await interaction.member.roles.add("1180723107145723934")
+	// 	}
 
-		if (torneo.id === 2) {
-			// Torneo Amateur
-			await interaction.member.roles.add("1180723237399834715")
-		}
-	}
+	// 	if (torneo.id === 2) {
+	// 		// Torneo Amateur
+	// 		await interaction.member.roles.add("1180723237399834715")
+	// 	}
+	// }
 
 	/** ----------------------- */
+
+
 
 	if (!interaction.replied) {
 		return void await interaction.reply({
 			ephemeral: true,
-			content: `¡Te has inscrito exitósamente al torneo **${torneo.name}**!`,
+			content: `¡Te has inscrito exitósamente al torneo **${tournament.name}**!`,
+			embeds: [],
+			components: []
 		})
 	}
 
 	return void await interaction.update({
-		content: `Te has inscrito en el torneo **${torneo.name}** exitósamente!`,
+		content: `Te has inscrito en el torneo **${tournament.name}** exitósamente!`,
 		components: [],
 		embeds: []
 	})
