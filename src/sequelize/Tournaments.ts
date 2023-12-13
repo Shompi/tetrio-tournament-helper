@@ -77,7 +77,7 @@ export interface Tournament extends Model<InferAttributes<Tournament>, InferCrea
 	winner_id: CreationOptional<string | null>;
 
 	/** Roles to add to the member that registers to this tournament */
-	add_roles: CreationOptional<Snowflake[]>
+	add_roles: Snowflake[]
 }
 
 const TournamentModel = sequelize.define<Tournament>('Tournament', {
@@ -137,7 +137,6 @@ const TournamentModel = sequelize.define<Tournament>('Tournament', {
 		set(value) {
 			return this.setDataValue('players', JSON.stringify(value) as unknown as Snowflake[])
 		},
-		defaultValue: "[]"
 	},
 
 	checked_in: {
@@ -148,7 +147,6 @@ const TournamentModel = sequelize.define<Tournament>('Tournament', {
 		set(val) {
 			return this.setDataValue('checked_in', JSON.stringify(val) as unknown as Snowflake[])
 		},
-		defaultValue: "[]"
 	},
 
 	is_rank_capped: {
