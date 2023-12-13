@@ -48,7 +48,7 @@ export class CloseRegistrations extends Command {
 		})
 	}
 
-	public async autocompleteRun(interaction: Command.AutocompleteInteraction) {
+	public async autocompleteRun(interaction: Command.AutocompleteInteraction <'cached'>) {
 		if (interaction.options.getFocused(true).name === 'nombre-id') {
 			return void await SearchTournamentByNameAutocomplete(interaction)
 		}

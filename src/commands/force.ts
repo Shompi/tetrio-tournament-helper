@@ -1,6 +1,6 @@
 import { Subcommand } from "@sapphire/plugin-subcommands"
 import { PermissionFlagsBits } from "discord.js"
-import { SearchTournamentById, SearchTournamentByNameAutocomplete } from "../helper-functions/index.js";
+import { GetTournamentFromGuild, SearchTournamentByNameAutocomplete } from "../helper-functions/index.js";
 import { TournamentStatus } from "../sequelize/Tournaments.js";
 import { RemovePlayerFromTournament } from "../helper-functions/index.js";
 
@@ -83,14 +83,14 @@ export class ForceCommands extends Subcommand {
 		}
 	}
 
-	public async chatInputForzarDesinscripcion(interaction: Subcommand.ChatInputCommandInteraction) {
+	public async chatInputForzarDesinscripcion(interaction: Subcommand.ChatInputCommandInteraction<'cached'>) {
 		// Your code goes here
 		const idTorneo = +interaction.options.getString('nombre-id', true)
 
 		if (isNaN(idTorneo)) 
 			return void await interaction.reply({ content: 'Debes ingresar la id o el nombre de algun torneo (usando las opciones del autocompletado)', ephemeral: true })
 
-		const torneo = await SearchTournamentById(idTorneo)
+		const torneo = await GetTournamentFromGuild(interaction.guildId, idTorneo)
 
 		if (!torneo) return void await interaction.reply({ content: 'No encontré ningun torneo.', ephemeral: true })
 		if (torneo.status === TournamentStatus.CLOSED)
@@ -110,7 +110,7 @@ export class ForceCommands extends Subcommand {
 		}
 	}
 
-	public async autocompleteRun(interaction: Subcommand.AutocompleteInteraction) {
+	public async autocompleteRun(interaction: Subcommand.AutocompleteInteraction<'cached'>) {
 		if (interaction.options.getFocused(true).name === 'nombre-id')
 			return void await SearchTournamentByNameAutocomplete(interaction)
 	}
