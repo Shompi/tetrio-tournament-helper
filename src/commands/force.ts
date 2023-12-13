@@ -93,10 +93,8 @@ export class ForceCommands extends Subcommand {
 		const torneo = await GetTournamentFromGuild(interaction.guildId, idTorneo)
 
 		if (!torneo) return void await interaction.reply({ content: 'No encontré ningun torneo.', ephemeral: true })
-		if (torneo.status === TournamentStatus.CLOSED)
-			return void await interaction.reply({ content: 'No puedes desinscribir a un jugador de un torneo que está marcado como **CLOSED**', ephemeral: true })
-
-
+		if (torneo.status === TournamentStatus.FINISHED)
+			return void await interaction.reply({ content: 'No puedes desinscribir a un jugador de un torneo que está marcado como **FINALIZADO**', ephemeral: true })
 
 		try {
 			await RemovePlayerFromTournament(torneo, interaction.options.getUser('discord-id', true).id);
