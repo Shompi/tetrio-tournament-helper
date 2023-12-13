@@ -1,10 +1,6 @@
 import { Subcommand } from "@sapphire/plugin-subcommands"
-import { PlayerModel, Tournament } from "../sequelize/Tournaments.js"
-import { GetTournamentFromGuild, TetrioRanksMap, TetrioUserData, TournamentDetailsEmbed } from "../helper-functions/index.js"
+import { TournamentDetailsEmbed } from "../helper-functions/index.js"
 import { SearchTournamentByNameAutocomplete, SearchTournamentById } from "../helper-functions/index.js"
-import { AsciiTable3 } from "ascii-table3"
-import { AttachmentBuilder, Colors, EmbedBuilder, codeBlock } from "discord.js"
-
 
 export class TournamentCommands extends Subcommand {
 
@@ -17,10 +13,6 @@ export class TournamentCommands extends Subcommand {
 					name: "detalles",
 					chatInputRun: "chatInputDetalles"
 				},
-				{
-					name: "lista-jugadores",
-					chatInputRun: "chatInputListaJugadores"
-				}
 			]
 		})
 	}
@@ -41,7 +33,7 @@ export class TournamentCommands extends Subcommand {
 								.setMaxLength(255)
 						)
 				)
-				
+
 		}, { idHints: ["1179715303735832646"] })
 	}
 
@@ -52,10 +44,14 @@ export class TournamentCommands extends Subcommand {
 		if (isNaN(idTorneo))
 			return void await interaction.reply({ content: 'Debes ingresar la id numérica de un torneo o **usar una de las opciones del autocompletado**.' })
 
-		const torneo = await SearchTournamentById(idTorneo)
-		if (!torneo) return void await interaction.reply({ content: 'No se encontró ningun torneo en la base de datos con los datos ingresados.', ephemeral: true })
+		const tournament = await SearchTournamentById(idTorneo)
+		if (!tournament) return void await interaction.reply({ content: 'No se encontró ningun torneo en la base de datos con los datos ingresados.', ephemeral: true })
 
-		return void await SendDetails(interaction, torneo)
+		return void await interaction.reply({
+			content: `Aquí está la información del torneo **${tournament.name}**`,
+			embeds: [TournamentDetailsEmbed(tournament)],
+			ephemeral: true
+		})
 	}
 
 
@@ -66,11 +62,3 @@ export class TournamentCommands extends Subcommand {
 		}
 	}
 }
-
-async function SendDetails(interaction: Subcommand.ChatInputCommandInteraction, tournament: Tournament) {
-	return void await interaction.reply({
-		content: `Aquí está la información del torneo **${tournament.name}**`,
-		embeds: [TournamentDetailsEmbed(tournament)]
-	})
-}
-
