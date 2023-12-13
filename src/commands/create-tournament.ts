@@ -65,9 +65,8 @@ export class CreateTournament extends Command {
 				.addStringOption(description =>
 					description.setName('descripcion')
 						.setDescription('La descripción de este torneo (Máximo 2000 caracteres)')
-						.setMaxLength(2000)
+						.setMaxLength(1000)
 				)
-				/** TODO: Add choices for skill cap */
 				.addStringOption(rankCap =>
 					rankCap.setName('rank_cap')
 						.setDescription('El rank máximo que pueden tener los jugadores (SOLO TETRIO)')
