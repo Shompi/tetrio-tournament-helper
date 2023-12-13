@@ -83,6 +83,66 @@ export class MySlashCommand extends Subcommand {
 								})
 						)
 				)
+				.addSubcommand(list =>
+					list.setName('lista-jugadores')
+						.setDescription('Obtén una lista con los jugadores inscritos en un torneo')
+						.addStringOption(name =>
+							name.setName('nombre-id')
+								.setDescription("El nombre o la Id numérica del torneo")
+								.setRequired(true)
+								.setAutocomplete(true)
+						)
+						.addStringOption(order =>
+							order.setName('ordenar-por')
+								.setDescription('El tipo de ordenamiento de los jugadores en la tabla (SOLO TETRIO)')
+								.setChoices(
+									{
+										name: 'Inscripción',
+										value: "default",
+									},
+									{
+										name: 'Rank (e.g: S, S+, SS, X)',
+										value: 'rank',
+									},
+									{
+										name: 'Tetra Rating',
+										value: 'tr',
+									},
+									{
+										name: 'Ataque Por Minuto (APM)',
+										value: 'apm',
+									},
+									{
+										name: 'Piezas Por Segundo (PPS)',
+										value: 'pps',
+									},
+								)
+
+						)
+						.addStringOption(format =>
+							format.setName('formato')
+								.setChoices(
+									{
+										name: 'Embed',
+										value: 'embed'
+									},
+									{
+										name: 'ASCII',
+										value: 'ascii',
+									},
+									{
+										name: "CSV",
+										value: "cvs",
+									},
+									{
+										name: 'JSON',
+										value: 'json',
+									},
+								)
+								.setDescription('El formato en el que quieres exportar la lista de jugadores')
+						)
+
+				)
 		}, { idHints: ["1183537285761859665"] })
 	}
 	public async chatInputDeletePlayer(interaction: Subcommand.ChatInputCommandInteraction) {
@@ -155,9 +215,8 @@ export class MySlashCommand extends Subcommand {
 			})
 
 
-		// Get all tournaments from this guild
+		// Try to get the tournament from this guild
 		const tournament = await GetTournamentFromGuild(interaction.guildId, tournamentId)
-
 
 		if (!tournament) {
 			return void await interaction.reply({
