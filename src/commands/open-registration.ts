@@ -92,7 +92,7 @@ export class OpenRegistration extends Command {
 		return void await interaction.editReply({ content: `El mensaje ha sido enviado exitosamente en el canal ${interaction.options.getChannel('canal', true)}` })
 	}
 
-	public async autocompleteRun(interaction: Command.AutocompleteInteraction) {
+	public async autocompleteRun(interaction: Command.AutocompleteInteraction<'cached'>) {
 		if (interaction.options.getFocused(true).name === 'nombre-id')
 			return void await SearchTournamentByNameAutocomplete(interaction)
 	}
