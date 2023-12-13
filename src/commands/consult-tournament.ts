@@ -1,6 +1,6 @@
 import { Subcommand } from "@sapphire/plugin-subcommands"
 import { PlayerModel, Tournament } from "../sequelize/Tournaments.js"
-import { TetrioRanksMap, TetrioUserData, TournamentDetailsEmbed } from "../helper-functions/index.js"
+import { GetTournamentFromGuild, TetrioRanksMap, TetrioUserData, TournamentDetailsEmbed } from "../helper-functions/index.js"
 import { SearchTournamentByNameAutocomplete, SearchTournamentById } from "../helper-functions/index.js"
 import { AsciiTable3 } from "ascii-table3"
 import { AttachmentBuilder, Colors, EmbedBuilder, codeBlock } from "discord.js"
@@ -42,66 +42,7 @@ export class TournamentCommands extends Subcommand {
 								.setMaxLength(255)
 						)
 				)
-				.addSubcommand(list =>
-					list.setName('lista-jugadores')
-						.setDescription('Obtén una lista con los jugadores inscritos en este torneo')
-						.addStringOption(name =>
-							name.setName('nombre-id')
-								.setDescription("El nombre o la Id numérica del torneo")
-								.setRequired(true)
-								.setAutocomplete(true)
-						)
-						.addStringOption(order =>
-							order.setName('ordenar-por')
-								.setDescription('El tipo de ordenamiento de los jugadores en la tabla (SOLO TETRIO)')
-								.setChoices(
-									{
-										name: 'Inscripción',
-										value: "default",
-									},
-									{
-										name: 'Rank (e.g: S, S+, SS, X)',
-										value: 'rank',
-									},
-									{
-										name: 'Tetra Rating',
-										value: 'tr',
-									},
-									{
-										name: 'Ataque Por Minuto (APM)',
-										value: 'apm',
-									},
-									{
-										name: 'Piezas Por Segundo (PPS)',
-										value: 'pps',
-									},
-								)
-
-						)
-						.addStringOption(format =>
-							format.setName('formato')
-								.setChoices(
-									{
-										name: 'Embed',
-										value: 'embed'
-									},
-									{
-										name: 'ASCII',
-										value: 'ascii',
-									},
-									{
-										name: "CSV",
-										value: "cvs",
-									},
-									{
-										name: 'JSON',
-										value: 'json',
-									},
-								)
-								.setDescription('El formato en el que quieres exportar la lista de jugadores')
-						)
-
-				)
+				
 		}, { idHints: ["1179715303735832646"] })
 	}
 
@@ -118,14 +59,14 @@ export class TournamentCommands extends Subcommand {
 		return void await SendDetails(interaction, torneo)
 	}
 
-	public async chatInputListaJugadores(interaction: Subcommand.ChatInputCommandInteraction) {
+	public async chatInputListaJugadores(interaction: Subcommand.ChatInputCommandInteraction<'cached'>) {
 		const idTorneo = +interaction.options.getString('nombre-id', true)
 
 		if (isNaN(idTorneo))
 			return void await interaction.reply({ content: 'Debes ingresar la id numérica de un torneo o **usar una de las opciones del autocompletado**.' })
 
-		const torneo = await SearchTournamentById(idTorneo)
-		if (!torneo) return void await interaction.reply({ content: 'No se encontró ningun torneo en la base de datos con los datos ingresados.', ephemeral: true })
+		const torneo = await GetTournamentFromGuild(interaction.guildId, idTorneo)
+		if (!torneo) return void await interaction.reply({ content: 'Este torneo no existe.', ephemeral: true })
 
 
 		const format = interaction.options.getString('formato', false) ?? "ascii" // default ascii
