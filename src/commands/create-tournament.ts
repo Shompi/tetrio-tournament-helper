@@ -134,6 +134,7 @@ export class CreateTournament extends Command {
 				max_players: options.max_players,
 				players: [],
 				status: TournamentStatus.OPEN,
+				add_roles: []
 			})
 
 			return void await interaction.reply({ content: "El torneo ha sido creado exitosamente.", embeds: [TournamentDetailsEmbed(createdTournament)] })
