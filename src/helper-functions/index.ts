@@ -234,10 +234,17 @@ export async function RunTetrioTournamentRegistrationChecks(userData: TetrioUser
 	return { allowed: true };
 }
 
-/** This function handles the autocomplete entirely */
-export async function SearchTournamentByNameAutocomplete(interaction: Subcommand.AutocompleteInteraction) {
+/** 
+* This function handles the autocomplete entirely.
+*	Also, this function should only return the tournaments belonging to this guild.
+*/
+export async function SearchTournamentByNameAutocomplete(interaction: Subcommand.AutocompleteInteraction<'cached'>) {
 	const focusedOption = interaction.options.getFocused(true)
-	const torneos = await TournamentModel.findAll()
+	const torneos = await TournamentModel.findAll({
+		where: {
+			guild_id: interaction.guildId
+		}
+	})
 	return void await interaction.respond(
 		torneos.filter(torneo => torneo.name.toLowerCase().includes(
 			focusedOption.value.toLowerCase()
@@ -317,4 +324,17 @@ export async function GetGuildTournaments(guild_id: string) {
 			guild_id
 		}
 	})
+}
+
+/**
+*	This function checks whether or not a tournament is from the same guild the command is being ran
+*	to avoid users editing tournaments from different guilds
+*/
+
+export function IsTournamentFromSameGuild(tournament: Tournament, guild_id: string) {
+
+	if (tournament.guild_id !== guild_id)
+		return false;
+
+	return true;
 }
