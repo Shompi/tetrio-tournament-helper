@@ -105,7 +105,7 @@ export class TournamentCommands extends Subcommand {
 		}, { idHints: ["1179715303735832646"] })
 	}
 
-	public async chatInputDetalles(interaction: Subcommand.ChatInputCommandInteraction) {
+	public async chatInputDetalles(interaction: Subcommand.ChatInputCommandInteraction<'cached'>) {
 		// Your code goes here
 		const idTorneo = +interaction.options.getString('nombre-id', true)
 
@@ -143,7 +143,7 @@ export class TournamentCommands extends Subcommand {
 
 	}
 
-	public async autocompleteRun(interaction: Subcommand.AutocompleteInteraction) {
+	public async autocompleteRun(interaction: Subcommand.AutocompleteInteraction<'cached'>) {
 
 		if (interaction.options.getFocused(true).name === 'nombre-id') {
 			return void await SearchTournamentByNameAutocomplete(interaction)
