@@ -10,7 +10,12 @@ const sequelize = new Sequelize({
 
 export enum TournamentStatus {
 	CLOSED = 0,
-	OPEN
+	OPEN,
+
+	/** 
+	*	This will make the tournament uneditable
+	*/
+	FINISHED
 }
 
 export interface Tournament extends Model<InferAttributes<Tournament>, InferCreationAttributes<Tournament>> {
@@ -18,35 +23,53 @@ export interface Tournament extends Model<InferAttributes<Tournament>, InferCrea
 
 	/** Automatically created by the database */
 	id: CreationOptional<number>;
+
 	/** Should default to the guild id on creation */
 	guild_id: string;
+
 	/** Discord ID of the organizer */
 	organized_by: string;
+
 	name: string;
+
 	game: GameName;
+
 	/** The description of this tournament, if any */
 	description: CreationOptional<string | null>;
 
 	max_players: CreationOptional<number | null>;
+
 	/** Should be open by default */
 	status: CreationOptional<TournamentStatus>;
-	/** Stringified array with discord IDs */
-	players: Snowflake[];
 
-	/** This probably will need to be replaced by a TETR.io rank enum */
+	/** Stringified array with discord IDs */
+	players: CreationOptional<Snowflake[]>;
+
+	/**
+	*	Participants that have checked in for this tournament
+	*	NOTE: Participants can still check in if the tournament is marked as CLOSED for registration.
+	*/
+	checked_in: CreationOptional<Snowflake[]>
+
 	is_rank_capped: CreationOptional<boolean>;
+
+	/** The maximum rank players are allowed to join (S, S+, SS, etc) */
 	rank_cap: CreationOptional<string | null>;
 
+	/** The country from which players are allowed to join from (Only for tetrio tournaments since this is based of API information) */
 	is_country_locked: CreationOptional<boolean>;
+
 	/** ISO 3166 two letter country code. */
 	country_lock: CreationOptional<string | null>;
 
 	is_tr_capped: CreationOptional<boolean>;
+
 	/** 25_000 max */
 	tr_cap: CreationOptional<number | null>;
 
 	/** The Discord ID of the winner of this tournament, if any. */
 	winner_id: CreationOptional<string | null>;
+
 }
 
 const TournamentModel = sequelize.define<Tournament>('Tournament', {
@@ -105,7 +128,19 @@ const TournamentModel = sequelize.define<Tournament>('Tournament', {
 		},
 		set(value) {
 			return this.setDataValue('players', JSON.stringify(value) as unknown as Snowflake[])
-		}
+		},
+		defaultValue: "[]"
+	},
+
+	checked_in: {
+		type: DataTypes.TEXT,
+		get() {
+			return JSON.parse((this.getDataValue('checked_in') as unknown as string)) as Snowflake[]
+		},
+		set(val) {
+			return this.setDataValue('checked_in', JSON.stringify(val) as unknown as Snowflake[])
+		},
+		defaultValue: "[]"
 	},
 
 	is_rank_capped: {
