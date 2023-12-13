@@ -309,3 +309,12 @@ export async function DeletePlayerFromDatabase(discord_id: string) {
 		removed_from_tournaments: removedFromTournaments
 	};
 }
+
+export async function GetGuildTournaments(guild_id: string) {
+
+	return await TournamentModel.findAll({
+		where: {
+			guild_id
+		}
+	})
+}
