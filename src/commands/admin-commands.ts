@@ -1,8 +1,11 @@
 import { Subcommand } from "@sapphire/plugin-subcommands"
-import { PlayerModel } from "../sequelize/Tournaments.js";
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, Colors, ComponentType, EmbedBuilder, PermissionFlagsBits } from "discord.js";
-import { GenerateTetrioAvatarURL, GetRolesToAddArray, GetTournamentFromGuild, IsTournamentEditable, SearchTournamentByNameAutocomplete, TetrioRanksArray } from "../helper-functions/index.js";
+import { PlayerModel, Tournament } from "../sequelize/Tournaments.js";
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, Colors, codeBlock, ComponentType, EmbedBuilder, PermissionFlagsBits } from "discord.js";
+import { GenerateTetrioAvatarURL, GetRolesToAddArray, GetTournamentFromGuild, IsTournamentEditable, OrderBy, SearchTournamentByNameAutocomplete, TetrioRanksArray } from "../helper-functions/index.js";
 import { DeletePlayerFromDatabase } from "../helper-functions/index.js";
+import { AsciiTable3 } from "ascii-table3";
+import { OrderPlayerListBy } from "../helper-functions/index.js";
+import { BuildASCIITableAttachment } from "../helper-functions/index.js";
 
 
 export class MySlashCommand extends Subcommand {
@@ -18,6 +21,10 @@ export class MySlashCommand extends Subcommand {
 				{
 					name: 'editar-torneo',
 					chatInputRun: 'chatInputEditarTorneo'
+				},
+				{
+				name: 'lista-jugadores',
+				chatInputRun: 'chatInputListaJugadores'
 				}
 			]
 		});
@@ -94,6 +101,11 @@ export class MySlashCommand extends Subcommand {
 							role.setName('role-3')
 								.setDescription('Rol que quieres añadir a los miembros que se unan a este torneo')
 						)
+				)
+				.addSubcommand(finishTournament => 
+					finishTournament.setName('finalizar-torneo')
+						.setDescription('Marca un torneo como FINALIZADO')
+
 				)
 				.addSubcommand(list =>
 					list.setName('lista-jugadores')
@@ -283,10 +295,67 @@ export class MySlashCommand extends Subcommand {
 		})
 	}
 
+	public async chatInputListaJugadores(interaction: Subcommand.ChatInputCommandInteraction<'cached'>) {
+		const idTorneo = +interaction.options.getString('nombre-id', true)
+
+		if (isNaN(idTorneo))
+			return void await interaction.reply({ content: 'Debes ingresar la id numérica de un torneo o **usar una de las opciones del autocompletado**.' })
+
+		const torneo = await GetTournamentFromGuild(interaction.guildId, idTorneo)
+		if (!torneo) return void await interaction.reply({ content: 'Este torneo no existe.', ephemeral: true })
+
+
+		const format = interaction.options.getString('formato', false) ?? "ascii" // default ascii
+
+		if (torneo.game !== "TETRIO") return void await interaction.reply({ content: 'El listado de jugadores para torneos que no son de tetrio se implementará prontamente.', ephemeral: true })
+		// We basically need to skip all the code below if the tournament is not a TETRIO tournament
+
+		if (format === 'ascii') BuildASCIITableAttachment(interaction, torneo)
+
+		if (format === 'embed') SendListOfPlayersEmbed(interaction, torneo)
+
+		if (format === 'csv') void await interaction.reply({ content: 'Este formato aún no está implementado.', ephemeral: true })
+
+		if (format === 'json') void await interaction.reply({ content: 'Este formato aún no está implementado.', ephemeral: true })
+
+	}
+
 	public async autocompleteRun(interaction: Subcommand.AutocompleteInteraction<'cached'>) {
 
 		if (interaction.options.getFocused(true).name === 'nombre-id') {
 			return void await SearchTournamentByNameAutocomplete(interaction)
 		}
 	}
+}
+
+
+async function SendListOfPlayersEmbed(interaction: Subcommand.ChatInputCommandInteraction, tournament: Tournament) {
+	void await interaction.deferReply()
+
+	const { players } = tournament
+	const orderBy = interaction.options.getString('ordenar-por', false) as OrderBy ?? 'default'
+
+	const orderedPlayerList = await OrderPlayerListBy(players, orderBy)
+
+	const table = new AsciiTable3()
+		.setHeading("POS", "USERNAME", "RANK", "RATING")
+		.setAlignCenter(1)
+		.setAlignCenter(2)
+		.setAlignCenter(3)
+
+	let pos = 1
+	for (const player of orderedPlayerList) {
+		table.addRow(pos, player.data.user.username, player.data.user.league.rank.toUpperCase(), player.data.user.league.rating.toFixed(2))
+		pos++
+	}
+
+	const playersEmbed = new EmbedBuilder()
+		.setTitle(tournament.name)
+		.setDescription(
+			codeBlock(
+				table.toString()
+			)
+		)
+
+	return void await interaction.editReply({ content: 'Aquí está la lista de jugadores', embeds: [playersEmbed] })
 }
