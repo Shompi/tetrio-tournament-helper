@@ -8,6 +8,12 @@ const sequelize = new Sequelize({
 	logging: (...msgs) => console.log(`[SEQUELIZE] => ${msgs}`)
 });
 
+export const TournamentStatusStrings = [
+	"Inscripciones Cerradas",
+	"Inscripciones Abiertas",
+	"Terminado"
+] as const
+
 export enum TournamentStatus {
 	CLOSED = 0,
 	OPEN,
