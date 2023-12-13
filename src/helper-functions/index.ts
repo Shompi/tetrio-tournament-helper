@@ -331,10 +331,13 @@ export async function GetGuildTournaments(guild_id: string) {
 *	to avoid users editing tournaments from different guilds
 */
 
-export function IsTournamentFromSameGuild(tournament: Tournament, guild_id: string) {
+export async function GetTournamentFromGuild(guild_id: string, tournament_id: number) {
 
-	if (tournament.guild_id !== guild_id)
-		return false;
+	return await TournamentModel.findOne({
+		where: {
+			guild_id: guild_id,
+			id: tournament_id
+		}
+	})
 
-	return true;
 }
