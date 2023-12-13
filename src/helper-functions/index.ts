@@ -8,6 +8,7 @@ import { Tournament, TournamentStatusStrings } from "../sequelize/Tournaments.js
 import { Subcommand } from "@sapphire/plugin-subcommands";
 import { TournamentModel, TournamentStatus } from "../sequelize/Tournaments.js";
 import { PlayerModel } from "../sequelize/Tournaments.js";
+import { Command } from "@sapphire/framework";
 
 export type TetrioApiCacheStatus = "hit" | "miss" | "awaited"
 export type TetrioUserRole = "anon" | "user" | "bot" | "halfmod" | "mod" | "admin" | "sysop" | "banned"
@@ -374,4 +375,17 @@ export async function GetTournamentFromGuild(guild_id: string, tournament_id: nu
 /** Wether or not this tournament can be edited (Is not FINISHED) */
 export function IsTournamentEditable(tournament: Tournament) {
 	return tournament.status !== TournamentStatus.FINISHED
+}
+
+export function GetRolesToAddArray(interaction: Command.ChatInputCommandInteraction<'cached'>) {
+	const roles = [];
+	const role1 = interaction.options.getRole('role-1', false);
+	const role2 = interaction.options.getRole('role-2', false);
+	const role3 = interaction.options.getRole('role-3', false);
+
+	if (role1) roles.push(role1.id);
+	if (role2) roles.push(role2.id);
+	if (role3) roles.push(role3.id);
+
+	return roles;
 }
