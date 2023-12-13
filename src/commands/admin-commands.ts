@@ -1,12 +1,11 @@
 import { Subcommand } from "@sapphire/plugin-subcommands"
 import { PlayerModel } from "../sequelize/Tournaments.js";
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, Colors, ComponentType, EmbedBuilder, PermissionFlagsBits } from "discord.js";
-import { GenerateTetrioAvatarURL } from "../helper-functions/index.js";
+import { GenerateTetrioAvatarURL, GetTournamentFromGuild, SearchTournamentByNameAutocomplete, TetrioRanksArray } from "../helper-functions/index.js";
 import { DeletePlayerFromDatabase } from "../helper-functions/index.js";
 
 
 export class MySlashCommand extends Subcommand {
-
 
 	public constructor(context: Subcommand.LoaderContext, options: Subcommand.Options) {
 		super(context, {
@@ -16,6 +15,10 @@ export class MySlashCommand extends Subcommand {
 					name: 'eliminar-jugador',
 					chatInputRun: 'chatInputDeletePlayer'
 				},
+				{
+					name: 'editar-torneo',
+					chatInputRun: 'chatInputEditarTorneo'
+				}
 			]
 		});
 	}
@@ -34,6 +37,50 @@ export class MySlashCommand extends Subcommand {
 							discorid.setName('discord-id')
 								.setDescription('La id de Discord del usuario que quieres eliminar')
 								.setRequired(true)
+						)
+				)
+				.addSubcommand(editTournament =>
+					editTournament.setName('editar-torneo')
+						.setDescription('Edita la información de un torneo que ya está creado.')
+						.addStringOption(name =>
+							name.setName('nombre-id')
+								.setDescription('El nombre o la Id numérica del torneo')
+								.setAutocomplete(true)
+								.setMaxLength(255)
+						)
+						.addStringOption(name =>
+							name.setName('nombre')
+								.setDescription('El nuevo nombre del torneo')
+								.setMaxLength(255)
+						)
+						.addStringOption(description =>
+							description.setName('descripcion')
+								.setDescription('La nueva descripción del torneo')
+								.setMaxLength(1000)
+						)
+						.addStringOption(rankCap =>
+							rankCap.setName('rank_cap')
+								.setDescription('El rank máximo que pueden tener los jugadores (SOLO TETRIO)')
+								.setDescriptionLocalizations({
+									"en-US": "The highest rank allowed to join this tournament (TETRIO ONLY)"
+								})
+								.addChoices(...TetrioRanksArray.map(rank => ({ name: rank.toUpperCase(), value: rank })))
+						)
+						.addIntegerOption(trCap =>
+							trCap.setName('tr_cap')
+								.setDescription('El cap de TR para este torneo (1 - 25000) (SOLO TETRIO)')
+								.setMinValue(1)
+								.setMaxValue(25000)
+						)
+						.addIntegerOption(maxPlayers =>
+							maxPlayers.setName('maximo-jugadores')
+								.setNameLocalizations({
+									"en-US": 'max-players'
+								})
+								.setDescription('Máximo de jugadores que pueden inscribirse en este torneo')
+								.setDescriptionLocalizations({
+									"en-US": "Maximum number of players that can join this tournament"
+								})
 						)
 				)
 		}, { idHints: ["1183537285761859665"] })
@@ -94,5 +141,65 @@ export class MySlashCommand extends Subcommand {
 			embeds: [SuccessInfo],
 			components: []
 		})
+	}
+
+	/** This is essentially an UPDATE request */
+	public async chatInputEditTournamentInfo(interaction: Subcommand.ChatInputCommandInteraction<'cached'>) {
+
+		const tournamentId = +interaction.options.getString('nombre-id', true)
+
+		if (isNaN(tournamentId))
+			return void await interaction.reply({
+				content: 'La id del torneo debe ser una id numérica o una de las opciones del autocompletado.',
+				ephemeral: true
+			})
+
+		// Get all tournaments from this guild
+		const tournament = await GetTournamentFromGuild(interaction.guildId, tournamentId)
+
+		if (!tournament) {
+			return void await interaction.reply({
+				content: 'Esta guild no tiene ningún torneo con esa id.',
+				ephemeral: true
+			})
+		}
+
+		const options = {
+			name: interaction.options.getString('nombre', false),
+			description: interaction.options.getString('descripcion', false),
+			rankCap: interaction.options.getString('rank_cap', false),
+			trCap: interaction.options.getInteger('tr_cap', false),
+			maxPlayers: interaction.options.getInteger('maximo-jugadores', false)
+		}
+
+		if (options.name) tournament.name = options.name
+		if (options.description) tournament.description = options.description
+
+		if (options.rankCap) {
+			tournament.rank_cap = options.rankCap
+			tournament.is_rank_capped = true
+		}
+
+		if (options.trCap) {
+			tournament.tr_cap = options.trCap
+			tournament.is_tr_capped = true
+		}
+
+		if (options.maxPlayers) tournament.max_players = options.maxPlayers
+
+		// Update the tournament in the database
+		await tournament.save()
+
+		return void await interaction.reply({
+			content: `¡El torneo **${tournament.name}** (id ${tournament.id}) ha sido editado con éxito!`,
+			ephemeral: false
+		})
+	}
+
+	public async autocompleteRun(interaction: Subcommand.AutocompleteInteraction<'cached'>) {
+
+		if (interaction.options.getFocused(true).name === 'nombre-id') {
+			return void await SearchTournamentByNameAutocomplete(interaction)
+		}
 	}
 }
