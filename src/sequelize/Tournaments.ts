@@ -45,7 +45,7 @@ export interface Tournament extends Model<InferAttributes<Tournament>, InferCrea
 	/** 25_000 max */
 	tr_cap: CreationOptional<number | null>;
 
-	/** The winner of this tournament, if any. */
+	/** The Discord ID of the winner of this tournament, if any. */
 	winner_id: CreationOptional<string | null>;
 }
 
