@@ -1,7 +1,7 @@
 import { Subcommand } from "@sapphire/plugin-subcommands"
 import { PlayerModel, Tournament } from "../sequelize/Tournaments.js";
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, Colors, codeBlock, ComponentType, EmbedBuilder, PermissionFlagsBits } from "discord.js";
-import { GenerateTetrioAvatarURL, GetRolesToAddArray, GetTournamentFromGuild, IsTournamentEditable, OrderBy, SearchTournamentByNameAutocomplete, TetrioRanksArray } from "../helper-functions/index.js";
+import { GenerateTetrioAvatarURL, GetRolesToAddArray, GetTournamentFromGuild, IsTournamentEditable, OrderBy, PlayerDataOrdered, SearchTournamentByNameAutocomplete, TetrioRanksArray } from "../helper-functions/index.js";
 import { DeletePlayerFromDatabase } from "../helper-functions/index.js";
 import { AsciiTable3 } from "ascii-table3";
 import { OrderPlayerListBy } from "../helper-functions/index.js";
@@ -23,8 +23,8 @@ export class MySlashCommand extends Subcommand {
 					chatInputRun: 'chatInputEditarTorneo'
 				},
 				{
-				name: 'lista-jugadores',
-				chatInputRun: 'chatInputListaJugadores'
+					name: 'lista-jugadores',
+					chatInputRun: 'chatInputListaJugadores'
 				}
 			]
 		});
@@ -102,13 +102,13 @@ export class MySlashCommand extends Subcommand {
 								.setDescription('Rol que quieres añadir a los miembros que se unan a este torneo')
 						)
 				)
-				.addSubcommand(finishTournament => 
+				.addSubcommand(finishTournament =>
 					finishTournament.setName('finalizar-torneo')
 						.setDescription('Marca un torneo como FINALIZADO')
 
 				)
 				.addSubcommand(list =>
-					list.setName('lista-jugadores')
+					list.setName('listar-jugadores')
 						.setDescription('Obtén una lista con los jugadores inscritos en un torneo')
 						.addStringOption(name =>
 							name.setName('nombre-id')
@@ -147,12 +147,16 @@ export class MySlashCommand extends Subcommand {
 							format.setName('formato')
 								.setChoices(
 									{
+										name: 'ASCII',
+										value: 'ascii',
+									},
+									{
 										name: 'Embed',
 										value: 'embed'
 									},
 									{
-										name: 'ASCII',
-										value: 'ascii',
+										name: 'Challonge Friendly',
+										value: 'challonge'
 									},
 									{
 										name: "CSV",
@@ -164,6 +168,10 @@ export class MySlashCommand extends Subcommand {
 									},
 								)
 								.setDescription('El formato en el que quieres exportar la lista de jugadores')
+						)
+						.addBooleanOption(checkedin =>
+							checkedin.setName('checked-in')
+								.setDescription('Filtrar jugadores que hayan hecho Check-in en el torneo')
 						)
 
 				)
@@ -301,23 +309,24 @@ export class MySlashCommand extends Subcommand {
 		if (isNaN(idTorneo))
 			return void await interaction.reply({ content: 'Debes ingresar la id numérica de un torneo o **usar una de las opciones del autocompletado**.' })
 
-		const torneo = await GetTournamentFromGuild(interaction.guildId, idTorneo)
-		if (!torneo) return void await interaction.reply({ content: 'Este torneo no existe.', ephemeral: true })
+		const tournament = await GetTournamentFromGuild(interaction.guildId, idTorneo)
+		if (!tournament) return void await interaction.reply({ content: 'Este torneo no existe.', ephemeral: true })
 
 
 		const format = interaction.options.getString('formato', false) ?? "ascii" // default ascii
 
-		if (torneo.game !== "TETRIO") return void await interaction.reply({ content: 'El listado de jugadores para torneos que no son de tetrio se implementará prontamente.', ephemeral: true })
+		if (tournament.game !== "TETRIO") return void await interaction.reply({ content: 'El listado de jugadores para torneos que no son de tetrio se implementará prontamente.', ephemeral: true })
 		// We basically need to skip all the code below if the tournament is not a TETRIO tournament
 
-		if (format === 'ascii') BuildASCIITableAttachment(interaction, torneo)
+		if (format === 'ascii') BuildASCIITableAttachment(interaction, tournament)
 
-		if (format === 'embed') SendListOfPlayersEmbed(interaction, torneo)
+		if (format === 'challonge') void await interaction.reply({ content: 'Este formato aún no está implementado.', ephemeral: true })
 
 		if (format === 'csv') void await interaction.reply({ content: 'Este formato aún no está implementado.', ephemeral: true })
 
-		if (format === 'json') void await interaction.reply({ content: 'Este formato aún no está implementado.', ephemeral: true })
+		if (format === 'embed') SendListOfPlayersEmbed(interaction, tournament)
 
+		if (format === 'json') void await interaction.reply({ content: 'Este formato aún no está implementado.', ephemeral: true })
 	}
 
 	public async autocompleteRun(interaction: Subcommand.AutocompleteInteraction<'cached'>) {
@@ -332,10 +341,15 @@ export class MySlashCommand extends Subcommand {
 async function SendListOfPlayersEmbed(interaction: Subcommand.ChatInputCommandInteraction, tournament: Tournament) {
 	void await interaction.deferReply()
 
-	const { players } = tournament
 	const orderBy = interaction.options.getString('ordenar-por', false) as OrderBy ?? 'default'
 
-	const orderedPlayerList = await OrderPlayerListBy(players, orderBy)
+	let orderedPlayerList: PlayerDataOrdered[]
+
+	if (!interaction.options.getBoolean('checked-in', false)) {
+		orderedPlayerList = await OrderPlayerListBy(tournament.players, orderBy)
+	} else {
+		orderedPlayerList = await OrderPlayerListBy(tournament.checked_in, orderBy)
+	}
 
 	const table = new AsciiTable3()
 		.setHeading("POS", "USERNAME", "RANK", "RATING")
