@@ -327,8 +327,9 @@ export async function DeletePlayerFromTournaments(discord_id: string) {
 	for (const tournament of tournaments) {
 
 		if (tournament.players.includes(discord_id)) {
-			await tournament.update('players', tournament.players.filter(id => id !== discord_id));
-			await tournament.save();
+			tournament.players = tournament.players.filter(id => id !== discord_id)
+			tournament.checked_in = tournament.players.filter(id => id !== discord_id)
+			await tournament.save()
 			removedFrom++;
 		}
 	}
@@ -391,10 +392,12 @@ export function GetRolesToAddArray(interaction: Command.ChatInputCommandInteract
 	if (role3) roles.push(role3.id);
 
 	return roles;
-} interface PlayerDataOrdered {
+}
+export interface PlayerDataOrdered {
 	discordId: string;
 	data: TetrioUserData;
 }
+
 export function BuildTableFromPlayerList(tournament: Tournament, playerList: PlayerDataOrdered[]) {
 	// Now we need to build the table
 	// We need to check whether or not this is a TETRIO tournament so we can build different tables for other games.
@@ -427,6 +430,7 @@ export function BuildTableFromPlayerList(tournament: Tournament, playerList: Pla
 
 	return table;
 }
+
 export async function OrderPlayerListBy(playerIds: string[], orderBy: OrderBy): Promise<PlayerDataOrdered[]> {
 	// We start by getting all the players we need from the database
 	const PlayersArray: PlayerDataOrdered[] = [];
@@ -487,6 +491,7 @@ export async function OrderPlayerListBy(playerIds: string[], orderBy: OrderBy): 
 
 	return PlayersArray;
 }
+
 export async function BuildASCIITableAttachment(interaction: Subcommand.ChatInputCommandInteraction, tournament: Tournament) {
 
 	void await interaction.deferReply();
@@ -524,6 +529,7 @@ export function TetrioUserProfileEmbed(userData: TetrioUserData) {
 
 	return embed
 }
+
 export async function AddPlayerIdToTournamentPlayerList(user: User, tournament: Tournament) {
 
 	// Add player to the tournament
@@ -538,7 +544,9 @@ export async function AddPlayerIdToTournamentPlayerList(user: User, tournament: 
 		players: playerList
 	});
 	console.log("[TOURNAMENT] El torneo ha sido guardado");
-}export async function GetPlayerFromDatabase(discordId: Snowflake) {
+} 
+
+export async function GetPlayerFromDatabase(discordId: Snowflake) {
 	return await PlayerModel.findByPk(discordId);
 }
 
