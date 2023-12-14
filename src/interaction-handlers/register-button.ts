@@ -1,13 +1,13 @@
 import { InteractionHandler, InteractionHandlerTypes } from '@sapphire/framework';
 import { ActionRowBuilder, ButtonBuilder, ButtonInteraction, ButtonStyle, ComponentType, ModalBuilder, TextInputBuilder, TextInputStyle } from "discord.js"
 import { PlayerModel, Tournament, TournamentModel, TournamentStatus } from '../sequelize/Tournaments.js';
-import { GetUserDataFromTetrio, TetrioUserProfileEmbed } from '../helper-functions/index.js';
+import { GetPlayerFromDatabase, GetUserDataFromTetrio, TetrioUserProfileEmbed } from '../helper-functions/index.js';
 import { TournamentDetailsEmbed } from "../helper-functions/index.js";
 import { AddTetrioPlayerToDatabase } from '../helper-functions/index.js';
 import { RunTetrioTournamentRegistrationChecks } from '../helper-functions/index.js';
 import { AddPlayerIdToTournamentPlayerList } from '../helper-functions/index.js';
 
-export class ParseExampleInteractionHandler extends InteractionHandler {
+export class RegisterButtonHandler extends InteractionHandler {
 	public constructor(ctx: InteractionHandler.LoaderContext, options: InteractionHandler.Options) {
 		super(ctx, { interactionHandlerType: InteractionHandlerTypes.Button });
 	}
@@ -42,24 +42,29 @@ export class ParseExampleInteractionHandler extends InteractionHandler {
 }
 
 
-async function HandleTetrioRegistration(interaction: ButtonInteraction<'cached'>, torneo: Tournament) {
+async function HandleTetrioRegistration(interaction: ButtonInteraction<'cached'>, tournament: Tournament) {
 
 	// Check if the player is already in our database
-	const playerData = await PlayerModel.findOne({
-		where: {
-			discord_id: interaction.user.id
-		}
-	})
+	const playerData = await GetPlayerFromDatabase(interaction.user.id)
 
 	if (!playerData) {
-		void await HandleNewPlayerRegistration(interaction, torneo)
+		void await HandleNewPlayerRegistration(interaction, tournament)
 	} else {
-		void await AddPlayerIdToTournamentPlayerList(interaction.user, torneo)
-	}
+		const check = await RunTetrioTournamentRegistrationChecks(playerData.data, tournament, interaction.user.id)
 
+		if (!check.allowed) {
+			return void await interaction.reply({
+				content: `No te puedes inscribir en este torneo.\nRazón: ${check.reason}`,
+				ephemeral: true
+			})
+		}
+
+		void await AddPlayerIdToTournamentPlayerList(interaction.user, tournament)
+		void await interaction.reply({ content: '✅ !Has sido añadido exitosamente al torneo!', ephemeral: true })
+	}
 	// Update the message with the new details
 	return void await interaction.message.edit({
-		embeds: [TournamentDetailsEmbed(torneo)]
+		embeds: [TournamentDetailsEmbed(tournament)]
 	})
 }
 
@@ -82,12 +87,16 @@ async function HandleNewPlayerRegistration(interaction: ButtonInteraction<'cache
 						.setMaxLength(50)
 						.setMinLength(1)
 						.setRequired(true),
+				),
+			new ActionRowBuilder<TextInputBuilder>()
+				.setComponents(
 					new TextInputBuilder()
 						.setStyle(TextInputStyle.Short)
 						.setCustomId('challonge-username')
 						.setLabel('Tu username de challonge (Opcional)')
 						.setPlaceholder("TetrisMaster_123")
 						.setMaxLength(50)
+						.setRequired(false)
 				)
 		)
 
