@@ -295,20 +295,22 @@ export async function SearchTournamentById(id: number) {
 
 export async function RemovePlayerFromTournament(torneo: Tournament, discord_id: string) {
 
-	const playerIds = Array.from(torneo.players);
-	const playerId = discord_id;
-	const filteredPlayers = playerIds.filter(id => id !== playerId);
+	const playerId = discord_id
 
-	console.log(`[TOURNAMENT] Quitando al jugador ${discord_id} del torneo ${torneo.name}`);
+	const playerIds = Array.from(torneo.players)
+	const checkedIn = Array.from(torneo.checked_in) ?? []
 
-	await torneo.update({
-		players: filteredPlayers
-	});
+	const filteredPlayers = playerIds.filter(id => id !== playerId)
+	const checkedInFiltered = checkedIn.filter(id => id !== playerId)
 
-	await torneo.save();
+	console.log(`[TOURNAMENT] Quitando al jugador ${discord_id} del torneo ${torneo.name}`)
 
-	console.log(`[TOURNAMENT] El jugador ${discord_id} ha sido desinscrito.`);
+	torneo.checked_in = checkedInFiltered
+	torneo.players = filteredPlayers
 
+	await torneo.save()
+
+	console.log(`[TOURNAMENT] El jugador ${discord_id} ha sido desinscrito.`)
 }
 
 /** This function will unregister this player from every OPEN tournament they are registered for. */
