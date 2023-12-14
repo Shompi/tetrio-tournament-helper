@@ -1,8 +1,9 @@
 import { Subcommand } from "@sapphire/plugin-subcommands"
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, Colors, ComponentType, EmbedBuilder, PermissionFlagsBits, Snowflake } from "discord.js"
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, Colors, ComponentType, EmbedBuilder, PermissionFlagsBits } from "discord.js"
 import { AddPlayerIdToTournamentPlayerList, AddTetrioPlayerToDatabase, GetTournamentFromGuild, GetUserDataFromTetrio, SearchTournamentByNameAutocomplete, TetrioUserProfileEmbed } from "../helper-functions/index.js";
-import { PlayerModel, TournamentStatus } from "../sequelize/Tournaments.js";
+import { TournamentStatus } from "../sequelize/Tournaments.js";
 import { RemovePlayerFromTournament } from "../helper-functions/index.js";
+import { GetPlayerFromDatabase } from "../helper-functions/index.js";
 
 export class ForceCommands extends Subcommand {
 
@@ -186,6 +187,7 @@ export class ForceCommands extends Subcommand {
 			return void await interaction.reply({ content: 'No puedes desinscribir a un jugador de un torneo que está marcado como **FINALIZADO**', ephemeral: true })
 
 		try {
+			
 			await RemovePlayerFromTournament(torneo, interaction.options.getUser('discord-id', true).id);
 
 			return void await interaction.reply({ content: `✅ El jugador ${interaction.options.getUser('discord-id', true)} ha sido quitado del torneo.` })
@@ -201,8 +203,4 @@ export class ForceCommands extends Subcommand {
 		if (interaction.options.getFocused(true).name === 'nombre-id')
 			return void await SearchTournamentByNameAutocomplete(interaction)
 	}
-}
-
-async function GetPlayerFromDatabase(discordId: Snowflake) {
-	return await PlayerModel.findByPk(discordId)
 }
