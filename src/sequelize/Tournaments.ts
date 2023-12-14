@@ -55,7 +55,7 @@ export interface Tournament extends Model<InferAttributes<Tournament>, InferCrea
 	*	Participants that have checked in for this tournament
 	*	NOTE: Participants can still check in if the tournament is marked as CLOSED for registration.
 	*/
-	checked_in: CreationOptional<Snowflake[]>
+	checked_in: Snowflake[]
 
 	is_rank_capped: CreationOptional<boolean>;
 
@@ -143,6 +143,7 @@ const TournamentModel = sequelize.define<Tournament>('Tournament', {
 		set(value) {
 			return this.setDataValue('players', JSON.stringify(value) as unknown as Snowflake[])
 		},
+		defaultValue: "[]"
 	},
 
 	/** Array of discord Id's of players that checked in */
@@ -154,6 +155,7 @@ const TournamentModel = sequelize.define<Tournament>('Tournament', {
 		set(val) {
 			return this.setDataValue('checked_in', JSON.stringify(val) as unknown as Snowflake[])
 		},
+		defaultValue: "[]",
 	},
 
 	is_rank_capped: {
