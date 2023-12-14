@@ -27,7 +27,7 @@ export class OpenCheckin extends Command {
 						.setRequired(true)
 						.addChannelTypes(ChannelType.GuildText)
 				)
-		}, { idHints: [""] })
+		}, { idHints: ["1184671678698115203"] })
 
 
 	}
