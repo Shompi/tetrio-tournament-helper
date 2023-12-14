@@ -86,7 +86,6 @@ export class ForceCommands extends Subcommand {
 			user: interaction.options.getUser('discord-id', true),
 			tetrioId: interaction.options.getString('tetrio-id', true),
 			idTorneo: +interaction.options.getString('nombre-id', true),
-			discordId: interaction.options.getString('discord-id', true),
 			challongeId: interaction.options.getString('challonge-id', false),
 		}
 
@@ -96,7 +95,7 @@ export class ForceCommands extends Subcommand {
 			return void await interaction.reply({ content: 'El torneo que ingresaste no existe en este servidor', ephemeral: true })
 
 		// Check if the player already exists in our database
-		const player = await GetPlayerFromDatabase(options.discordId)
+		const player = await GetPlayerFromDatabase(options.user.id)
 
 		if (player) {
 			await AddPlayerIdToTournamentPlayerList(options.user, tournament)
@@ -169,7 +168,9 @@ export class ForceCommands extends Subcommand {
 		await AddPlayerIdToTournamentPlayerList(options.user, tournament)
 
 		return void await selectedOption.update({
-			content: `✅ l jugador ${options.tetrioId.toUpperCase()} (${options.user.username} - ${options.user.id}) ha sido agregado a la base de datos y a la lista de jugadores del torneo **${tournament.name}** exitosamente!`,
+			content: `✅ El jugador ${options.tetrioId.toUpperCase()} (${options.user.username} - ${options.user.id}) ha sido agregado a la base de datos y a la lista de jugadores del torneo **${tournament.name}** exitosamente!`,
+			components: [],
+			embeds: [],
 		})
 	}
 
