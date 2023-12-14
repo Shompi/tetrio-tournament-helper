@@ -10,7 +10,7 @@ export class TournamentCommands extends Subcommand {
 			name: 'torneo',
 			subcommands: [
 				{
-					name: "detalles",
+					name: "general",
 					chatInputRun: "chatInputDetalles"
 				},
 			]
