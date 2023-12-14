@@ -535,16 +535,17 @@ export async function AddPlayerIdToTournamentPlayerList(user: User, tournament: 
 	// Add player to the tournament
 	console.log(`[TOURNAMENT] Añadiendo nuevo jugador ${user.id} (${user.username}) al torneo ${tournament.name}`);
 
-	const playerList = Array.from(tournament.players);
+	if (tournament.players.includes(user.id))
+		return console.log('[TOURNAMENT] El jugador ya estába en la lista de jugadores inscritos en el torneo')
 
-	playerList.push(user.id);
-
+	const players = Array.from(tournament.players)
+	players.push(user.id)
+	tournament.players = players
 	console.log("[TOURNAMENT] El jugador ha sido añadido a la lista");
-	await tournament.update({
-		players: playerList
-	});
+
+	await tournament.save()
 	console.log("[TOURNAMENT] El torneo ha sido guardado");
-} 
+}
 
 export async function GetPlayerFromDatabase(discordId: Snowflake) {
 	return await PlayerModel.findByPk(discordId);
