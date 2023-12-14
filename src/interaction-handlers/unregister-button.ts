@@ -4,7 +4,7 @@ import { TournamentModel, TournamentStatus } from "../sequelize/Tournaments.js";
 import { RemovePlayerFromTournament, TournamentDetailsEmbed } from "../helper-functions/index.js";
 
 
-export class ParseExampleInteractionHandler extends InteractionHandler {
+export class UnregisterButtonHandler extends InteractionHandler {
 	public constructor(ctx: InteractionHandler.LoaderContext, options: InteractionHandler.Options) {
 		super(ctx, { interactionHandlerType: InteractionHandlerTypes.Button });
 	}
