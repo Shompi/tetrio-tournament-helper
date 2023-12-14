@@ -20,10 +20,10 @@ export class MySlashCommand extends Subcommand {
 				},
 				{
 					name: 'editar-torneo',
-					chatInputRun: 'chatInputEditarTorneo'
+					chatInputRun: 'chatInputEditTournamentInfo'
 				},
 				{
-					name: 'lista-jugadores',
+					name: 'listar-jugadores',
 					chatInputRun: 'chatInputListaJugadores'
 				}
 			]
