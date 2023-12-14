@@ -146,6 +146,7 @@ export class CreateTournament extends Command {
 				tr_cap: options.tr_cap,
 				max_players: options.max_players,
 				players: [],
+				checked_in: [],
 				// We create this tournament open by default
 				status: TournamentStatus.OPEN,
 				add_roles: GetRolesToAddArray(interaction)
