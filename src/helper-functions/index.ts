@@ -2,11 +2,11 @@
 * This file will contain tetrio api function calls
 * and maybe other stuff.
 */
-import { AttachmentBuilder, EmbedBuilder, Colors, Snowflake } from "discord.js";
+import { AttachmentBuilder, EmbedBuilder, Colors, Snowflake, User } from "discord.js";
 import { AsciiTable3 } from "ascii-table3";
 import { Command } from "@sapphire/framework";
 import { Subcommand } from "@sapphire/plugin-subcommands";
-import { TournamentModel, TournamentStatus, Tournament, TournamentStatusStrings } from "../sequelize/Tournaments.js";
+import { TournamentModel, TournamentStatus, TournamentStatusStrings, Tournament } from "../sequelize/Tournaments.js";
 import { PlayerModel } from "../sequelize/Tournaments.js";
 import { request } from "undici"
 
@@ -139,7 +139,7 @@ const CreateRanksMap = (ranks: typeof TetrioRanksArray) => {
 	const tempMap = new Map<string, TetrioRankObject>()
 	for (const rank of ranks) {
 		tempMap.set(rank, { index: i, emoji: TetrioRanksEmojis[i] })
-		i++ // This was a bug before lol I forgot to add this
+		i++
 	}
 
 	return tempMap
@@ -206,7 +206,7 @@ export function TournamentDetailsEmbed(torneo: Tournament) {
 	)
 }
 
-export async function AddTetrioPlayerToDatabase({ discordId, tetrioId }: { discordId: string; tetrioId: string; }, userData: TetrioUserData) {
+export async function AddTetrioPlayerToDatabase({ discordId, tetrioId, challongeId }: { discordId: string; tetrioId: string; challongeId: string | null }, userData: TetrioUserData) {
 
 	if (!discordId || !tetrioId)
 		throw new Error(`Missing one of the arguments. dId: ${discordId}, tId: ${tetrioId}`);
@@ -217,6 +217,7 @@ export async function AddTetrioPlayerToDatabase({ discordId, tetrioId }: { disco
 	await PlayerModel.create({
 		discord_id: discordId,
 		tetrio_id: tetrioId,
+		challonge_id: challongeId,
 		data: userData
 	});
 
@@ -390,7 +391,7 @@ export function GetRolesToAddArray(interaction: Command.ChatInputCommandInteract
 	if (role3) roles.push(role3.id);
 
 	return roles;
-}interface PlayerDataOrdered {
+} interface PlayerDataOrdered {
 	discordId: string;
 	data: TetrioUserData;
 }
@@ -502,5 +503,42 @@ export async function BuildASCIITableAttachment(interaction: Subcommand.ChatInpu
 		.setDescription(`Tabla de jugadores del torneo ${tournament.name}`);
 
 	return TableFile;
+}
+
+export function TetrioUserProfileEmbed(userData: TetrioUserData) {
+	const avatarUrl = GenerateTetrioAvatarURL(userData.user._id, userData.user.avatar_revision)
+
+	const embed = new EmbedBuilder()
+		.setDescription(
+			`**Username**: ${userData.user.username.toUpperCase()}`
+			+ `\n**Rank**: ${TetrioRanksMap.get(userData.user.league.rank)?.emoji}`
+			+ `\n**Rating**: ${userData.user.league.rating.toFixed(2)}`
+			+ `\n**Bio**: ${userData.user.bio ?? "No bio."}`
+			+ `\n\n[Enlace al perfil](${GetUserProfileURL(userData.user.username)})`
+		)
+		.setColor(Colors.Blue)
+
+	if (avatarUrl) {
+		embed.setThumbnail(avatarUrl)
+	}
+
+	return embed
+}
+export async function AddPlayerIdToTournamentPlayerList(user: User, tournament: Tournament) {
+
+	// Add player to the tournament
+	console.log(`[TOURNAMENT] Añadiendo nuevo jugador ${user.id} (${user.username}) al torneo ${tournament.name}`);
+
+	const playerList = Array.from(tournament.players);
+
+	playerList.push(user.id);
+
+	console.log("[TOURNAMENT] El jugador ha sido añadido a la lista");
+	await tournament.update({
+		players: playerList
+	});
+	console.log("[TOURNAMENT] El torneo ha sido guardado");
+}export async function GetPlayerFromDatabase(discordId: Snowflake) {
+	return await PlayerModel.findByPk(discordId);
 }
 
