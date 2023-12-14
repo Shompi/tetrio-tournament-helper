@@ -14,7 +14,7 @@ export class CloseRegistrations extends Command {
 
 	public override registerApplicationCommands(registry: Command.Registry) {
 		registry.registerChatInputCommand((builder) => {
-			builder.setName("close-registration")
+			builder.setName("cerrar-inscripciones")
 				.setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
 				.setDMPermission(false)
 				.setDescription('Cierra las inscripciones de un torneo')

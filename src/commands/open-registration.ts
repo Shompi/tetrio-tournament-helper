@@ -13,7 +13,7 @@ export class OpenRegistration extends Command {
 
 	public override registerApplicationCommands(registry: Command.Registry) {
 		registry.registerChatInputCommand((builder) => {
-			builder.setName("open-registration")
+			builder.setName("abrir-inscripciones")
 				.setDefaultMemberPermissions(PermissionsBitField.Flags.Administrator)
 				.setDMPermission(false)
 				.setDescription("Abre las inscripciones para un torneo")
