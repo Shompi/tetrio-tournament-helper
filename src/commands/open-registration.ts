@@ -59,13 +59,13 @@ export class OpenRegistration extends Command {
 
 		// Create a button that users can click to begin the registration flow
 		const RegisterButton = new ButtonBuilder()
-			.setCustomId(`t-register-${interaction.options.getInteger('torneo-id', true)}`)
+			.setCustomId(`t-register-${idTorneo}`)
 			.setLabel('Inscribete aquí')
 			.setStyle(ButtonStyle.Primary)
 			.setEmoji('📩')
 
 		const UnregisterButton = new ButtonBuilder()
-			.setCustomId(`t-unregister-${interaction.options.getInteger('torneo-id', true)}`)
+			.setCustomId(`t-unregister-${idTorneo}`)
 			.setLabel('Retirar inscripción')
 			.setStyle(ButtonStyle.Secondary)
 			.setEmoji('⬅️')
