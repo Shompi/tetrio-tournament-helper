@@ -22,6 +22,7 @@ export class CloseCheckin extends Command {
 					tournamentId.setName('nombre-id')
 						.setDescription('La id numérica de un torneo o una de las opciones del autocompletado')
 						.setRequired(true)
+						.setAutocomplete(true)
 				)
 
 		}, { idHints: ["1184670640003887157"] })
@@ -38,13 +39,15 @@ export class CloseCheckin extends Command {
 
 		const tournament = await GetTournamentFromGuild(interaction.guildId, idTorneo)
 
-		if (!tournament) return void await interaction.editReply({ content: "El mensaje no ha sido enviado por que el torneo no existe." })
+		if (!tournament) return void await interaction.editReply({ content: "No se puede cerrar el check in de este torneo por que no se ha encontrado." })
 
 		if (tournament.status === TournamentStatus.FINISHED)
 			return void await interaction.reply({ content: '❌ No puedes ejecutar esta acción en un torneo que ya está finalizado.' })
 
 		if (!tournament.is_checkin_open)
 			return void await interaction.reply({ content: '❌ El torneo no tiene un proceso de check in activo.' })
+
+		await interaction.deferReply()
 
 		// El check in está abierto, y debemos cerrarlo
 		const checkinChannel = interaction.client.channels.cache.get(tournament.checkin_channel!) as TextChannel
@@ -72,6 +75,10 @@ export class CloseCheckin extends Command {
 
 		await checkinMessage.edit({
 			components: [newRow]
+		})
+
+		return void await interaction.editReply({
+			content: `✅ ¡El Check-in para el torneo **${tournament.name}** ha sido cerrado!`
 		})
 	}
 
