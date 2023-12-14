@@ -68,7 +68,7 @@ export class OpenCheckin extends Command {
 				.setComponents(CheckinButton)
 
 			const checkinMessage = await thread.send({
-				content: `¡Presiona el botón de abajo para completar el Check-In en el torneo **${tournament.name}**!`,
+				content: `${tournament.add_roles.length > 0 ? `${tournament.add_roles.map(id => `<@&${id}>`).join(", ")}\n` : ""}¡Presiona el botón de abajo para completar el Check-In en el torneo **${tournament.name}**!`,
 				components: [CheckinRow]
 			})
 
