@@ -265,7 +265,7 @@ const PlayerModel = sequelize.define<Player>('Player', {
 
 
 console.log("[DEBUG] Sincronizando tablas en sequelize...");
-sequelize.sync({ alter: true });
+sequelize.sync();
 console.log("[DEBUG] La sincronización ha terminado!");
 
 export { TournamentModel, PlayerModel }

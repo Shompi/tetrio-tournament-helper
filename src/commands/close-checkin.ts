@@ -24,7 +24,7 @@ export class CloseCheckin extends Command {
 						.setRequired(true)
 				)
 
-		}, { idHints: [""] })
+		}, { idHints: ["1184670640003887157"] })
 
 
 	}

@@ -12,6 +12,7 @@ export class OpenCheckin extends Command {
 	public override registerApplicationCommands(registry: Command.Registry) {
 		registry.registerChatInputCommand((builder) => {
 			builder.setName("abrir-checkin")
+				.setDescription("Abre el proceso de Check-in para un torneo")
 				.setDMPermission(false)
 				.setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
 				.addStringOption(tournamentId =>
