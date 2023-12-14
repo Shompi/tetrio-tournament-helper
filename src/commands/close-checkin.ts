@@ -74,6 +74,7 @@ export class CloseCheckin extends Command {
 			.setComponents(disabledButton)
 
 		await checkinMessage.edit({
+			content:'El check-in para este torneo ha finalizado.',
 			components: [newRow]
 		})
 
