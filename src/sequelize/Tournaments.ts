@@ -77,7 +77,13 @@ export interface Tournament extends Model<InferAttributes<Tournament>, InferCrea
 	winner_id: CreationOptional<string | null>;
 
 	/** Roles to add to the member that registers to this tournament */
-	add_roles: Snowflake[]
+	add_roles: Snowflake[];
+
+	/** Whether or not this tournament has their check in process open */
+	is_checkin_open: CreationOptional<boolean>;
+	checkin_channel: CreationOptional<Snowflake | null>;
+	checkin_threadId: CreationOptional<Snowflake | null>;
+	checkin_message: CreationOptional<Snowflake | null>;
 }
 
 const TournamentModel = sequelize.define<Tournament>('Tournament', {
@@ -139,6 +145,7 @@ const TournamentModel = sequelize.define<Tournament>('Tournament', {
 		},
 	},
 
+	/** Array of discord Id's of players that checked in */
 	checked_in: {
 		type: DataTypes.TEXT,
 		get() {
@@ -194,6 +201,26 @@ const TournamentModel = sequelize.define<Tournament>('Tournament', {
 		set(val) {
 			return this.setDataValue('add_roles', JSON.stringify(val) as unknown as Snowflake[])
 		},
+	},
+
+	is_checkin_open: {
+		type: DataTypes.BOOLEAN,
+		defaultValue: false,
+	},
+	checkin_channel: {
+		type: DataTypes.STRING,
+		defaultValue: null,
+		allowNull: true,
+	},
+	checkin_message: {
+		type: DataTypes.STRING,
+		defaultValue: null,
+		allowNull: true
+	},
+	checkin_threadId: {
+		type: DataTypes.STRING,
+		defaultValue: null,
+		allowNull: true
 	}
 });
 
@@ -238,7 +265,7 @@ const PlayerModel = sequelize.define<Player>('Player', {
 
 
 console.log("[DEBUG] Sincronizando tablas en sequelize...");
-// await sequelize.sync({ alter: true });
+sequelize.sync({ alter: true });
 console.log("[DEBUG] La sincronización ha terminado!");
 
 export { TournamentModel, PlayerModel }
