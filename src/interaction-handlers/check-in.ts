@@ -2,7 +2,7 @@ import { InteractionHandler, InteractionHandlerTypes } from "@sapphire/framework
 import { ButtonInteraction } from "discord.js";
 import { TournamentModel, TournamentStatus } from "../sequelize/Tournaments.js";
 
-export class ParseExampleInteractionHandler extends InteractionHandler {
+export class CheckinButtonHandler extends InteractionHandler {
 	public constructor(ctx: InteractionHandler.LoaderContext, options: InteractionHandler.Options) {
 		super(ctx, { interactionHandlerType: InteractionHandlerTypes.Button });
 	}
@@ -18,8 +18,17 @@ export class ParseExampleInteractionHandler extends InteractionHandler {
 		if (!tournament.players.includes(interaction.user.id))
 			return void await interaction.reply({ content: 'No puedes hacer Check-in por que no estás inscrito en este torneo.', ephemeral: true })
 
+		if (tournament.checked_in.includes(interaction.user.id))
+			return void await interaction.reply({
+				content: 'Ya estás en la lista de Checked-in.',
+				ephemeral: true
+			})
+
 		// Inscribimos al user en la lista de checked in
-		tournament.checked_in.push(interaction.user.id)
+		const checkedIn = tournament.checked_in ? Array.from(tournament.checked_in) : []
+
+		checkedIn.push(interaction.user.id)
+		tournament.checked_in = checkedIn
 		await tournament.save()
 
 		return void await interaction.reply({
