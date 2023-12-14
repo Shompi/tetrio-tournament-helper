@@ -1,7 +1,7 @@
 import { Subcommand } from "@sapphire/plugin-subcommands"
-import { PermissionFlagsBits } from "discord.js"
-import { GetTournamentFromGuild, SearchTournamentByNameAutocomplete } from "../helper-functions/index.js";
-import { TournamentStatus } from "../sequelize/Tournaments.js";
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, Colors, ComponentType, EmbedBuilder, PermissionFlagsBits, Snowflake } from "discord.js"
+import { AddPlayerIdToTournamentPlayerList, AddTetrioPlayerToDatabase, GetTournamentFromGuild, GetUserDataFromTetrio, SearchTournamentByNameAutocomplete, TetrioUserProfileEmbed } from "../helper-functions/index.js";
+import { PlayerModel, TournamentStatus } from "../sequelize/Tournaments.js";
 import { RemovePlayerFromTournament } from "../helper-functions/index.js";
 
 export class ForceCommands extends Subcommand {
@@ -51,6 +51,11 @@ export class ForceCommands extends Subcommand {
 								.setMaxLength(100)
 								.setRequired(true)
 						)
+						.addStringOption(challongeId =>
+							challongeId.setName('challonge-id')
+								.setDescription('La id de challonge de este usuario (OPCIONAL)')
+								.setMaxLength(100)
+						)
 				)
 				.addSubcommand(unregister =>
 					unregister.setName('desinscripcion')
@@ -74,20 +79,104 @@ export class ForceCommands extends Subcommand {
 
 	}
 
-	public async chatInputForzarInscripcion(interaction: Subcommand.ChatInputCommandInteraction) {
+	public async chatInputForzarInscripcion(interaction: Subcommand.ChatInputCommandInteraction<'cached'>) {
 		// Your code goes here
 		const options = {
 			user: interaction.options.getUser('discord-id', true),
 			tetrioId: interaction.options.getString('tetrio-id', true),
-			idTorneo: +interaction.options.getString('nombre-id', true)
+			idTorneo: +interaction.options.getString('nombre-id', true),
+			discordId: interaction.options.getString('discord-id', true),
+			challongeId: interaction.options.getString('challonge-id', false),
 		}
+
+		const tournament = await GetTournamentFromGuild(interaction.guildId, options.idTorneo)
+
+		if (!tournament)
+			return void await interaction.reply({ content: 'El torneo que ingresaste no existe en este servidor', ephemeral: true })
+
+		// Check if the player already exists in our database
+		const player = await GetPlayerFromDatabase(options.discordId)
+
+		if (player) {
+			await AddPlayerIdToTournamentPlayerList(options.user, tournament)
+			return void await interaction.reply({
+				content: `✅ ¡El jugador ha sido inscrito en el torneo!`,
+				ephemeral: true
+			})
+		}
+
+		await interaction.deferReply({ ephemeral: true })
+
+		// Check if the user exists on tetrio
+		const TetrioUserData = await GetUserDataFromTetrio(options.tetrioId)
+
+		if (!TetrioUserData)
+			return void await interaction.editReply({
+				content: `El usuario ${options.tetrioId} no es un usuario válido en TETRIO.`,
+			})
+
+		const userdetails = TetrioUserProfileEmbed(TetrioUserData)
+
+		const userSecondaryDetails = new EmbedBuilder()
+			.setTitle('Otros Datos')
+			.setDescription(
+				`**Discord id**: ${options.user} (${options.user.id})` +
+				`\n**Torneo**: ${tournament.name}`)
+			.setThumbnail(options.user.avatarURL({ size: 512 }))
+			.setColor(Colors.Blue)
+
+		const acceptButton = new ButtonBuilder()
+			.setCustomId('accept')
+			.setLabel('Confirmar')
+			.setStyle(ButtonStyle.Success)
+
+		const cancelButton = new ButtonBuilder()
+			.setCustomId('cancel')
+			.setLabel('Cancelar')
+			.setStyle(ButtonStyle.Secondary)
+
+		const buttonRow = new ActionRowBuilder<ButtonBuilder>()
+			.setComponents(acceptButton, cancelButton)
+
+		const initialReply = await interaction.editReply({
+			content: '¿Es esta información correcta?',
+			embeds: [userdetails, userSecondaryDetails],
+			components: [buttonRow]
+		})
+
+		const selectedOption = await initialReply.awaitMessageComponent({
+			componentType: ComponentType.Button,
+			time: 60_000,
+			filter: (btn => ["accept", "cancel"].includes(btn.customId))
+		}).catch(() => null)
+
+		if (!selectedOption) return void await interaction.editReply({ content: 'La interacción ha expirado.', components: [], embeds: [] })
+
+		if (selectedOption.customId === 'cancel')
+			return void await interaction.editReply({
+				content: 'La interacción ha sido cancelada.',
+				components: [],
+				embeds: []
+			})
+
+		await AddTetrioPlayerToDatabase({
+			challongeId: options.challongeId,
+			discordId: options.user.id,
+			tetrioId: options.tetrioId
+		}, TetrioUserData)
+
+		await AddPlayerIdToTournamentPlayerList(options.user, tournament)
+
+		return void await selectedOption.update({
+			content: `✅ l jugador ${options.tetrioId.toUpperCase()} (${options.user.username} - ${options.user.id}) ha sido agregado a la base de datos y a la lista de jugadores del torneo **${tournament.name}** exitosamente!`,
+		})
 	}
 
 	public async chatInputForzarDesinscripcion(interaction: Subcommand.ChatInputCommandInteraction<'cached'>) {
 		// Your code goes here
 		const idTorneo = +interaction.options.getString('nombre-id', true)
 
-		if (isNaN(idTorneo)) 
+		if (isNaN(idTorneo))
 			return void await interaction.reply({ content: 'Debes ingresar la id o el nombre de algun torneo (usando las opciones del autocompletado)', ephemeral: true })
 
 		const torneo = await GetTournamentFromGuild(interaction.guildId, idTorneo)
@@ -112,4 +201,8 @@ export class ForceCommands extends Subcommand {
 		if (interaction.options.getFocused(true).name === 'nombre-id')
 			return void await SearchTournamentByNameAutocomplete(interaction)
 	}
+}
+
+async function GetPlayerFromDatabase(discordId: Snowflake) {
+	return await PlayerModel.findByPk(discordId)
 }
