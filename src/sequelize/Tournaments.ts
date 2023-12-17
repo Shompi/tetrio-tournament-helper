@@ -92,6 +92,8 @@ export interface Tournament extends Model<InferAttributes<Tournament>, InferCrea
 
 	registration_message: CreationOptional<Snowflake | null>;
 	registration_channel: CreationOptional<Snowflake | null>;
+	registration_open_until: CreationOptional<Date | null>;
+	checkin_open_until: CreationOptional<Date | null>;
 }
 
 const TournamentModel = sequelize.define<Tournament>('Tournament', {
@@ -239,6 +241,16 @@ const TournamentModel = sequelize.define<Tournament>('Tournament', {
 	},
 	registration_message: {
 		type: DataTypes.STRING,
+		defaultValue: null,
+		allowNull: true
+	},
+	registration_open_until: {
+		type: DataTypes.DATE,
+		defaultValue: null,
+		allowNull: true
+	},
+	checkin_open_until: {
+		type: DataTypes.DATE,
 		defaultValue: null,
 		allowNull: true
 	}
