@@ -89,6 +89,9 @@ export class ForceCommands extends Subcommand {
 			challongeId: interaction.options.getString('challonge-id', false),
 		}
 
+		if (isNaN(options.idTorneo))
+			return void await interaction.reply({ content: 'La id debe ser una id numérica o una de las opciones del autocompletado.', ephemeral: true })
+			
 		const tournament = await GetTournamentFromGuild(interaction.guildId, options.idTorneo)
 
 		if (!tournament)
@@ -181,15 +184,15 @@ export class ForceCommands extends Subcommand {
 		if (isNaN(idTorneo))
 			return void await interaction.reply({ content: 'Debes ingresar la id o el nombre de algun torneo (usando las opciones del autocompletado)', ephemeral: true })
 
-		const torneo = await GetTournamentFromGuild(interaction.guildId, idTorneo)
+		const tournament = await GetTournamentFromGuild(interaction.guildId, idTorneo)
 
-		if (!torneo) return void await interaction.reply({ content: 'No encontré ningun torneo.', ephemeral: true })
-		if (torneo.status === TournamentStatus.FINISHED)
+		if (!tournament) return void await interaction.reply({ content: 'No encontré ningun torneo.', ephemeral: true })
+		if (tournament.status === TournamentStatus.FINISHED)
 			return void await interaction.reply({ content: 'No puedes desinscribir a un jugador de un torneo que está marcado como **FINALIZADO**', ephemeral: true })
 
 		try {
 
-			await RemovePlayerFromTournament(torneo, interaction.options.getUser('discord-id', true).id);
+			await RemovePlayerFromTournament(tournament, interaction.options.getUser('discord-id', true).id);
 
 			return void await interaction.reply({ content: `✅ El jugador ${interaction.options.getUser('discord-id', true)} ha sido quitado del torneo.` })
 		} catch (e) {
