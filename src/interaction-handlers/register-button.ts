@@ -1,6 +1,6 @@
 import { InteractionHandler, InteractionHandlerTypes } from '@sapphire/framework';
 import { ActionRowBuilder, ButtonBuilder, ButtonInteraction, ButtonStyle, ComponentType, ModalBuilder, TextInputBuilder, TextInputStyle } from "discord.js"
-import { PlayerModel, Tournament, TournamentModel, TournamentStatus } from '../sequelize/Tournaments.js';
+import { Tournament, TournamentModel, TournamentStatus } from '../sequelize/Tournaments.js';
 import { GetPlayerFromDatabase, GetUserDataFromTetrio, TetrioUserProfileEmbed } from '../helper-functions/index.js';
 import { TournamentDetailsEmbed } from "../helper-functions/index.js";
 import { AddTetrioPlayerToDatabase } from '../helper-functions/index.js';
