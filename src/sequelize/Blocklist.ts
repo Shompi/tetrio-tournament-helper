@@ -29,6 +29,8 @@ const BlocklistModel = sequelize.define<BlocklistedUser>('Blocklist', {
 	}
 })
 
+console.log("[BLOCKLIST] Sincronizando tablas...");
 await sequelize.sync();
+console.log("[BLOCKLIST] Sincronización terminada.");
 
 export { BlocklistModel }
