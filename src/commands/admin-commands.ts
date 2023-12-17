@@ -1,7 +1,7 @@
 import { Subcommand } from "@sapphire/plugin-subcommands"
-import { PlayerModel, Tournament } from "../sequelize/Tournaments.js";
+import { PlayerModel, Tournament, TournamentStatus } from "../sequelize/Tournaments.js";
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, Colors, codeBlock, ComponentType, EmbedBuilder, PermissionFlagsBits, ChannelType, GuildTextBasedChannel, ColorResolvable } from "discord.js";
-import { GenerateTetrioAvatarURL, GetRolesToAddArray, GetTournamentFromGuild, IsTournamentEditable, OrderBy, PlayerDataOrdered, SearchTournamentByNameAutocomplete, TetrioRanksArray } from "../helper-functions/index.js";
+import { BuildTableForChallonge, FinishTournament, GenerateTetrioAvatarURL, GetRolesToAddArray, GetTournamentFromGuild, IsTournamentEditable, OrderBy, PlayerDataOrdered, SearchTournamentByNameAutocomplete, TetrioRanksArray, TournamentDetailsEmbed } from "../helper-functions/index.js";
 import { DeletePlayerFromDatabase } from "../helper-functions/index.js";
 import { AsciiTable3 } from "ascii-table3";
 import { OrderPlayerListBy } from "../helper-functions/index.js";
@@ -16,7 +16,7 @@ export class MySlashCommand extends Subcommand {
 			subcommands: [
 				{
 					name: 'anuncio',
-					chatInputRun: 'chatInputAnnounce'
+					chatInputRun: 'chatInputAnnounce',
 				},
 
 				{
@@ -178,7 +178,16 @@ export class MySlashCommand extends Subcommand {
 				.addSubcommand(finishTournament =>
 					finishTournament.setName('finalizar-torneo')
 						.setDescription('Marca un torneo como FINALIZADO')
-
+						.addStringOption(name =>
+							name.setName('nombre-id')
+								.setDescription("El nombre o la Id numérica del torneo")
+								.setRequired(true)
+								.setAutocomplete(true)
+						)
+						.addUserOption(winner =>
+							winner.setName('ganador')
+								.setDescription('El usuario que ganó el torneo')
+						)
 				)
 				.addSubcommand(list =>
 					list.setName('listar-jugadores')
@@ -324,10 +333,10 @@ export class MySlashCommand extends Subcommand {
 
 		const playerInfo = new EmbedBuilder()
 			.setColor(Colors.Red)
-			.setDescription(`**Username**: ${player.data.user.username}\n**Rank**: ${player.data.user.league.rank.toUpperCase()}`)
+			.setDescription(`**Username**: ${player.data.username}\n**Rank**: ${player.data.league.rank.toUpperCase()}`)
 
-		if (player.data.user.avatar_revision) {
-			playerInfo.setThumbnail(GenerateTetrioAvatarURL(player.data.user.username, player.data.user.avatar_revision))
+		if (player.data.avatar_revision) {
+			playerInfo.setThumbnail(GenerateTetrioAvatarURL(player.data.username, player.data.avatar_revision))
 		}
 
 		const initialReply = await interaction.reply({
@@ -429,6 +438,64 @@ export class MySlashCommand extends Subcommand {
 		})
 	}
 
+	public async chatInputFinishTournament(interaction: Subcommand.ChatInputCommandInteraction<'cached'>) {
+		const options = {
+			winner: interaction.options.getUser('ganador', false),
+			idTorneo: +interaction.options.getString('nombre-id', true)
+		}
+
+		if (isNaN(options.idTorneo))
+			return void await interaction.reply({ content: 'La id debe ser un numero o una de las opciones del autocompletado.', ephemeral: true })
+
+		const tournament = await GetTournamentFromGuild(interaction.guildId, options.idTorneo)
+		if (!tournament)
+			return void await interaction.reply({ content: 'No existe un torneo con esa id en esta guild.', ephemeral: true })
+
+		if (tournament.status === TournamentStatus.FINISHED)
+			return void await interaction.reply({ content: 'Este torneo ya está marcado como finalizado.', ephemeral: true })
+
+		// Prompt the user to confirm this action
+
+		const AcceptButton = new ButtonBuilder()
+			.setCustomId('accept')
+			.setLabel('Confirmar')
+			.setStyle(ButtonStyle.Success)
+			.setEmoji("✅")
+
+		const CancelButton = new ButtonBuilder()
+			.setCustomId('cancel')
+			.setLabel('Cancelar')
+			.setStyle(ButtonStyle.Secondary)
+
+		const SelectionRow = new ActionRowBuilder<ButtonBuilder>()
+			.setComponents(AcceptButton, CancelButton)
+
+		const tournamentInfo = TournamentDetailsEmbed(tournament)
+
+		const initialReply = await interaction.reply({
+			content: '¿Estás seguro que quieres marcar este torneo como **FINALIZADO**?\nEsta acción hará que el torneo no sea modificable en el futuro.',
+			embeds: [tournamentInfo],
+			components: [SelectionRow],
+			ephemeral: true
+		})
+
+		const action = await initialReply.awaitMessageComponent({
+			componentType: ComponentType.Button,
+			time: 60_000
+		}).catch(() => null)
+
+		if (!action || action.customId === 'cancel')
+			return void await interaction.editReply({ content: "La interacción ha sido cancelada.", embeds: [], components: [] })
+
+		void await FinishTournament(tournament)
+
+		return void await action.update({
+			content: `El torneo **${tournament.name}** ha sido marcado como **FINALIZADO** exitósamente.`,
+			embeds: [],
+			components: [],
+		})
+	}
+
 	public async chatInputListaJugadores(interaction: Subcommand.ChatInputCommandInteraction<'cached'>) {
 		const idTorneo = +interaction.options.getString('nombre-id', true)
 
@@ -438,15 +505,28 @@ export class MySlashCommand extends Subcommand {
 		const tournament = await GetTournamentFromGuild(interaction.guildId, idTorneo)
 		if (!tournament) return void await interaction.reply({ content: 'Este torneo no existe.', ephemeral: true })
 
+		const format = interaction.options.getString('formato', false) ?? "embed" // default embed
+		const orderBy = (interaction.options.getString('ordenar-por', false) ?? "default") as OrderBy
+		const filterCheckedIn = interaction.options.getBoolean('checked_in', false)
 
-		const format = interaction.options.getString('formato', false) ?? "ascii" // default ascii
+		const orderedPlayerList = await OrderPlayerListBy(tournament, orderBy, filterCheckedIn)
 
 		if (tournament.game !== "TETRIO") return void await interaction.reply({ content: 'El listado de jugadores para torneos que no son de tetrio se implementará prontamente.', ephemeral: true })
 		// We basically need to skip all the code below if the tournament is not a TETRIO tournament
 
-		if (format === 'ascii') BuildASCIITableAttachment(interaction, tournament)
+		if (format === 'ascii') {
+			const attachment = BuildASCIITableAttachment(tournament, orderedPlayerList)
 
-		if (format === 'challonge') void await interaction.reply({ content: 'Este formato aún no está implementado.', ephemeral: true })
+			// Send the attachment
+			return void await interaction.reply({
+				content: 'Aquí está la lista de jugadores',
+				files: [attachment]
+			})
+		}
+
+		if (format === 'challonge') {
+			BuildTableForChallonge(tournament, orderedPlayerList)
+		}
 
 		if (format === 'csv') void await interaction.reply({ content: 'Este formato aún no está implementado.', ephemeral: true })
 
@@ -471,11 +551,7 @@ async function SendListOfPlayersEmbed(interaction: Subcommand.ChatInputCommandIn
 
 	let orderedPlayerList: PlayerDataOrdered[]
 
-	if (!interaction.options.getBoolean('checked-in', false)) {
-		orderedPlayerList = await OrderPlayerListBy(tournament.players, orderBy)
-	} else {
-		orderedPlayerList = await OrderPlayerListBy(tournament.checked_in, orderBy)
-	}
+	orderedPlayerList = await OrderPlayerListBy(tournament, orderBy, interaction.options.getBoolean('checked-in', false))
 
 	const table = new AsciiTable3()
 		.setHeading("POS", "USERNAME", "RANK", "RATING")
@@ -485,7 +561,7 @@ async function SendListOfPlayersEmbed(interaction: Subcommand.ChatInputCommandIn
 
 	let pos = 1
 	for (const player of orderedPlayerList) {
-		table.addRow(pos, player.data.user.username, player.data.user.league.rank.toUpperCase(), player.data.user.league.rating.toFixed(2))
+		table.addRow(pos, player.data.username, player.data.league.rank.toUpperCase(), player.data.league.rating.toFixed(2))
 		pos++
 	}
 
