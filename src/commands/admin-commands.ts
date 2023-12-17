@@ -487,7 +487,7 @@ export class MySlashCommand extends Subcommand {
 		if (!action || action.customId === 'cancel')
 			return void await interaction.editReply({ content: "La interacción ha sido cancelada.", embeds: [], components: [] })
 
-		void await FinishTournament(tournament)
+		void await FinishTournament(tournament, options.winner?.id)
 
 		return void await action.update({
 			content: `El torneo **${tournament.name}** ha sido marcado como **FINALIZADO** exitósamente.`,
