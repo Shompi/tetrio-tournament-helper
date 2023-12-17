@@ -30,7 +30,7 @@ export class MySlashCommand extends Subcommand {
 				},
 				{
 					name: 'listar-jugadores',
-					chatInputRun: 'chatInputListaJugadores'
+					chatInputRun: 'chatInputListPlayers'
 				}
 			]
 		});
@@ -497,7 +497,7 @@ export class MySlashCommand extends Subcommand {
 		})
 	}
 
-	public async chatInputListaJugadores(interaction: Subcommand.ChatInputCommandInteraction<'cached'>) {
+	public async chatInputListPlayers(interaction: Subcommand.ChatInputCommandInteraction<'cached'>) {
 		const idTorneo = +interaction.options.getString('nombre-id', true)
 
 		if (isNaN(idTorneo))
@@ -526,7 +526,12 @@ export class MySlashCommand extends Subcommand {
 		}
 
 		if (format === 'challonge') {
-			BuildTableForChallonge(tournament, orderedPlayerList)
+			const players = await BuildTableForChallonge(tournament, orderedPlayerList)
+
+			return void await interaction.reply({
+				content: `¡Aquí está la lista de jugadores del torneo **${tournament.name}**!`,
+				embeds: [players]
+			})
 		}
 
 		if (format === 'csv') void await interaction.reply({ content: 'Este formato aún no está implementado.', ephemeral: true })
