@@ -1,5 +1,6 @@
 import { Subcommand } from "@sapphire/plugin-subcommands"
-import { PlayerModel, Tournament, TournamentStatus } from "../sequelize/Tournaments.js";
+import { Tournament, TournamentStatus } from "../sequelize/Tournaments.js";
+import { PlayerModel } from "../sequelize/TetrioPlayers.js";
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, Colors, codeBlock, ComponentType, EmbedBuilder, PermissionFlagsBits, ChannelType, GuildTextBasedChannel, ColorResolvable } from "discord.js";
 import { BuildTableForChallonge, FinishTournament, GenerateTetrioAvatarURL, GetRolesToAddArray, GetTournamentFromGuild, IsTournamentEditable, OrderBy, PlayerDataOrdered, SearchTournamentByNameAutocomplete, TetrioRanksArray, TournamentDetailsEmbed } from "../helper-functions/index.js";
 import { DeletePlayerFromDatabase } from "../helper-functions/index.js";
