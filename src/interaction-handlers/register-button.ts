@@ -5,7 +5,7 @@ import { GetPlayerFromDatabase, GetUserDataFromTetrio, TetrioUserProfileEmbed } 
 import { TournamentDetailsEmbed } from "../helper-functions/index.js";
 import { AddTetrioPlayerToDatabase } from '../helper-functions/index.js';
 import { RunTetrioTournamentRegistrationChecks } from '../helper-functions/index.js';
-import { AddPlayerIdToTournamentPlayerList } from '../helper-functions/index.js';
+import { AddPlayerToTournamentPlayerList } from '../helper-functions/index.js';
 
 export class RegisterButtonHandler extends InteractionHandler {
 	public constructor(ctx: InteractionHandler.LoaderContext, options: InteractionHandler.Options) {
@@ -59,7 +59,7 @@ async function HandleTetrioRegistration(interaction: ButtonInteraction<'cached'>
 			})
 		}
 
-		void await AddPlayerIdToTournamentPlayerList(interaction.user, tournament)
+		void await AddPlayerToTournamentPlayerList(tournament, interaction.user.id, playerData.challonge_id)
 		void await interaction.reply({ content: '✅ !Has sido añadido exitosamente al torneo!', ephemeral: true })
 	}
 	// Update the message with the new details
@@ -184,7 +184,7 @@ async function HandleNewPlayerRegistration(interaction: ButtonInteraction<'cache
 		if (challongeUsername.length === 0)
 			challongeUsername = null
 
-		void await AddTetrioPlayerToDatabase({ discordId: interaction.user.id, tetrioId: userData.user.username, challongeId: challongeUsername }, userData)
+		void await AddTetrioPlayerToDatabase({ discordId: interaction.user.id, tetrioId: userData.username, challongeId: challongeUsername }, userData)
 
 		const result = await RunTetrioTournamentRegistrationChecks(userData, tournament, interaction.user.id)
 
@@ -196,7 +196,7 @@ async function HandleNewPlayerRegistration(interaction: ButtonInteraction<'cache
 	}
 
 	// User passed the checks and can be added to the tournament
-	void await AddPlayerIdToTournamentPlayerList(interaction.user, tournament)
+	void await AddPlayerToTournamentPlayerList(tournament, interaction.user.id, challongeUsername)
 
 	console.log("[ACTION ON PLAYER] Chequeando si hay roles para agregar...");
 
