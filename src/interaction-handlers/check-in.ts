@@ -15,9 +15,11 @@ export class CheckinButtonHandler extends InteractionHandler {
 		if (tournament.status === TournamentStatus.FINISHED)
 			return void await interaction.reply({ content: 'No puedes hacer Check-in en este torneo por que ya está finalizado.', ephemeral: true })
 
-		if (!tournament.players.includes(interaction.user.id))
+		// Check if the player is on the registered players list first
+		if (!tournament.players.some(player => player.discordId === interaction.user.id))
 			return void await interaction.reply({ content: 'No puedes hacer Check-in por que no estás inscrito en este torneo.', ephemeral: true })
 
+		// Check if the player is already checked-in
 		if (tournament.checked_in.includes(interaction.user.id))
 			return void await interaction.reply({
 				content: 'Ya estás en la lista de Checked-in.',
