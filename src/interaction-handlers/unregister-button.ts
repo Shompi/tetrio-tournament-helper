@@ -17,8 +17,10 @@ export class UnregisterButtonHandler extends InteractionHandler {
 		if (tournament.status === TournamentStatus.CLOSED || tournament.status === TournamentStatus.FINISHED)
 			return void await interaction.reply({ content: 'No te puedes desinscribir de este torneo por que ya está cerrado.', ephemeral: true })
 
-		if (!tournament.players.includes(interaction.user.id))
+		if (!tournament.players.some(player => player.discordId === interaction.user.id))
 			return void await interaction.reply({ content: 'No estás inscrita/o en este torneo.', ephemeral: true })
+
+		await interaction.deferReply({ ephemeral: true })
 
 		try {
 			await RemovePlayerFromTournament(tournament, interaction.user.id)
@@ -28,16 +30,15 @@ export class UnregisterButtonHandler extends InteractionHandler {
 				console.log(`[ACTION ON PLAYER] Quitando roles al jugador ${interaction.user.id}...`);
 				await interaction.member.roles.remove(tournament.add_roles)
 				console.log("[ACTION ON PLAYER] Los roles han sido quitados.");
-				
+
 			}
 
 			void await interaction.message.edit({
 				embeds: [TournamentDetailsEmbed(tournament)]
 			})
 
-			return void await interaction.reply({
+			return void await interaction.editReply({
 				content: 'Te has desinscrito de este torneo exitosamente!',
-				ephemeral: true
 			})
 
 		} catch (e) {
