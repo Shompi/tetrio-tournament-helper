@@ -6,78 +6,81 @@ import { AttachmentBuilder, EmbedBuilder, Colors, Snowflake, User, ChatInputComm
 import { AsciiTable3 } from "ascii-table3";
 import { Command } from "@sapphire/framework";
 import { Subcommand } from "@sapphire/plugin-subcommands";
-import { TournamentModel, TournamentStatus, TournamentStatusStrings, Tournament } from "../sequelize/Tournaments.js";
+import { TournamentModel, TournamentStatus, TournamentStatusStrings, Tournament, RegisteredPlayer } from "../sequelize/Tournaments.js";
 import { PlayerModel } from "../sequelize/Tournaments.js";
 import { request } from "undici"
+import { codeBlock } from "@sapphire/utilities";
+import { Op } from "sequelize";
 
 export type TetrioApiCacheStatus = "hit" | "miss" | "awaited"
 export type TetrioUserRole = "anon" | "user" | "bot" | "halfmod" | "mod" | "admin" | "sysop" | "banned"
 export type OrderBy = "default" | "apm" | "pps" | "tr" | "rank" | null
 
-
-export interface TetrioUserData {
-	user: {
-		_id: string;
-		username: string;
-		role: TetrioUserRole;
+type TetrioUserLeagueStats = {
+	gamesplayed: number;
+	gameswon: number;
+	rating: number;
+	rank: string;
+	bestrank: string;
+	standing: number;
+	standing_local: number;
+	next_rank: string | null;
+	prev_rank: string | null;
+	next_at: number;
+	prev_at: number;
+	percentile: number;
+	glicko?: number;
+	rd?: number;
+	apm?: number;
+	pps?: number;
+	vs?: number;
+	decaying: boolean;
+}
+interface TetrioApiUser {
+	_id: string;
+	username: string;
+	role: TetrioUserRole;
+	ts?: string;
+	botmaster?: string;
+	badges?: {
+		id: string;
+		label: string;
 		ts?: string;
-		botmaster?: string;
-		badges?: {
+	}[],
+	xp: number;
+	gamesplayed: number;
+	gameswon: number;
+	gametime: number;
+	country: string | null;
+	badstanding: boolean;
+	supporter: boolean;
+	/** between 0 - 4 inclusive */
+	supporter_tier: number;
+	verified: boolean;
+	/** Tetra League stats */
+	league: TetrioUserLeagueStats,
+	/** This user's avatar ID. Get their avatar at https://tetr.io/user-content/avatars/{ USERID }.jpg?rv={ AVATAR_REVISION } */
+	avatar_revision?: number;
+	/** This user's banner ID. Get their banner at https://tetr.io/user-content/banners/{ USERID }.jpg?rv={ BANNER_REVISION }. Ignore this field if the user is not a supporter. */
+	banner_revision?: number;
+	/** About me */
+	bio?: string;
+	connections: {
+		discord?: {
 			id: string;
-			label: string;
-			ts?: string;
-		}[],
-		xp: number;
-		gamesplayed: number;
-		gameswon: number;
-		gametime: number;
-		country: string | null;
-		badstanding: boolean;
-		supporter: boolean;
-		/** between 0 - 4 inclusive */
-		supporter_tier: number;
-		verified: boolean;
-		/** Tetra League stats */
-		league: {
-			gamesplayed: number;
-			gameswon: number;
-			rating: number;
-			rank: string;
-			bestrank: string;
-			standing: number;
-			standing_local: number;
-			next_rank: string | null;
-			prev_rank: string | null;
-			next_at: number;
-			prev_at: number;
-			percentile: number;
-			glicko?: number;
-			rd?: number;
-			apm?: number;
-			pps?: number;
-			vs?: number;
-			decaying: boolean;
+			username: string;
 		}
-		/** This user's avatar ID. Get their avatar at https://tetr.io/user-content/avatars/{ USERID }.jpg?rv={ AVATAR_REVISION } */
-		avatar_revision?: number;
-		/** This user's banner ID. Get their banner at https://tetr.io/user-content/banners/{ USERID }.jpg?rv={ BANNER_REVISION }. Ignore this field if the user is not a supporter. */
-		banner_revision?: number;
-		/** About me */
-		bio?: string;
-		connections: {
-			discord?: {
-				id: string;
-				username: string;
-			}
-		}
-		friend_count: number;
-		distinguishment?: {
-			type: string;
-		}
+	}
+	friend_count: number;
+	distinguishment?: {
+		type: string;
 	}
 }
 
-interface APIUserResponse {
+interface TetrioAPIUserData {
+	user: TetrioApiUser
+}
+interface TetrioAPIUserResponse {
 	success: boolean;
 	error?: string;
 	cache?: {
@@ -85,12 +88,18 @@ interface APIUserResponse {
 		cached_at: number;
 		cached_until: number;
 	},
-	data?: TetrioUserData;
+	data?: TetrioAPIUserData
 }
+
+export interface TetrioPlayerRelevantData extends Pick<TetrioApiUser, "bio" | "league" | "country" | "username" | "avatar_revision" | "banner_revision" | "badstanding" | "_id"> {
+
+}
+
+
 
 const TETRIO_BASE = "https://ch.tetr.io/api"
 const TETRIO_ENDPOINTS = {
-	users: TETRIO_BASE + "/users/",
+	USERS: TETRIO_BASE + "/users/",
 }
 
 export enum AllowedGames {
@@ -148,16 +157,25 @@ const CreateRanksMap = (ranks: typeof TetrioRanksArray) => {
 export const TetrioRanksMap: Map<string, TetrioRankObject> = CreateRanksMap(TetrioRanksArray)
 
 /** Gets data of an user from the TETRIO API, calls toLowerCase() internally */
-export async function GetUserDataFromTetrio(_username: string): Promise<TetrioUserData | null> {
+export async function GetUserDataFromTetrio(_username: string): Promise<TetrioPlayerRelevantData | null> {
 	try {
 		const username = _username.toLowerCase();
 
-		const apiResponse = await request(TETRIO_ENDPOINTS.users + username).then(response => response.body.json()) as APIUserResponse;
+		const apiResponse = await request(TETRIO_ENDPOINTS.USERS + username).then(response => response.body.json()) as TetrioAPIUserResponse;
 
-		if (!apiResponse.success) return null;
+		if (!apiResponse.success)
+			return null
 
 		/** apiResponse.data shouldn't be undefined here since the request succeeded */
-		return apiResponse.data!
+		return {
+			username: apiResponse.data!.user.username,
+			league: apiResponse.data!.user.league,
+			_id: apiResponse.data!.user._id,
+			country: apiResponse.data!.user.country,
+			badstanding: apiResponse.data!.user.badstanding,
+			avatar_revision: apiResponse.data!.user.avatar_revision,
+			banner_revision: apiResponse.data!.user.banner_revision
+		}
 
 	} catch (e) {
 		console.log(e);
@@ -179,7 +197,7 @@ export function GetUserProfileURL(username: string) {
 	return `https://ch.tetr.io/u/${username}`
 }
 
-export function TournamentIsJoinableByTetrioPlayer(playerData: TetrioUserData, caps: { rank_cap?: string; tr_cap?: number; country_lock?: string }) {
+export function TournamentIsJoinableByTetrioPlayer(playerData: TetrioApiUser, caps: { rank_cap?: string; tr_cap?: number; country_lock?: string }) {
 }
 
 export function TournamentDetailsEmbed(torneo: Tournament) {
@@ -197,16 +215,19 @@ export function TournamentDetailsEmbed(torneo: Tournament) {
 				`\n**Descripción**: ${torneo.description ?? "N/A"}` +
 				`${torneo.is_tr_capped ? `\n**TR CAP**: ${torneo.tr_cap}` : ""}` +
 				`${torneo.is_rank_capped ? `\n**RANK CAP**: ${TetrioRanksMap.get(torneo.rank_cap!)?.emoji}` : ""}` +
-				`${torneo.is_country_locked ? `\n**COUNTRY LOCK**: ${torneo.country_lock?.toUpperCase()}` : ""}` +
+				`${torneo.is_country_locked ? `\n**COUNTRY LOCK**: :flag_${torneo.country_lock?.toLowerCase()}: (${torneo.country_lock?.toUpperCase()})` : ""}` +
 				`\n**Máximo de jugadores**: ${torneo.max_players ?? "Sin límite"}` +
 				`\n**Jugadores registrados**: ${players.length}`
 			)
 			.setColor(Colors.White)
 			.setTimestamp()
+			.setFooter({
+				text: "Última actualización"
+			})
 	)
 }
 
-export async function AddTetrioPlayerToDatabase({ discordId, tetrioId, challongeId }: { discordId: string; tetrioId: string; challongeId: string | null }, userData: TetrioUserData) {
+export async function AddTetrioPlayerToDatabase({ discordId, tetrioId, challongeId }: { discordId: string; tetrioId: string; challongeId: string | null }, userData: TetrioPlayerRelevantData) {
 
 	if (!discordId || !tetrioId)
 		throw new Error(`Missing one of the arguments. dId: ${discordId}, tId: ${tetrioId}`);
@@ -225,39 +246,39 @@ export async function AddTetrioPlayerToDatabase({ discordId, tetrioId, challonge
 
 }
 
-export async function RunTetrioTournamentRegistrationChecks(userData: TetrioUserData, torneo: Tournament, discordId: string): Promise<{ allowed: boolean; reason?: string; }> {
+export async function RunTetrioTournamentRegistrationChecks(userData: TetrioPlayerRelevantData, torneo: Tournament, discordId: string): Promise<{ allowed: boolean; reason?: string; }> {
+	// In here we have to check for Tetrio caps like rank, rating and country lock and if the player is already on the tournament.
 
 	if (torneo.status === TournamentStatus.CLOSED) {
 		return ({ allowed: false, reason: "Las inscripciones para este torneo no se encuentran abiertas." })
 	}
 
-	// In here we have to check for Tetrio caps like rank, rating and country lock and if the player is already on the tournament.
-	if (torneo.players.includes(discordId)) {
+	if (torneo.players.some(player => player.discordId === discordId)) {
 		return ({ allowed: false, reason: "Ya te encuentras en la lista de participantes de este torneo." });
 	}
 
-	if (torneo.is_country_locked && torneo.country_lock?.toUpperCase() !== userData.user.country?.toUpperCase()) {
+	if (torneo.is_country_locked && torneo.country_lock?.toUpperCase() !== userData.country?.toUpperCase()) {
 		// The country of the player doesn't match the tournament country lock
 		return ({ allowed: false, reason: "El pais del jugador es distinto al pais del torneo." });
 	}
 
 	if (torneo.is_tr_capped) {
-		if (userData.user.league.rank === 'z')
+		if (userData.league.rank === 'z')
 			return ({ allowed: false, reason: "El jugador no posee un rank actualmente." });
 
 
-		if (userData.user.league.rating > torneo.tr_cap!) {
+		if (userData.league.rating > torneo.tr_cap!) {
 			return ({ allowed: false, reason: "El rating del jugador está por sobre el limite de TR del torneo." });
 		}
 	}
 
 	if (torneo.is_rank_capped) {
 
-		if (userData.user.league.rank === 'z')
+		if (userData.league.rank === 'z')
 			return ({ allowed: false, reason: "El jugador es actualmente UNRANKED en Tetra League." });
 
 		const tournamentRankIndex = TetrioRanksArray.findIndex((rank) => rank === torneo.rank_cap);
-		const userRankIndex = TetrioRanksArray.findIndex((rank) => rank === userData.user.league.rank);
+		const userRankIndex = TetrioRanksArray.findIndex((rank) => rank === userData.league.rank);
 
 		if (tournamentRankIndex < userRankIndex)
 			return ({ allowed: false, reason: "El rank del jugador está por sobre el límite de rank impuesto por el torneo." });
@@ -293,14 +314,17 @@ export async function SearchTournamentById(id: number) {
 	return await TournamentModel.findOne({ where: { id } })
 }
 
+/** Function used to remove a player from a tournament */
 export async function RemovePlayerFromTournament(torneo: Tournament, discord_id: string) {
 
 	const playerId = discord_id
 
-	const playerIds = Array.from(torneo.players)
+	const players = Array.from(torneo.players)
 	const checkedIn = Array.from(torneo.checked_in) ?? []
 
-	const filteredPlayers = playerIds.filter(id => id !== playerId)
+	// Remove the player from the registered players list
+	const filteredPlayers = players.filter(player => player.discordId !== discord_id)
+	// Remove the player from the checked in list
 	const checkedInFiltered = checkedIn.filter(id => id !== playerId)
 
 	console.log(`[TOURNAMENT] Quitando al jugador ${discord_id} del torneo ${torneo.name}`)
@@ -328,9 +352,9 @@ export async function DeletePlayerFromTournaments(discord_id: string) {
 
 	for (const tournament of tournaments) {
 
-		if (tournament.players.includes(discord_id)) {
-			tournament.players = tournament.players.filter(id => id !== discord_id)
-			tournament.checked_in = tournament.players.filter(id => id !== discord_id)
+		if (tournament.players.some(player => player.discordId === discord_id)) {
+			tournament.players = tournament.players.filter(player => player.discordId !== discord_id)
+			tournament.checked_in = tournament.checked_in.filter(id => id !== discord_id)
 			await tournament.save()
 			removedFrom++;
 		}
@@ -366,6 +390,32 @@ export async function GetTournamentsFromGuild(guild_id: string) {
 	})
 }
 
+
+export async function FinishTournament(tournament: Tournament, /** Discord ID of the winner */ winner?: string | null) {
+	console.log(`[TOURNAMENT] Marcando torneo ${tournament.id} - ${tournament.name} como FINALIZADO`);
+
+	await tournament.update({
+		winner_id: winner,
+		status: TournamentStatus.FINISHED
+	})
+
+	console.log(`[TOURNAMENT] Torneo guardado!`);
+
+	return true
+}
+
+/** This function returns all ongoing (not marked as FINISHED) tournaments from a guild */
+export async function GetAllOngoingTournamentsFromGuild(guild_id: string) {
+	return await TournamentModel.findAll({
+		where: {
+			guild_id,
+			status: {
+				[Op.ne]: TournamentStatus.FINISHED
+			}
+		}
+	})
+}
+
 /** Gets a single tournament from a guild */
 export async function GetTournamentFromGuild(guild_id: string, tournament_id: number) {
 
@@ -375,7 +425,6 @@ export async function GetTournamentFromGuild(guild_id: string, tournament_id: nu
 			id: tournament_id
 		}
 	})
-
 }
 
 /** Wether or not this tournament can be edited (Is not FINISHED) */
@@ -397,10 +446,52 @@ export function GetRolesToAddArray(interaction: Command.ChatInputCommandInteract
 }
 export interface PlayerDataOrdered {
 	discordId: string;
-	data: TetrioUserData;
+	data: TetrioPlayerRelevantData;
+	challongeId: string | null
 }
 
-export function BuildTableFromPlayerList(tournament: Tournament, playerList: PlayerDataOrdered[]) {
+export async function BuildTableForChallonge(tournament: Tournament, players: PlayerDataOrdered[]) {
+
+	// Challonge bulk add accepts a string like [displayName, email or challonge username]
+
+	if (tournament.game === AllowedGames.TETRIO) {
+		return new EmbedBuilder()
+			.setTitle(`Jugadores ${tournament.name}`)
+			.setDescription(codeBlock(
+				players.map((player) => `${player.data.username}${player.challongeId ? ", " + player.challongeId : ""}`)
+					.join("\n")
+			))
+			.setColor(Colors.White)
+			.setTimestamp()
+	}
+}
+
+export async function BuildTableForGeneralInfo(tournament: Tournament, playerList: PlayerDataOrdered[]) {
+	// Now we need to build the table
+	// We need to check whether or not this is a TETRIO tournament so we can build different tables for other games.
+	const table = new AsciiTable3(tournament.name)
+		.setTitleAlignCenter()
+		.setHeadingAlignCenter()
+		.setHeading("POSICION", "DISCORD ID", "MENTION", "CHALLONGE ID")
+		.setAlignCenter(1)
+		.setAlignCenter(2)
+		.setAlignCenter(3)
+		.setAlignCenter(4)
+
+	// Good old for loop
+	for (let i = 0; i < playerList.length; i++) {
+
+		table.addRow(
+			i + 1,
+			playerList[i].discordId,
+			`<@${playerList[i].discordId}>`,
+		);
+	}
+
+	return table;
+}
+
+export function BuildAsciiTableForTetrio(tournament: Tournament, playerList: PlayerDataOrdered[]) {
 	// Now we need to build the table
 	// We need to check whether or not this is a TETRIO tournament so we can build different tables for other games.
 	const table = new AsciiTable3(tournament.name)
@@ -421,89 +512,91 @@ export function BuildTableFromPlayerList(tournament: Tournament, playerList: Pla
 		table.addRow(
 			i + 1,
 			playerList[i].discordId,
-			playerList[i].data.user.username.toUpperCase(),
-			playerList[i].data.user.country?.toUpperCase() ?? "OCULTO",
-			playerList[i].data.user.league.rank.toUpperCase(),
-			playerList[i].data.user.league.rating.toFixed(2),
-			playerList[i].data.user.league.apm ?? "0.00",
-			playerList[i].data.user.league.pps ?? "0.00"
+			playerList[i].data.username.toUpperCase(),
+			playerList[i].data.country?.toUpperCase() ?? "OCULTO",
+			playerList[i].data.league.rank.toUpperCase(),
+			playerList[i].data.league.rating.toFixed(2),
+			playerList[i].data.league.apm ?? "0.00",
+			playerList[i].data.league.pps ?? "0.00"
 		);
 	}
 
 	return table;
 }
 
-export async function OrderPlayerListBy(playerIds: string[], orderBy: OrderBy): Promise<PlayerDataOrdered[]> {
+export async function OrderPlayerListBy(tournament: Tournament, orderBy: OrderBy, filter_checked_in: boolean | null): Promise<PlayerDataOrdered[]> {
 	// We start by getting all the players we need from the database
 	const PlayersArray: PlayerDataOrdered[] = [];
 
-	for (const id of playerIds) {
-		const playerData = await PlayerModel.findByPk(id);
+	for (const { challongeId, discordId } of tournament.players) {
+
+		if (filter_checked_in) {
+			// If the discordId of the player that is on the player list, is not on the checked in list we skip it
+			if (!tournament.checked_in.includes(discordId))
+				continue
+		}
+
+		const playerData = await PlayerModel.findByPk(discordId);
 
 		if (!playerData) {
-			console.log(`[DEBUG] Los datos del usuario ${id} no están en la base de datos PLAYER`);
+			console.log(`[DEBUG] Los datos del usuario ${discordId} no están en la base de datos PLAYER`);
 			continue;
 		}
 
-		PlayersArray.push({ discordId: id, data: playerData.data });
-	}
-
-	// At this point we should have a list of players
-	if (orderBy === "rank") {
-
-		// We need to remember that ranks are letters here.
-		// Sort is INPLACE
-		PlayersArray.sort((playerA, playerB) => {
-
-			const rankA = TetrioRanksMap.get(playerA.data.user.league.rank)!.index;
-			const rankB = TetrioRanksMap.get(playerB.data.user.league.rank)!.index;
-
-			return rankB - rankA;
-		});
-	}
-
-	if (orderBy === 'tr') {
-		PlayersArray.sort((playerA, playerB) => {
-			const ratingA = playerA.data.user.league.rating;
-			const ratingB = playerB.data.user.league.rating;
-
-			return ratingB - ratingA;
-		});
-	}
-
-	if (orderBy === 'apm') {
-		PlayersArray.sort((playerA, playerB) => {
-			const apmA = playerA.data.user.league.apm ?? 0;
-			const apmB = playerB.data.user.league.apm ?? 0;
-
-			return apmB - apmA;
-		});
-	}
-
-	if (orderBy === 'pps') {
-		PlayersArray.sort((playerA, playerB) => {
-			const apmA = playerA.data.user.league.pps ?? 0;
-			const apmB = playerB.data.user.league.pps ?? 0;
-
-			return apmB - apmA;
-		});
+		PlayersArray.push({ discordId, data: playerData.data, challongeId });
 	}
 
 
+	if (tournament.game === AllowedGames.TETRIO) {
+		// At this point we should have a list of players
+		if (orderBy === "rank") {
 
-	return PlayersArray;
+			// We need to remember that ranks are letters here.
+			// Sort is INPLACE
+			PlayersArray.sort((playerA, playerB) => {
+
+				const rankA = TetrioRanksMap.get(playerA.data.league.rank)!.index;
+				const rankB = TetrioRanksMap.get(playerB.data.league.rank)!.index;
+
+				return rankB - rankA;
+			});
+		}
+
+		if (orderBy === 'tr') {
+			PlayersArray.sort((playerA, playerB) => {
+				const ratingA = playerA.data.league.rating;
+				const ratingB = playerB.data.league.rating;
+
+				return ratingB - ratingA;
+			});
+		}
+
+		if (orderBy === 'apm') {
+			PlayersArray.sort((playerA, playerB) => {
+				const apmA = playerA.data.league.apm ?? 0;
+				const apmB = playerB.data.league.apm ?? 0;
+
+				return apmB - apmA;
+			});
+		}
+
+		if (orderBy === 'pps') {
+			PlayersArray.sort((playerA, playerB) => {
+				const apmA = playerA.data.league.pps ?? 0;
+				const apmB = playerB.data.league.pps ?? 0;
+
+				return apmB - apmA;
+			});
+		}
+	}
+
+	return PlayersArray
 }
 
-export async function BuildASCIITableAttachment(interaction: Subcommand.ChatInputCommandInteraction, tournament: Tournament) {
-
-	void await interaction.deferReply();
-
+export function BuildASCIITableAttachment(tournament: Tournament, orderedPlayerList: PlayerDataOrdered[]) {
 	const { players } = tournament;
-	const orderBy = interaction.options.getString('ordenar-por', false) as OrderBy ?? 'default';
 
-	const orderedPlayerList = await OrderPlayerListBy(players, orderBy);
-
-	const table = BuildTableFromPlayerList(tournament, orderedPlayerList);
+	const table = BuildAsciiTableForTetrio(tournament, orderedPlayerList);
 
 	const TableFile = new AttachmentBuilder(Buffer.from(table.toString()))
 		.setName('playersTable.txt')
@@ -512,16 +605,16 @@ export async function BuildASCIITableAttachment(interaction: Subcommand.ChatInpu
 	return TableFile;
 }
 
-export function TetrioUserProfileEmbed(userData: TetrioUserData) {
-	const avatarUrl = GenerateTetrioAvatarURL(userData.user._id, userData.user.avatar_revision)
+export function TetrioUserProfileEmbed(userData: TetrioPlayerRelevantData) {
+	const avatarUrl = GenerateTetrioAvatarURL(userData._id, userData.avatar_revision)
 
 	const embed = new EmbedBuilder()
 		.setDescription(
-			`**Username**: ${userData.user.username.toUpperCase()}`
-			+ `\n**Rank**: ${TetrioRanksMap.get(userData.user.league.rank)?.emoji}`
-			+ `\n**Rating**: ${userData.user.league.rating.toFixed(2)}`
-			+ `\n**Bio**: ${userData.user.bio ?? "No bio."}`
-			+ `\n\n[Enlace al perfil](${GetUserProfileURL(userData.user.username)})`
+			`**Username**: ${userData.username.toUpperCase()}`
+			+ `\n**Rank**: ${TetrioRanksMap.get(userData.league.rank)?.emoji}`
+			+ `\n**Rating**: ${userData.league.rating.toFixed(2)}`
+			+ `\n**Bio**: ${userData.bio ?? "No bio."}`
+			+ `\n\n[Enlace al perfil](${GetUserProfileURL(userData.username)})`
 		)
 		.setColor(Colors.Blue)
 
@@ -532,16 +625,17 @@ export function TetrioUserProfileEmbed(userData: TetrioUserData) {
 	return embed
 }
 
-export async function AddPlayerIdToTournamentPlayerList(user: User, tournament: Tournament) {
+/** This function assumes the player (user) has already been added to the player's database, in case of tetrio tournaments */
+export async function AddPlayerToTournamentPlayerList(tournament: Tournament, userId: string, challongeId: string | null) {
 
 	// Add player to the tournament
-	console.log(`[TOURNAMENT] Añadiendo nuevo jugador ${user.id} (${user.username}) al torneo ${tournament.name}`);
+	console.log(`[TOURNAMENT] Añadiendo nuevo jugador ${userId} al torneo ${tournament.name}`);
 
-	if (tournament.players.includes(user.id))
+	if (tournament.players.some(player => player.discordId === userId))
 		return console.log('[TOURNAMENT] El jugador ya estába en la lista de jugadores inscritos en el torneo')
 
 	const players = Array.from(tournament.players)
-	players.push(user.id)
+	players.push({ challongeId, discordId: userId })
 	tournament.players = players
 	console.log("[TOURNAMENT] El jugador ha sido añadido a la lista");
 
