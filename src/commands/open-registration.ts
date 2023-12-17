@@ -45,16 +45,16 @@ export class OpenRegistration extends Command {
 		if (isNaN(idTorneo))
 			return void await interaction.reply({ content: 'Debes ingresar la id numérica de un torneo o **usar una de las opciones del autocompletado**.' })
 
-		const torneo = await GetTournamentFromGuild(interaction.guildId, idTorneo)
+		const tournament = await GetTournamentFromGuild(interaction.guildId, idTorneo)
 
-		if (!torneo) return void await interaction.editReply({ content: "El mensaje no ha sido enviado por que el torneo no existe." })
+		if (!tournament) return void await interaction.editReply({ content: "El mensaje no ha sido enviado por que el torneo no existe." })
 
-		if (torneo.status === TournamentStatus.FINISHED)
+		if (tournament.status === TournamentStatus.FINISHED)
 			return void await interaction.editReply({ content: "No se pueden abrir las inscripciones para este torneo por que está marcado como **TERMINADO**." })
 
-		if (torneo.status === TournamentStatus.CLOSED) {
+		if (tournament.status === TournamentStatus.CLOSED) {
 			// Reopen this tournament registrations if it was closed
-			await torneo.update('status', TournamentStatus.OPEN)
+			await tournament.update('status', TournamentStatus.OPEN)
 		}
 
 		// Create a button that users can click to begin the registration flow
@@ -80,11 +80,17 @@ export class OpenRegistration extends Command {
 		const channel = interaction.options.getChannel('canal', true) as GuildTextBasedChannel
 
 		try {
-			void await channel.send({
-				content: interaction.options.getString('mensaje', false) ?? DefaultMessage.replace('{userid}', interaction.user.toString()).replace('{nombre_torneo}', torneo.name),
+			const registrationMessage = await channel.send({
+				content: interaction.options.getString('mensaje', false) ?? DefaultMessage.replace('{userid}', interaction.user.toString()).replace('{nombre_torneo}', tournament.name),
 				components: [ActionRow],
-				embeds: [TournamentDetailsEmbed(torneo)]
+				embeds: [TournamentDetailsEmbed(tournament)]
 			})
+
+			await tournament.update({
+				registration_message: registrationMessage.id,
+				registration_channel: registrationMessage.channel.id
+			})
+
 		} catch (e) {
 
 			console.error(e)
