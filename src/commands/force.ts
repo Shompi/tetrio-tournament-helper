@@ -1,6 +1,6 @@
 import { Subcommand } from "@sapphire/plugin-subcommands"
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, Colors, ComponentType, EmbedBuilder, PermissionFlagsBits } from "discord.js"
-import { AddPlayerIdToTournamentPlayerList, AddTetrioPlayerToDatabase, GetTournamentFromGuild, GetUserDataFromTetrio, SearchTournamentByNameAutocomplete, TetrioUserProfileEmbed } from "../helper-functions/index.js";
+import { AddPlayerToTournamentPlayerList, AddTetrioPlayerToDatabase, GetTournamentFromGuild, GetUserDataFromTetrio, SearchTournamentByNameAutocomplete, TetrioUserProfileEmbed } from "../helper-functions/index.js";
 import { TournamentStatus } from "../sequelize/Tournaments.js";
 import { RemovePlayerFromTournament } from "../helper-functions/index.js";
 import { GetPlayerFromDatabase } from "../helper-functions/index.js";
@@ -98,7 +98,7 @@ export class ForceCommands extends Subcommand {
 		const player = await GetPlayerFromDatabase(options.user.id)
 
 		if (player) {
-			await AddPlayerIdToTournamentPlayerList(options.user, tournament)
+			await AddPlayerToTournamentPlayerList(tournament, options.user.id, options.challongeId)
 			return void await interaction.reply({
 				content: `✅ ¡El jugador ha sido inscrito en el torneo!`,
 				ephemeral: true
@@ -165,7 +165,7 @@ export class ForceCommands extends Subcommand {
 			tetrioId: options.tetrioId
 		}, TetrioUserData)
 
-		await AddPlayerIdToTournamentPlayerList(options.user, tournament)
+		await AddPlayerToTournamentPlayerList(tournament, options.user.id, options.challongeId)
 
 		return void await selectedOption.update({
 			content: `✅ El jugador ${options.tetrioId.toUpperCase()} (${options.user.username} - ${options.user.id}) ha sido agregado a la base de datos y a la lista de jugadores del torneo **${tournament.name}** exitosamente!`,
@@ -188,7 +188,7 @@ export class ForceCommands extends Subcommand {
 			return void await interaction.reply({ content: 'No puedes desinscribir a un jugador de un torneo que está marcado como **FINALIZADO**', ephemeral: true })
 
 		try {
-			
+
 			await RemovePlayerFromTournament(torneo, interaction.options.getUser('discord-id', true).id);
 
 			return void await interaction.reply({ content: `✅ El jugador ${interaction.options.getUser('discord-id', true)} ha sido quitado del torneo.` })
