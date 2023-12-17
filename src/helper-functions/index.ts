@@ -296,7 +296,7 @@ export async function RunTetrioTournamentRegistrationChecks(userData: TetrioPlay
 *	Also, this function should only return the tournaments belonging to this guild.
 */
 export async function SearchTournamentByNameAutocomplete(interaction: Subcommand.AutocompleteInteraction<'cached'>) {
-	const focusedOption = interaction.options.getFocused(true)
+	const focusedOption = interaction.options.getFocused()
 	const torneos = await TournamentModel.findAll({
 		where: {
 			guild_id: interaction.guildId
@@ -304,8 +304,8 @@ export async function SearchTournamentByNameAutocomplete(interaction: Subcommand
 	})
 
 	return void await interaction.respond(
-		torneos.filter(torneo => torneo.name.toLowerCase().includes(
-			focusedOption.value.toLowerCase()
+		torneos.filter(tournament => tournament.name.toLowerCase().includes(
+			focusedOption.toLowerCase()
 		)).map(torneo => ({ name: torneo.name.slice(0, 50), value: torneo.id.toString() }))
 	)
 }
@@ -453,17 +453,14 @@ export interface PlayerDataOrdered {
 export async function BuildTableForChallonge(tournament: Tournament, players: PlayerDataOrdered[]) {
 
 	// Challonge bulk add accepts a string like [displayName, email or challonge username]
-
-	if (tournament.game === AllowedGames.TETRIO) {
-		return new EmbedBuilder()
-			.setTitle(`Jugadores ${tournament.name}`)
-			.setDescription(codeBlock(
-				players.map((player) => `${player.data.username}${player.challongeId ? ", " + player.challongeId : ""}`)
-					.join("\n")
-			))
-			.setColor(Colors.White)
-			.setTimestamp()
-	}
+	return new EmbedBuilder()
+		.setTitle(`Jugadores ${tournament.name}`)
+		.setDescription(codeBlock(
+			players.map((player) => `${player.data.username}${player.challongeId ? ", " + player.challongeId : ""}`)
+				.join("\n")
+		))
+		.setColor(Colors.White)
+		.setTimestamp()
 }
 
 export async function BuildTableForGeneralInfo(tournament: Tournament, playerList: PlayerDataOrdered[]) {
