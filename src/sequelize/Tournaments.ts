@@ -1,5 +1,5 @@
 import { Sequelize, DataTypes, InferAttributes, InferCreationAttributes, CreationOptional, Model } from 'sequelize'
-import { GameName, TetrioUserData } from '../helper-functions/index.js';
+import { GameName, TetrioPlayerRelevantData } from '../helper-functions/index.js';
 import { Snowflake } from 'discord.js';
 
 const sequelize = new Sequelize({
@@ -22,6 +22,11 @@ export enum TournamentStatus {
 	*	This will make the tournament uneditable
 	*/
 	FINISHED
+}
+
+export type RegisteredPlayer = {
+	discordId: Snowflake
+	challongeId: string | null
 }
 
 export interface Tournament extends Model<InferAttributes<Tournament>, InferCreationAttributes<Tournament>> {
@@ -49,7 +54,7 @@ export interface Tournament extends Model<InferAttributes<Tournament>, InferCrea
 	status: CreationOptional<TournamentStatus>;
 
 	/** Stringified array with discord IDs */
-	players: CreationOptional<Snowflake[]>;
+	players: RegisteredPlayer[];
 
 	/**
 	*	Participants that have checked in for this tournament
@@ -141,7 +146,7 @@ const TournamentModel = sequelize.define<Tournament>('Tournament', {
 			return JSON.parse((this.getDataValue('players') as unknown as string)) as Snowflake[];
 		},
 		set(value) {
-			return this.setDataValue('players', JSON.stringify(value) as unknown as Snowflake[])
+			return this.setDataValue('players', JSON.stringify(value) as unknown as RegisteredPlayer[])
 		},
 		defaultValue: "[]"
 	},
@@ -231,7 +236,7 @@ export interface Player extends Model<InferAttributes<Player>, InferCreationAttr
 	discord_id: string;
 	tetrio_id: string;
 	challonge_id: CreationOptional<string | null>;
-	data: TetrioUserData;
+	data: TetrioPlayerRelevantData;
 }
 
 const PlayerModel = sequelize.define<Player>('Player', {
@@ -252,10 +257,10 @@ const PlayerModel = sequelize.define<Player>('Player', {
 		allowNull: false,
 		defaultValue: "{}",
 		get() {
-			return JSON.parse(this.getDataValue('data') as unknown as string) as TetrioUserData;
+			return JSON.parse(this.getDataValue('data') as unknown as string) as TetrioPlayerRelevantData;
 		},
 		set(value) {
-			this.setDataValue('data', JSON.stringify(value) as unknown as TetrioUserData);
+			this.setDataValue('data', JSON.stringify(value) as unknown as TetrioPlayerRelevantData);
 		}
 	},
 	challonge_id: {
