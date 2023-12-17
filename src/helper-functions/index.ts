@@ -7,7 +7,7 @@ import { AsciiTable3 } from "ascii-table3";
 import { Command } from "@sapphire/framework";
 import { Subcommand } from "@sapphire/plugin-subcommands";
 import { TournamentModel, TournamentStatus, TournamentStatusStrings, Tournament, RegisteredPlayer } from "../sequelize/Tournaments.js";
-import { PlayerModel } from "../sequelize/Tournaments.js";
+import { PlayerModel } from "../sequelize/TetrioPlayers.js";
 import { request } from "undici"
 import { codeBlock } from "@sapphire/utilities";
 import { Op } from "sequelize";
