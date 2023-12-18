@@ -124,6 +124,7 @@ export class ForceCommands extends Subcommand {
 			.setTitle('Otros Datos')
 			.setDescription(
 				`**Discord id**: ${options.user} (${options.user.id})` +
+				`\n**Discord Username**: ${options.user.username}` +
 				`\n**Torneo**: ${tournament.name}`)
 			.setThumbnail(options.user.avatarURL({ size: 512 }))
 			.setColor(Colors.Blue)
