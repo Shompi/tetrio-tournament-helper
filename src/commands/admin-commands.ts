@@ -9,7 +9,7 @@ import { OrderPlayerListBy } from "../helper-functions/index.js";
 import { BuildASCIITableAttachment } from "../helper-functions/index.js";
 
 
-export class MySlashCommand extends Subcommand {
+export class AdminCommands extends Subcommand {
 
 	public constructor(context: Subcommand.LoaderContext, options: Subcommand.Options) {
 		super(context, {

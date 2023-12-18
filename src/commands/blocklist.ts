@@ -2,7 +2,7 @@ import { Subcommand } from "@sapphire/plugin-subcommands"
 import { PermissionFlagsBits } from "discord.js"
 import { BlocklistModel } from "../sequelize/Blocklist.js";
 
-export class MySlashCommand extends Subcommand {
+export class BlocklistCommands extends Subcommand {
 
 
 	public constructor(context: Subcommand.LoaderContext, options: Subcommand.Options) {
