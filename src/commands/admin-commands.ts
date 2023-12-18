@@ -534,10 +534,17 @@ export class MySlashCommand extends Subcommand {
 			})
 		}
 
+		if (format === 'embed') {
+			const players = BuildEmbedPlayerList(tournament, orderedPlayerList)
+
+			return void await interaction.reply({
+				content: `¡Aquí está la lista de jugadores del torneo **${tournament.name}**!`,
+				embeds: [players]
+			})
+		}
+
+
 		if (format === 'csv') void await interaction.reply({ content: 'Este formato aún no está implementado.', ephemeral: true })
-
-		if (format === 'embed') SendListOfPlayersEmbed(interaction, tournament)
-
 		if (format === 'json') void await interaction.reply({ content: 'Este formato aún no está implementado.', ephemeral: true })
 	}
 
@@ -550,14 +557,7 @@ export class MySlashCommand extends Subcommand {
 }
 
 
-async function SendListOfPlayersEmbed(interaction: Subcommand.ChatInputCommandInteraction, tournament: Tournament) {
-	void await interaction.deferReply()
-
-	const orderBy = interaction.options.getString('ordenar-por', false) as OrderBy ?? 'default'
-
-	let orderedPlayerList: PlayerDataOrdered[]
-
-	orderedPlayerList = await OrderPlayerListBy(tournament, orderBy, interaction.options.getBoolean('checked-in', false))
+function BuildEmbedPlayerList(tournament: Tournament, players: PlayerDataOrdered[]) {
 
 	const table = new AsciiTable3()
 		.setHeading("POS", "USERNAME", "RANK", "RATING")
@@ -566,18 +566,17 @@ async function SendListOfPlayersEmbed(interaction: Subcommand.ChatInputCommandIn
 		.setAlignCenter(3)
 
 	let pos = 1
-	for (const player of orderedPlayerList) {
+
+	for (const player of players) {
 		table.addRow(pos, player.data.username, player.data.league.rank.toUpperCase(), player.data.league.rating.toFixed(2))
 		pos++
 	}
 
-	const playersEmbed = new EmbedBuilder()
+	return new EmbedBuilder()
 		.setTitle(tournament.name)
 		.setDescription(
 			codeBlock(
 				table.toString()
 			)
 		)
-
-	return void await interaction.editReply({ content: 'Aquí está la lista de jugadores', embeds: [playersEmbed] })
 }
