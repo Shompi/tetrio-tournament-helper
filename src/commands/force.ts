@@ -91,22 +91,11 @@ export class ForceCommands extends Subcommand {
 
 		if (isNaN(options.idTorneo))
 			return void await interaction.reply({ content: 'La id debe ser una id numérica o una de las opciones del autocompletado.', ephemeral: true })
-			
+
 		const tournament = await GetTournamentFromGuild(interaction.guildId, options.idTorneo)
 
 		if (!tournament)
 			return void await interaction.reply({ content: 'El torneo que ingresaste no existe en este servidor', ephemeral: true })
-
-		// Check if the player already exists in our database
-		const player = await GetPlayerFromDatabase(options.user.id)
-
-		if (player) {
-			await AddPlayerToTournamentPlayerList(tournament, options.user.id, options.challongeId)
-			return void await interaction.reply({
-				content: `✅ ¡El jugador ha sido inscrito en el torneo!`,
-				ephemeral: true
-			})
-		}
 
 		await interaction.deferReply({ ephemeral: true })
 
@@ -163,13 +152,17 @@ export class ForceCommands extends Subcommand {
 				embeds: []
 			})
 
-		await AddTetrioPlayerToDatabase({
+		// await AddTetrioPlayerToDatabase({
+		// 	challongeId: options.challongeId,
+		// 	discordId: options.user.id,
+		// 	tetrioId: options.tetrioId
+		// }, TetrioUserData)
+
+		await AddPlayerToTournamentPlayerList(tournament, {
 			challongeId: options.challongeId,
 			discordId: options.user.id,
-			tetrioId: options.tetrioId
-		}, TetrioUserData)
-
-		await AddPlayerToTournamentPlayerList(tournament, options.user.id, options.challongeId)
+			data: TetrioUserData
+		})
 
 		return void await selectedOption.update({
 			content: `✅ El jugador ${options.tetrioId.toUpperCase()} (${options.user.username} - ${options.user.id}) ha sido agregado a la base de datos y a la lista de jugadores del torneo **${tournament.name}** exitosamente!`,
