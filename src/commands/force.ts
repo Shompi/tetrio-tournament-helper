@@ -97,6 +97,9 @@ export class ForceCommands extends Subcommand {
 		if (!tournament)
 			return void await interaction.reply({ content: 'El torneo que ingresaste no existe en este servidor', ephemeral: true })
 
+		if (tournament.players.some(player => player.discordId === options.user.id))
+			return void await interaction.reply({ content: 'Este usuario ya se encuentra en la lista de inscritos en el torneo.', ephemeral: true })
+
 		await interaction.deferReply({ ephemeral: true })
 
 		// Check if the user exists on tetrio
