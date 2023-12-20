@@ -308,7 +308,7 @@ export async function RunTetrioTournamentRegistrationChecks(userData: TetrioPlay
 			return ({ allowed: false, reason: "El jugador es actualmente UNRANKED en Tetra League." });
 
 		const tournamentRankIndex = TetrioRanksArray.findIndex((rank) => rank === torneo.rank_cap);
-		const userRankIndex = TetrioRanksArray.findIndex((rank) => rank === userData.league.rank);
+		const userRankIndex = TetrioRanksArray.findIndex((rank) => rank === userData.league.bestrank);
 
 		if (tournamentRankIndex < userRankIndex)
 			return ({ allowed: false, reason: "El rank del jugador está por sobre el límite de rank impuesto por el torneo." });
