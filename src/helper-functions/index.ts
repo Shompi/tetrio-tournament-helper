@@ -149,24 +149,58 @@ const CreateRanksMap = (ranks: typeof TetrioRanksArray) => {
 
 	return tempMap
 }
-
 export const TetrioRanksMap: Map<string, TetrioRankObject> = CreateRanksMap(TetrioRanksArray)
+
+type TetrioUsername = string
+/** Cache for tetrio requests */
+const TetrioCache = new Map<TetrioUsername, TetrioPlayerRelevantData>()
 
 /** Gets data of an user from the TETRIO API, calls toLowerCase() internally */
 export async function GetUserDataFromTetrio(_username: string): Promise<TetrioPlayerRelevantData | null> {
+
+	// We can actually implement a little cache here i guess
+
 	try {
 		const username = _username.toLowerCase();
+
+		if (TetrioCache.has(username)) {
+			return TetrioCache.get(username)!
+		}
+
 
 		const apiResponse = await request(TETRIO_ENDPOINTS.USERS + username).then(response => response.body.json()) as TetrioAPIUserResponse;
 
 		if (!apiResponse.success)
 			return null
 
+		// Add this user data to our cache
+		TetrioCache.set(apiResponse.data!.user.username, {
+			_id: apiResponse.data!.user._id,
+			badstanding: apiResponse.data!.user.badstanding,
+			country: apiResponse.data!.user.country,
+			league: apiResponse.data!.user.league,
+			username: apiResponse.data!.user.username,
+			avatar_revision: apiResponse.data!.user.avatar_revision,
+			banner_revision: apiResponse.data!.user.banner_revision,
+			bio: apiResponse.data!.user.bio
+		})
+		// Delete the entry after some time
+		console.log(`[CACHE] Añadiendo a ${apiResponse.data?.user.username} al cache`);
+
+		setTimeout(() => {
+
+			console.log(`[CACHE] Quitando a ${apiResponse.data?.user.username} del cache`);
+
+			TetrioCache.delete(apiResponse.data!.user.username)
+		},/** 10 minutes I guess its alright */ 60_000 * 10);
+
+
 		/** apiResponse.data shouldn't be undefined here since the request succeeded */
+		const { league } = apiResponse.data!.user
 		return {
 			_id: apiResponse.data!.user._id,
 			username: apiResponse.data!.user.username,
-			league: apiResponse.data!.user.league,
+			league,
 			country: apiResponse.data!.user.country,
 			badstanding: apiResponse.data!.user.badstanding,
 			avatar_revision: apiResponse.data!.user.avatar_revision,
@@ -618,17 +652,23 @@ export function TetrioUserProfileEmbed(userData: TetrioPlayerRelevantData) {
 	return embed
 }
 
-/** This function assumes the player (user) has already been added to the player's database, in case of tetrio tournaments */
-export async function AddPlayerToTournamentPlayerList(tournament: Tournament, userId: string, challongeId: string | null) {
+type BasePlayer = {
+	discordId: string
+	challongeId: string | null,
+	data?: TetrioPlayerRelevantData
+}
+
+/** This function will add a base player (discordId, challongeId, data? to the players array) */
+export async function AddPlayerToTournamentPlayerList(tournament: Tournament, player: BasePlayer) {
 
 	// Add player to the tournament
-	console.log(`[TOURNAMENT] Añadiendo nuevo jugador ${userId} al torneo ${tournament.name}`);
+	console.log(`[TOURNAMENT] Añadiendo nuevo jugador ${player.discordId} al torneo ${tournament.name}`);
 
-	if (tournament.players.some(player => player.discordId === userId))
+	if (tournament.players.some(pl => pl.discordId === player.discordId))
 		return console.log('[TOURNAMENT] El jugador ya estába en la lista de jugadores inscritos en el torneo')
 
 	const players = Array.from(tournament.players)
-	players.push({ challongeId, discordId: userId })
+	players.push(player)
 	tournament.players = players
 	console.log("[TOURNAMENT] El jugador ha sido añadido a la lista");
 
