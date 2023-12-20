@@ -2,11 +2,11 @@
 * This file will contain tetrio api function calls
 * and maybe other stuff.
 */
-import { AttachmentBuilder, EmbedBuilder, Colors, Snowflake, User, ChatInputCommandInteraction } from "discord.js";
+import { AttachmentBuilder, EmbedBuilder, Colors, Snowflake } from "discord.js";
 import { AsciiTable3 } from "ascii-table3";
 import { Command } from "@sapphire/framework";
 import { Subcommand } from "@sapphire/plugin-subcommands";
-import { TournamentModel, TournamentStatus, TournamentStatusStrings, Tournament, RegisteredPlayer } from "../sequelize/Tournaments.js";
+import { TournamentModel, TournamentStatus, TournamentStatusStrings, Tournament } from "../sequelize/Tournaments.js";
 import { PlayerModel } from "../sequelize/TetrioPlayers.js";
 import { request } from "undici"
 import { codeBlock } from "@sapphire/utilities";
