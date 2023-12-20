@@ -91,11 +91,7 @@ interface TetrioAPIUserResponse {
 	data?: TetrioAPIUserData
 }
 
-export interface TetrioPlayerRelevantData extends Pick<TetrioApiUser, "bio" | "league" | "country" | "username" | "avatar_revision" | "banner_revision" | "badstanding" | "_id"> {
-
-}
-
-
+export type TetrioPlayerRelevantData = Pick<TetrioApiUser, "bio" | "league" | "country" | "username" | "avatar_revision" | "banner_revision" | "badstanding" | "_id">
 
 const TETRIO_BASE = "https://ch.tetr.io/api"
 const TETRIO_ENDPOINTS = {
@@ -168,9 +164,9 @@ export async function GetUserDataFromTetrio(_username: string): Promise<TetrioPl
 
 		/** apiResponse.data shouldn't be undefined here since the request succeeded */
 		return {
+			_id: apiResponse.data!.user._id,
 			username: apiResponse.data!.user.username,
 			league: apiResponse.data!.user.league,
-			_id: apiResponse.data!.user._id,
 			country: apiResponse.data!.user.country,
 			badstanding: apiResponse.data!.user.badstanding,
 			avatar_revision: apiResponse.data!.user.avatar_revision,
