@@ -1,5 +1,5 @@
 import { Sequelize, DataTypes, InferAttributes, InferCreationAttributes, CreationOptional, Model } from 'sequelize'
-import { GameName } from '../helper-functions/index.js';
+import { GameName, TetrioPlayerRelevantData } from '../helper-functions/index.js';
 import { Snowflake } from 'discord.js';
 
 const sequelize = new Sequelize({
@@ -27,6 +27,8 @@ export enum TournamentStatus {
 export type RegisteredPlayer = {
 	discordId: Snowflake
 	challongeId: string | null
+	/** This should only be present if the tournament game is TETRIO */
+	data?: TetrioPlayerRelevantData
 }
 
 export interface Tournament extends Model<InferAttributes<Tournament>, InferCreationAttributes<Tournament>> {
