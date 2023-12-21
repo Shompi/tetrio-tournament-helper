@@ -1,9 +1,7 @@
 import { Subcommand } from "@sapphire/plugin-subcommands"
-import { Tournament, TournamentStatus } from "../sequelize/Tournaments.js";
-import { PlayerModel } from "../sequelize/TetrioPlayers.js";
+import { RegisteredPlayer, Tournament, TournamentStatus } from "../sequelize/Tournaments.js";
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, Colors, codeBlock, ComponentType, EmbedBuilder, PermissionFlagsBits, ChannelType, GuildTextBasedChannel, ColorResolvable } from "discord.js";
-import { BuildTableForChallonge, ClearTournamentPlayerList, FinishTournament, GenerateTetrioAvatarURL, GetRolesToAddArray, GetTournamentFromGuild, IsTournamentEditable, OrderBy, PlayerDataOrdered, SearchTournamentByNameAutocomplete, TetrioRanksArray, TournamentDetailsEmbed } from "../helper-functions/index.js";
-import { DeletePlayerFromDatabase } from "../helper-functions/index.js";
+import { BuildTableForChallonge, ClearTournamentPlayerList, FinishTournament, GetRolesToAddArray, GetTournamentFromGuild, IsTournamentEditable, OrderBy, SearchTournamentByNameAutocomplete, TetrioRanksArray, TournamentDetailsEmbed } from "../helper-functions/index.js";
 import { AsciiTable3 } from "ascii-table3";
 import { OrderPlayerListBy } from "../helper-functions/index.js";
 import { BuildASCIITableAttachment } from "../helper-functions/index.js";
@@ -554,7 +552,7 @@ export class AdminCommands extends Subcommand {
 }
 
 
-function BuildEmbedPlayerList(tournament: Tournament, players: PlayerDataOrdered[]) {
+function BuildEmbedPlayerList(tournament: Tournament, players: RegisteredPlayer[]) {
 
 	const table = new AsciiTable3()
 		.setHeading("POS", "USERNAME", "RANK", "RATING")
@@ -565,7 +563,7 @@ function BuildEmbedPlayerList(tournament: Tournament, players: PlayerDataOrdered
 	let pos = 1
 
 	for (const player of players) {
-		table.addRow(pos, player.data.username, player.data.league.rank.toUpperCase(), player.data.league.rating.toFixed(2))
+		table.addRow(pos, player.data!.username, player.data!.league.rank.toUpperCase(), player.data!.league.rating.toFixed(2))
 		pos++
 	}
 

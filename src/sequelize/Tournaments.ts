@@ -26,6 +26,7 @@ export enum TournamentStatus {
 
 export type RegisteredPlayer = {
 	discordId: Snowflake
+	dUsername: string
 	challongeId: string | null
 	/** This should only be present if the tournament game is TETRIO */
 	data?: TetrioPlayerRelevantData

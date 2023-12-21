@@ -6,7 +6,7 @@ import { AttachmentBuilder, EmbedBuilder, Colors, Snowflake } from "discord.js";
 import { AsciiTable3 } from "ascii-table3";
 import { Command } from "@sapphire/framework";
 import { Subcommand } from "@sapphire/plugin-subcommands";
-import { TournamentModel, TournamentStatus, TournamentStatusStrings, Tournament } from "../sequelize/Tournaments.js";
+import { TournamentModel, TournamentStatus, TournamentStatusStrings, Tournament, RegisteredPlayer } from "../sequelize/Tournaments.js";
 import { PlayerModel } from "../sequelize/TetrioPlayers.js";
 import { request } from "undici"
 import { codeBlock } from "@sapphire/utilities";
@@ -257,6 +257,7 @@ export function TournamentDetailsEmbed(torneo: Tournament) {
 	)
 }
 
+/** @deprecated This function should not be used */
 export async function AddTetrioPlayerToDatabase({ discordId, tetrioId, challongeId }: { discordId: string; tetrioId: string; challongeId: string | null }, userData: TetrioPlayerRelevantData) {
 
 	if (!discordId || !tetrioId)
@@ -393,7 +394,7 @@ export async function DeletePlayerFromTournaments(discord_id: string) {
 	return removedFrom;
 }
 
-/** This function takes a discord_id and deletes the row from the PLAYERS database */
+/** @deprecated This function takes a discord_id and deletes the row from the PLAYERS database */
 export async function DeletePlayerFromDatabase(discord_id: string) {
 	console.log(`[DEBUG: Database PLAYERS] Borrando al usuario ${discord_id} de la base de datos..`);
 
@@ -474,26 +475,21 @@ export function GetRolesToAddArray(interaction: Command.ChatInputCommandInteract
 
 	return roles;
 }
-export interface PlayerDataOrdered {
-	discordId: string;
-	data: TetrioPlayerRelevantData;
-	challongeId: string | null
-}
 
-export async function BuildTableForChallonge(tournament: Tournament, players: PlayerDataOrdered[]) {
+export async function BuildTableForChallonge(tournament: Tournament, players: RegisteredPlayer[]) {
 
 	// Challonge bulk add accepts a string like [displayName, email or challonge username]
 	return new EmbedBuilder()
 		.setTitle(`Jugadores ${tournament.name}`)
 		.setDescription(codeBlock(
-			players.map((player) => `${player.data.username}${player.challongeId ? ", " + player.challongeId : ""}`)
+			players.map((player) => `${player.data!.username}${player.challongeId ? ", " + player.challongeId : ""}`)
 				.join("\n")
 		))
 		.setColor(Colors.White)
 		.setTimestamp()
 }
 
-export async function BuildTableForGeneralInfo(tournament: Tournament, playerList: PlayerDataOrdered[]) {
+export async function BuildTableForGeneralInfo(tournament: Tournament, playerList: RegisteredPlayer[]) {
 	// Now we need to build the table
 	// We need to check whether or not this is a TETRIO tournament so we can build different tables for other games.
 	const table = new AsciiTable3(tournament.name)
@@ -518,7 +514,7 @@ export async function BuildTableForGeneralInfo(tournament: Tournament, playerLis
 	return table;
 }
 
-export function BuildAsciiTableForTetrio(tournament: Tournament, playerList: PlayerDataOrdered[]) {
+export function BuildAsciiTableForTetrio(tournament: Tournament, playerList: RegisteredPlayer[]) {
 	// Now we need to build the table
 	// We need to check whether or not this is a TETRIO tournament so we can build different tables for other games.
 	const table = new AsciiTable3(tournament.name)
@@ -539,38 +535,31 @@ export function BuildAsciiTableForTetrio(tournament: Tournament, playerList: Pla
 		table.addRow(
 			i + 1,
 			playerList[i].discordId,
-			playerList[i].data.username.toUpperCase(),
-			playerList[i].data.country?.toUpperCase() ?? "OCULTO",
-			playerList[i].data.league.rank.toUpperCase(),
-			playerList[i].data.league.rating.toFixed(2),
-			playerList[i].data.league.apm ?? "0.00",
-			playerList[i].data.league.pps ?? "0.00"
+			playerList[i].data!.username.toUpperCase(),
+			playerList[i].data!.country?.toUpperCase() ?? "OCULTO",
+			playerList[i].data!.league.rank.toUpperCase(),
+			playerList[i].data!.league.rating.toFixed(2),
+			playerList[i].data!.league.apm ?? "0.00",
+			playerList[i].data!.league.pps ?? "0.00"
 		);
 	}
 
 	return table;
 }
 
-export async function OrderPlayerListBy(tournament: Tournament, orderBy: OrderBy, filter_checked_in: boolean | null): Promise<PlayerDataOrdered[]> {
+export async function OrderPlayerListBy(tournament: Tournament, orderBy: OrderBy, filter_checked_in: boolean | null): Promise<RegisteredPlayer[]> {
 	// We start by getting all the players we need from the database
-	const PlayersArray: PlayerDataOrdered[] = [];
+	const PlayersArray: RegisteredPlayer[] = [];
 
-	for (const { challongeId, discordId } of tournament.players) {
+	for (const player of tournament.players) {
 
 		if (filter_checked_in) {
 			// If the discordId of the player that is on the player list, is not on the checked in list we skip it
-			if (!tournament.checked_in.includes(discordId))
+			if (!tournament.checked_in.includes(player.discordId))
 				continue
 		}
 
-		const playerData = await PlayerModel.findByPk(discordId);
-
-		if (!playerData) {
-			console.log(`[DEBUG] Los datos del usuario ${discordId} no están en la base de datos PLAYER`);
-			continue;
-		}
-
-		PlayersArray.push({ discordId, data: playerData.data, challongeId });
+		PlayersArray.push(player);
 	}
 
 
@@ -582,8 +571,8 @@ export async function OrderPlayerListBy(tournament: Tournament, orderBy: OrderBy
 			// Sort is INPLACE
 			PlayersArray.sort((playerA, playerB) => {
 
-				const rankA = TetrioRanksMap.get(playerA.data.league.rank)!.index;
-				const rankB = TetrioRanksMap.get(playerB.data.league.rank)!.index;
+				const rankA = TetrioRanksMap.get(playerA.data!.league.rank)!.index;
+				const rankB = TetrioRanksMap.get(playerB.data!.league.rank)!.index;
 
 				return rankB - rankA;
 			});
@@ -591,8 +580,8 @@ export async function OrderPlayerListBy(tournament: Tournament, orderBy: OrderBy
 
 		if (orderBy === 'tr') {
 			PlayersArray.sort((playerA, playerB) => {
-				const ratingA = playerA.data.league.rating;
-				const ratingB = playerB.data.league.rating;
+				const ratingA = playerA.data!.league.rating;
+				const ratingB = playerB.data!.league.rating;
 
 				return ratingB - ratingA;
 			});
@@ -600,8 +589,8 @@ export async function OrderPlayerListBy(tournament: Tournament, orderBy: OrderBy
 
 		if (orderBy === 'apm') {
 			PlayersArray.sort((playerA, playerB) => {
-				const apmA = playerA.data.league.apm ?? 0;
-				const apmB = playerB.data.league.apm ?? 0;
+				const apmA = playerA.data!.league.apm ?? 0;
+				const apmB = playerB.data!.league.apm ?? 0;
 
 				return apmB - apmA;
 			});
@@ -609,8 +598,8 @@ export async function OrderPlayerListBy(tournament: Tournament, orderBy: OrderBy
 
 		if (orderBy === 'pps') {
 			PlayersArray.sort((playerA, playerB) => {
-				const apmA = playerA.data.league.pps ?? 0;
-				const apmB = playerB.data.league.pps ?? 0;
+				const apmA = playerA.data!.league.pps ?? 0;
+				const apmB = playerB.data!.league.pps ?? 0;
 
 				return apmB - apmA;
 			});
@@ -620,8 +609,7 @@ export async function OrderPlayerListBy(tournament: Tournament, orderBy: OrderBy
 	return PlayersArray
 }
 
-export function BuildASCIITableAttachment(tournament: Tournament, orderedPlayerList: PlayerDataOrdered[]) {
-	const { players } = tournament;
+export function BuildASCIITableAttachment(tournament: Tournament, orderedPlayerList: RegisteredPlayer[]) {
 
 	const table = BuildAsciiTableForTetrio(tournament, orderedPlayerList);
 
@@ -659,7 +647,7 @@ type BasePlayer = {
 }
 
 /** This function will add a base player (discordId, challongeId, data? to the players array) */
-export async function AddPlayerToTournamentPlayerList(tournament: Tournament, player: BasePlayer) {
+export async function AddPlayerToTournamentPlayerList(tournament: Tournament, player: RegisteredPlayer) {
 
 	// Add player to the tournament
 	console.log(`[TOURNAMENT] Añadiendo nuevo jugador ${player.discordId} al torneo ${tournament.name}`);

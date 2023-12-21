@@ -163,6 +163,7 @@ export class ForceCommands extends Subcommand {
 		await AddPlayerToTournamentPlayerList(tournament, {
 			challongeId: options.challongeId,
 			discordId: options.user.id,
+			dUsername: options.user.username,
 			data: TetrioUserData
 		})
 

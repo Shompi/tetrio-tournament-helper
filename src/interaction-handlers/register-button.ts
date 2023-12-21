@@ -29,6 +29,7 @@ export class RegisterButtonHandler extends InteractionHandler {
 
 		return void await AddPlayerToTournamentPlayerList(tournament, {
 			discordId: interaction.user.id,
+			dUsername: interaction.user.username,
 			challongeId: null,
 		})
 	}
@@ -145,6 +146,7 @@ async function HandleTetrioRegistration(interaction: ButtonInteraction<'cached'>
 
 	void await AddPlayerToTournamentPlayerList(tournament, {
 		discordId: interaction.user.id,
+		dUsername: interaction.user.username,
 		challongeId: challongeUsername,
 		data: playerdata
 	})
