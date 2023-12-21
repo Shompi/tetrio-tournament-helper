@@ -316,7 +316,7 @@ export class AdminCommands extends Subcommand {
 	public async chatInputClearPlayerList(interaction: Subcommand.ChatInputCommandInteraction<'cached'>) {
 		// Your code goes here
 
-		const idTorneo = +interaction.options.getString('id-nombre', true)
+		const idTorneo = +interaction.options.getString('nombre-id', true)
 		if (isNaN(idTorneo))
 			return void await interaction.reply({ content: 'La id ingresada no es una id válida de un torneo. Recuerda usar una de las opciones del autocompletado o directamente usar la id del torneo.', ephemeral: true })
 
