@@ -627,6 +627,7 @@ export function TetrioUserProfileEmbed(userData: TetrioPlayerRelevantData) {
 		.setDescription(
 			`**Username**: ${userData.username.toUpperCase()}`
 			+ `\n**Rank**: ${TetrioRanksMap.get(userData.league.rank)?.emoji}`
+			+ `\n**Rank más alto**: ${TetrioRanksMap.get(userData.league.bestrank)?.emoji}`
 			+ `\n**Rating**: ${userData.league.rating.toFixed(2)}`
 			+ `\n**Bio**: ${userData.bio ?? "No bio."}`
 			+ `\n\n[Enlace al perfil](${GetUserProfileURL(userData.username)})`
