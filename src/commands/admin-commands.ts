@@ -111,15 +111,6 @@ export class AdminCommands extends Subcommand {
 								.setRequired(false)
 						)
 				)
-				.addSubcommand(deletePlayer =>
-					deletePlayer.setName('eliminar-jugador')
-						.setDescription('Elimina a un jugador de la base de datos')
-						.addUserOption(discorid =>
-							discorid.setName('discord-id')
-								.setDescription('La id de Discord del usuario que quieres eliminar')
-								.setRequired(true)
-						)
-				)
 				.addSubcommand(editTournament =>
 					editTournament.setName('editar-torneo')
 						.setDescription('Edita la información de un torneo que ya está creado.')
