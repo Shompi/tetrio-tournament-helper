@@ -71,89 +71,96 @@ async function HandleTetrioRegistration(interaction: ButtonInteraction<'cached'>
 		ephemeral: true
 	})
 
-	const profileEmbed = TetrioUserProfileEmbed(playerdata)
+	// const profileEmbed = TetrioUserProfileEmbed(playerdata)
 
-	const confirmButton = new ButtonBuilder()
-		.setCustomId(`t-profile-confirm`)
-		.setLabel("Si")
-		.setEmoji("✅")
-		.setStyle(ButtonStyle.Secondary)
+	// const confirmButton = new ButtonBuilder()
+	// 	.setCustomId(`t-profile-confirm`)
+	// 	.setLabel("Si")
+	// 	.setEmoji("✅")
+	// 	.setStyle(ButtonStyle.Secondary)
 
-	const cancelButton = new ButtonBuilder()
-		.setCustomId(`t-profile-cancel`)
-		.setLabel("Cancelar inscripción")
-		.setStyle(ButtonStyle.Danger)
+	// const cancelButton = new ButtonBuilder()
+	// 	.setCustomId(`t-profile-cancel`)
+	// 	.setLabel("Cancelar")
+	// 	.setStyle(ButtonStyle.Danger)
 
-	const confirmOrDenyRow = new ActionRowBuilder<ButtonBuilder>()
-		.setComponents(confirmButton)
+	// const confirmOrCancel = new ActionRowBuilder<ButtonBuilder>()
+	// 	.setComponents(confirmButton, cancelButton)
 
-	const cancelRow = new ActionRowBuilder<ButtonBuilder>()
-		.setComponents(cancelButton)
 
-	// Interaction is deferred at this point
-	const profileReply = await modalSubmition.reply({
-		content: '¿Es este tu perfil de TETRIO?',
-		embeds: [profileEmbed],
-		components: [confirmOrDenyRow, cancelRow],
+	// // Interaction is deferred at this point
+	// const profileReply = await modalSubmition.reply({
+	// 	content: '¿Es este tu perfil de TETRIO?',
+	// 	embeds: [profileEmbed],
+	// 	components: [confirmOrCancel],
+	// 	ephemeral: true
+	// })
+
+	// const pressedButton = await profileReply.awaitMessageComponent({
+	// 	componentType: ComponentType.Button,
+	// 	time: 60_000 * 2,
+	// 	filter: (bint) => {
+	// 		console.log('Received button pressed');
+	// 		return true
+	// 	}
+
+	// }).catch(() => null);
+
+	// if (!pressedButton) {
+	// 	return void await profileReply.edit({
+	// 		content: 'La interacción ha expirado, si quieres continuar con el proceso, por favor presiona el boton de inscripción nuevamente.',
+	// 		components: [],
+	// 		embeds: [],
+	// 	})
+	// }
+
+	// console.log(`[DEBUG] Received button interaction!`);
+	// if (pressedButton.customId === "t-profile-cancel") {
+	// 	return void await pressedButton.update({
+	// 		content: 'La interacción ha sido cancelada.\nSi quieres comenzar el proceso de inscripción de nuevo, debes presionar nuevamente el botón.',
+	// 		components: [],
+	// 		embeds: []
+	// 	})
+	// }
+
+	// if (pressedButton.customId === 't-profile-confirm') {
+	// 	console.log("[REGISTER BUTTON] EL usuario confirmo su perfil...");
+
+
+	// Run tournament checks
+	console.log("[DEBUG] Running tournament inscription checks...");
+	const check = await RunTetrioTournamentRegistrationChecks(playerdata, tournament, interaction.user.id)
+
+
+	if (!check.allowed) {
+		return void await modalSubmition.reply({
+			content: `No te puedes inscribir en este torneo.\nRazón: **${check.reason}**`,
+			ephemeral: true
+		})
+	}
+	console.log("[DEBUG] Tournament checks passed!");
+
+
+	console.log("[DEBUG] Adding player to tournament players list");
+
+	void await AddPlayerToTournamentPlayerList(tournament, {
+		discordId: interaction.user.id,
+		challongeId: challongeUsername,
+		data: playerdata
+	})
+
+	void await modalSubmition.reply({
+		content: '✅ !Has sido añadido exitosamente al torneo!\nEl perfil con el que te inscribiste es el siguiente:',
+		embeds: [TetrioUserProfileEmbed(playerdata)],
 		ephemeral: true
 	})
 
-	const pressedButton = await profileReply.awaitMessageComponent({
-		componentType: ComponentType.Button,
-		time: 60_000 * 2,
-
-	}).catch(() => null);
-
-	if (!pressedButton) {
-		return void await profileReply.edit({
-			content: 'La interacción ha expirado, si quieres continuar con el proceso, por favor presiona el boton de inscripción nuevamente.',
-			components: [],
-			embeds: [],
-		})
-	}
-
-	console.log(`[DEBUG] Received button interaction!`);
-
-
-	if (pressedButton.customId === "t-profile-cancel") {
-		return void await pressedButton.update({
-			content: 'La interacción ha sido cancelada.\nSi quieres comenzar el proceso de inscripción de nuevo, debes presionar nuevamente el botón.',
-			components: [],
-			embeds: []
-		})
-	}
-
-	if (pressedButton.customId === 't-profile-confirm') {
-		console.log("[REGISTER BUTTON] EL usuario confirmo su perfil...");
-
-
-		// Run tournament checks
-		const check = await RunTetrioTournamentRegistrationChecks(playerdata, tournament, interaction.user.id)
-
-		console.log("[DEBUG] Running tournament inscription checks...");
-
-		if (!check.allowed) {
-			return void await pressedButton.update({
-				content: `No te puedes inscribir en este torneo.\nRazón: **${check.reason}**`,
-			})
-		}
-
-		console.log("[DEBUG] Tournament checks passed!");
-
-
-		void await AddPlayerToTournamentPlayerList(tournament, {
-			discordId: interaction.user.id,
-			challongeId: challongeUsername,
-			data: playerdata
-		})
-
-		void await pressedButton.update({ content: '✅ !Has sido añadido exitosamente al torneo!' })
-		// Update the message with the new details
-		return void await interaction.message.edit({
-			embeds: [TournamentDetailsEmbed(tournament)]
-		})
-	}
+	// Update the message with the new details
+	return void await interaction.message.edit({
+		embeds: [TournamentDetailsEmbed(tournament)]
+	})
 }
+// }
 
 function BuildGeneralRegistrationModal(interaction: ButtonInteraction<'cached'>) {
 	return new ModalBuilder()
