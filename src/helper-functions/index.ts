@@ -679,3 +679,13 @@ export async function AddPlayerToTournamentPlayerList(tournament: Tournament, pl
 export async function GetPlayerFromDatabase(discordId: Snowflake) {
 	return await PlayerModel.findByPk(discordId);
 }
+
+export async function ClearTournamentPlayerList(tournament: Tournament) {
+
+	await tournament.update({
+		players: [],
+		checked_in: [],
+	})
+
+	return true
+}
