@@ -1,9 +1,8 @@
 import { Subcommand } from "@sapphire/plugin-subcommands"
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, Colors, ComponentType, EmbedBuilder, PermissionFlagsBits } from "discord.js"
-import { AddPlayerToTournamentPlayerList, AddTetrioPlayerToDatabase, GetTournamentFromGuild, GetUserDataFromTetrio, SearchTournamentByNameAutocomplete, TetrioUserProfileEmbed } from "../helper-functions/index.js";
+import { AddPlayerToTournamentPlayerList, GetTournamentFromGuild, GetUserDataFromTetrio, SearchTournamentByNameAutocomplete, TetrioUserProfileEmbed } from "../helper-functions/index.js";
 import { TournamentStatus } from "../sequelize/Tournaments.js";
 import { RemovePlayerFromTournament } from "../helper-functions/index.js";
-import { GetPlayerFromDatabase } from "../helper-functions/index.js";
 
 export class ForceCommands extends Subcommand {
 
