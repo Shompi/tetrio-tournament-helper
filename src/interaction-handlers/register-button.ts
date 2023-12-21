@@ -101,7 +101,6 @@ async function HandleTetrioRegistration(interaction: ButtonInteraction<'cached'>
 
 	const pressedButton = await profileReply.awaitMessageComponent({
 		componentType: ComponentType.Button,
-		filter: (bInteraction) => ["t-profile-confirm", "t-profile-cancel"].includes(bInteraction.customId),
 		time: 60_000 * 2,
 
 	}).catch(() => null);
@@ -113,6 +112,9 @@ async function HandleTetrioRegistration(interaction: ButtonInteraction<'cached'>
 			embeds: [],
 		})
 	}
+
+	console.log(`[DEBUG] Received button interaction!`);
+
 
 	if (pressedButton.customId === "t-profile-cancel") {
 		return void await pressedButton.update({
