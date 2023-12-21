@@ -19,14 +19,9 @@ export class AdminCommands extends Subcommand {
 					name: 'anuncio',
 					chatInputRun: 'chatInputAnnounce',
 				},
-
-				{
-					name: 'eliminar-jugador',
-					chatInputRun: 'chatInputDeletePlayer'
-				},
 				{
 					name: 'eliminar-jugadores',
-					chatInputRun: 'chatInputDeletePlayers'
+					chatInputRun: 'chatInputClearPlayerList'
 				},
 				{
 					name: 'editar-torneo',
@@ -318,7 +313,7 @@ export class AdminCommands extends Subcommand {
 		}
 	}
 
-	public async chatInputDeletePlayers(interaction: Subcommand.ChatInputCommandInteraction<'cached'>) {
+	public async chatInputClearPlayerList(interaction: Subcommand.ChatInputCommandInteraction<'cached'>) {
 		// Your code goes here
 
 		const idTorneo = +interaction.options.getString('id-nombre', true)
