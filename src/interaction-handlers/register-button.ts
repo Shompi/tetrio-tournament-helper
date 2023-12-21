@@ -123,13 +123,13 @@ async function HandleTetrioRegistration(interaction: ButtonInteraction<'cached'>
 	}
 
 	if (pressedButton.customId === 't-profile-confirm') {
+
 		// Run tournament checks
 		const check = await RunTetrioTournamentRegistrationChecks(playerdata, tournament, interaction.user.id)
 
 		if (!check.allowed) {
-			return void await interaction.reply({
+			return void await pressedButton.update({
 				content: `No te puedes inscribir en este torneo.\nRazón: **${check.reason}**`,
-				ephemeral: true
 			})
 		}
 
@@ -139,7 +139,7 @@ async function HandleTetrioRegistration(interaction: ButtonInteraction<'cached'>
 			data: playerdata
 		})
 
-		void await interaction.reply({ content: '✅ !Has sido añadido exitosamente al torneo!', ephemeral: true })
+		void await pressedButton.update({ content: '✅ !Has sido añadido exitosamente al torneo!' })
 		// Update the message with the new details
 		return void await interaction.message.edit({
 			embeds: [TournamentDetailsEmbed(tournament)]
