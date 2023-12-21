@@ -356,11 +356,12 @@ export class AdminCommands extends Subcommand {
 			}
 		}).catch(_ => null)
 
-		if (!Action) return
+		if (!Action)
+			return void await interaction.editReply({ components: [], content: "La interacción ha finalizado." })
 
 		await ClearTournamentPlayerList(tournament)
 
-		return void await Action.editReply({
+		return void await Action.update({
 			content: `✅ ¡La lista de jugadores del torneo **${tournament.name}** ha sido borrada!`,
 			embeds: [],
 			components: []
