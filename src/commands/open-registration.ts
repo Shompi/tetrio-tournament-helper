@@ -21,6 +21,7 @@ export class OpenRegistration extends Command {
 					id.setName('nombre-id')
 						.setDescription('La id numérica o el nombre del torneo que quieres abrir las inscripciones')
 						.setRequired(true)
+						.setAutocomplete(true)
 				)
 				.addChannelOption(channel =>
 					channel.setName('canal')
