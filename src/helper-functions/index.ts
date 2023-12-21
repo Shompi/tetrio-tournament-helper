@@ -682,6 +682,9 @@ export async function GetPlayerFromDatabase(discordId: Snowflake) {
 
 export async function ClearTournamentPlayerList(tournament: Tournament) {
 
+	console.log(`[TOURNAMENTS] Eliminado jugadores del torneo ${tournament.name}`)
+
+
 	await tournament.update({
 		players: [],
 		checked_in: [],
