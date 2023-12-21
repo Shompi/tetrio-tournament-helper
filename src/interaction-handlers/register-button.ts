@@ -101,7 +101,7 @@ async function HandleTetrioRegistration(interaction: ButtonInteraction<'cached'>
 
 	const pressedButton = await profileReply.awaitMessageComponent({
 		componentType: ComponentType.Button,
-		filter: (bInteraction) => bInteraction.message.id === profileReply.id && ["t-profile-confirm", "t-profile-retry", "t-profile-cancel"].includes(bInteraction.customId),
+		filter: (bInteraction) => ["t-profile-confirm", "t-profile-cancel"].includes(bInteraction.customId),
 		time: 60_000 * 2,
 
 	}).catch(() => null);
@@ -123,15 +123,22 @@ async function HandleTetrioRegistration(interaction: ButtonInteraction<'cached'>
 	}
 
 	if (pressedButton.customId === 't-profile-confirm') {
+		console.log("[REGISTER BUTTON] EL usuario confirmo su perfil...");
+
 
 		// Run tournament checks
 		const check = await RunTetrioTournamentRegistrationChecks(playerdata, tournament, interaction.user.id)
+
+		console.log("[DEBUG] Running tournament inscription checks...");
 
 		if (!check.allowed) {
 			return void await pressedButton.update({
 				content: `No te puedes inscribir en este torneo.\nRazón: **${check.reason}**`,
 			})
 		}
+
+		console.log("[DEBUG] Tournament checks passed!");
+
 
 		void await AddPlayerToTournamentPlayerList(tournament, {
 			discordId: interaction.user.id,
