@@ -505,10 +505,10 @@ export class AdminCommands extends Subcommand {
 		const orderBy = (interaction.options.getString('ordenar-por', false) ?? "default") as OrderBy
 		const filterCheckedIn = interaction.options.getBoolean('checked_in', false)
 
-		const orderedPlayerList = await OrderPlayerListBy(tournament, orderBy, filterCheckedIn)
-
 		if (tournament.game !== "TETRIO") return void await interaction.reply({ content: 'El listado de jugadores para torneos que no son de tetrio se implementará prontamente.', ephemeral: true })
 		// We basically need to skip all the code below if the tournament is not a TETRIO tournament
+
+		const orderedPlayerList = await OrderPlayerListBy(tournament, orderBy, filterCheckedIn)
 
 		if (format === 'ascii') {
 			const attachment = BuildASCIITableAttachment(tournament, orderedPlayerList)
