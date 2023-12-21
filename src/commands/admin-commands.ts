@@ -2,7 +2,7 @@ import { Subcommand } from "@sapphire/plugin-subcommands"
 import { Tournament, TournamentStatus } from "../sequelize/Tournaments.js";
 import { PlayerModel } from "../sequelize/TetrioPlayers.js";
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, Colors, codeBlock, ComponentType, EmbedBuilder, PermissionFlagsBits, ChannelType, GuildTextBasedChannel, ColorResolvable } from "discord.js";
-import { BuildTableForChallonge, FinishTournament, GenerateTetrioAvatarURL, GetRolesToAddArray, GetTournamentFromGuild, IsTournamentEditable, OrderBy, PlayerDataOrdered, SearchTournamentByNameAutocomplete, TetrioRanksArray, TournamentDetailsEmbed } from "../helper-functions/index.js";
+import { BuildTableForChallonge, ClearTournamentPlayerList, FinishTournament, GenerateTetrioAvatarURL, GetRolesToAddArray, GetTournamentFromGuild, IsTournamentEditable, OrderBy, PlayerDataOrdered, SearchTournamentByNameAutocomplete, TetrioRanksArray, TournamentDetailsEmbed } from "../helper-functions/index.js";
 import { DeletePlayerFromDatabase } from "../helper-functions/index.js";
 import { AsciiTable3 } from "ascii-table3";
 import { OrderPlayerListBy } from "../helper-functions/index.js";
@@ -23,6 +23,10 @@ export class AdminCommands extends Subcommand {
 				{
 					name: 'eliminar-jugador',
 					chatInputRun: 'chatInputDeletePlayer'
+				},
+				{
+					name: 'eliminar-jugadores',
+					chatInputRun: 'chatInputDeletePlayers'
 				},
 				{
 					name: 'editar-torneo',
@@ -109,6 +113,16 @@ export class AdminCommands extends Subcommand {
 							mencion.setName('mencion3')
 								.setDescription('Rol o Usuario que quieres mencionar')
 								.setRequired(false)
+						)
+				)
+				.addSubcommand(clearPlayers =>
+					clearPlayers.setName('eliminar-jugadores')
+						.setDescription('Elimina a todos los jugadores inscritos en un torneo.')
+						.addStringOption(name =>
+							name.setName('nombre-id')
+								.setDescription('El nombre o la Id numérica del torneo')
+								.setAutocomplete(true)
+								.setMaxLength(255)
 						)
 				)
 				.addSubcommand(editTournament =>
@@ -304,16 +318,17 @@ export class AdminCommands extends Subcommand {
 		}
 	}
 
-	public async chatInputDeletePlayer(interaction: Subcommand.ChatInputCommandInteraction) {
+	public async chatInputDeletePlayers(interaction: Subcommand.ChatInputCommandInteraction<'cached'>) {
 		// Your code goes here
-		const target = interaction.options.getUser('discord-id', true)
-		const player = await PlayerModel.findOne({
-			where: {
-				discord_id: target.id
-			}
-		})
 
-		if (!player) return void await interaction.reply({ content: `El usuario ${target.username} no está en la base de datos.` })
+		const idTorneo = +interaction.options.getString('id-nombre', true)
+		if (isNaN(idTorneo))
+			return void await interaction.reply({ content: 'La id ingresada no es una id válida de un torneo. Recuerda usar una de las opciones del autocompletado o directamente usar la id del torneo.', ephemeral: true })
+
+		const tournament = await GetTournamentFromGuild(interaction.guildId, idTorneo)
+
+		if (!tournament)
+			return void await interaction.reply({ content: 'El torneo no pertenece a este servidor o la id es incorrecta.', ephemeral: true })
 
 		const ConfirmButton = new ButtonBuilder()
 			.setCustomId('pl-eliminar')
@@ -323,41 +338,36 @@ export class AdminCommands extends Subcommand {
 		const ConfirmRow = new ActionRowBuilder<ButtonBuilder>()
 			.setComponents(ConfirmButton)
 
-		const playerInfo = new EmbedBuilder()
-			.setColor(Colors.Red)
-			.setDescription(`**Username**: ${player.data.username}\n**Rank**: ${player.data.league.rank.toUpperCase()}`)
-
-		if (player.data.avatar_revision) {
-			playerInfo.setThumbnail(GenerateTetrioAvatarURL(player.data.username, player.data.avatar_revision))
-		}
+		const tournamentInfo = new EmbedBuilder()
+			.setColor(Colors.Blue)
+			.setDescription(`**Torneo**: ${tournament.name}\n**Descripción**: ${tournament.description}\n**Jugadores**: ${tournament.players.length}`)
 
 		const initialReply = await interaction.reply({
-			content: `¿Estás seguro de que quieres eliminar a este jugador?\nAl confirmar, los datos vinculados a este usuario serán eliminados de la base de datos y el jugador será desinscrito de cualquier torneo en el cual estén inscritos.\nÉsta acción se **cancelará** automáticamente en 60 segundos.`,
-			embeds: [playerInfo],
+			content: `¿Estás seguro de que quieres **eliminar a todos los jugadores** de este torneo?\n`,
+			embeds: [tournamentInfo],
 			components: [ConfirmRow],
-			ephemeral: true
 		})
 
 		const Action = await initialReply.awaitMessageComponent({
 			componentType: ComponentType.Button,
 			time: 60_000,
-			filter: (interaction) => interaction.customId === "pl-eliminar"
+			filter: (bInteraction) => {
+				if (bInteraction.user.id !== interaction.user.id) {
+					bInteraction.reply({ content: 'Esta interacción no es para ti.', ephemeral: true })
+					return false
+				}
+
+				return true
+			}
 		}).catch(_ => null)
 
 		if (!Action) return
 
-		void await Action.update({ content: 'Eliminando al jugador de la base de datos, espera un momento...' })
-
-		const success = await DeletePlayerFromDatabase(target.id)
-
-		const SuccessInfo = new EmbedBuilder()
-			.setColor(Colors.Green)
-			.setDescription(`Jugador eliminado.\nTorneos afectados: ${success.removed_from_tournaments}`)
-			.setTimestamp()
+		await ClearTournamentPlayerList(tournament)
 
 		return void await Action.editReply({
-			content: `✅ El jugador ha sido eliminado exitosamente!`,
-			embeds: [SuccessInfo],
+			content: `✅ ¡La lista de jugadores del torneo **${tournament.name}** ha sido borrada!`,
+			embeds: [],
 			components: []
 		})
 	}
