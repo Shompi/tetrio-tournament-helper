@@ -92,10 +92,11 @@ async function HandleTetrioRegistration(interaction: ButtonInteraction<'cached'>
 		.setComponents(cancelButton)
 
 	// Interaction is deferred at this point
-	const profileReply = await modalSubmition.editReply({
+	const profileReply = await modalSubmition.reply({
 		content: '¿Es este tu perfil de TETRIO?',
 		embeds: [profileEmbed],
-		components: [confirmOrDenyRow, cancelRow]
+		components: [confirmOrDenyRow, cancelRow],
+		ephemeral: true
 	})
 
 	const pressedButton = await profileReply.awaitMessageComponent({
@@ -127,7 +128,7 @@ async function HandleTetrioRegistration(interaction: ButtonInteraction<'cached'>
 
 		if (!check.allowed) {
 			return void await interaction.reply({
-				content: `No te puedes inscribir en este torneo.\nRazón: ${check.reason}`,
+				content: `No te puedes inscribir en este torneo.\nRazón: **${check.reason}**`,
 				ephemeral: true
 			})
 		}
@@ -145,12 +146,6 @@ async function HandleTetrioRegistration(interaction: ButtonInteraction<'cached'>
 		})
 	}
 }
-
-type TetrioPlayerModalInfo = {
-	username: string
-	challongeId: string | null
-}
-
 
 function BuildGeneralRegistrationModal(interaction: ButtonInteraction<'cached'>) {
 	return new ModalBuilder()
