@@ -1,10 +1,11 @@
 import { Subcommand } from "@sapphire/plugin-subcommands"
-import { RegisteredPlayer, Tournament, TournamentStatus } from "../sequelize/Tournaments.js";
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, Colors, codeBlock, ComponentType, EmbedBuilder, PermissionFlagsBits, ChannelType, GuildTextBasedChannel, ColorResolvable } from "discord.js";
-import { BuildTableForChallonge, ClearTournamentPlayerList, FinishTournament, GetRolesToAddArray, GetTournamentFromGuild, IsTournamentEditable, OrderBy, SearchTournamentByNameAutocomplete, TetrioRanksArray, TournamentDetailsEmbed } from "../helper-functions/index.js";
-import { AsciiTable3 } from "ascii-table3";
+import { TournamentStatus } from "../sequelize/Tournaments.js";
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, Colors, ComponentType, EmbedBuilder, PermissionFlagsBits, ChannelType, GuildTextBasedChannel, ColorResolvable } from "discord.js";
+import { BuildTableForChallonge, ClearTournamentPlayerList, EmbedMessage, FinishTournament, GetRolesToAddArray, GetTournamentFromGuild, IsTournamentEditable, OrderBy, SearchTournamentByNameAutocomplete, TetrioRanksArray, TournamentDetailsEmbed } from "../helper-functions/index.js";
 import { OrderPlayerListBy } from "../helper-functions/index.js";
 import { BuildASCIITableAttachment } from "../helper-functions/index.js";
+import { BuildEmbedPlayerList } from "../helper-functions/index.js";
+import { CommonErrors } from "../helper-functions/common-errors.js";
 
 
 export class AdminCommands extends Subcommand {
@@ -315,13 +316,24 @@ export class AdminCommands extends Subcommand {
 		// Your code goes here
 
 		const idTorneo = +interaction.options.getString('nombre-id', true)
+
 		if (isNaN(idTorneo))
-			return void await interaction.reply({ content: 'La id ingresada no es una id válida de un torneo. Recuerda usar una de las opciones del autocompletado o directamente usar la id del torneo.', ephemeral: true })
+			return void await interaction.reply({
+				embeds: [EmbedMessage({
+					description: CommonErrors.InvalidTournamentId,
+					color: Colors.Red
+				})]
+			})
 
 		const tournament = await GetTournamentFromGuild(interaction.guildId, idTorneo)
 
 		if (!tournament)
-			return void await interaction.reply({ content: 'El torneo no pertenece a este servidor o la id es incorrecta.', ephemeral: true })
+			return void await interaction.reply({
+				embeds: [EmbedMessage({
+					description: CommonErrors.GuildTournamentNotFound,
+					color: Colors.Red
+				})]
+			})
 
 		const ConfirmButton = new ButtonBuilder()
 			.setCustomId('pl-eliminar')
@@ -360,8 +372,12 @@ export class AdminCommands extends Subcommand {
 		await ClearTournamentPlayerList(tournament)
 
 		return void await Action.update({
-			content: `✅ ¡La lista de jugadores del torneo **${tournament.name}** ha sido borrada!`,
-			embeds: [],
+			embeds: [
+				EmbedMessage({
+					description: `✅ ¡La lista de jugadores del torneo **${tournament.name}** ha sido borrada!`,
+					color: Colors.Green
+				})
+			],
 			components: []
 		})
 	}
@@ -373,7 +389,12 @@ export class AdminCommands extends Subcommand {
 
 		if (isNaN(tournamentId))
 			return void await interaction.reply({
-				content: 'La id del torneo debe ser una id numérica o una de las opciones del autocompletado.',
+				embeds: [
+					EmbedMessage({
+						color: Colors.Red,
+						description: CommonErrors.InvalidTournamentId
+					})
+				],
 				ephemeral: true
 			})
 
@@ -383,14 +404,24 @@ export class AdminCommands extends Subcommand {
 
 		if (!tournament) {
 			return void await interaction.reply({
-				content: 'Esta guild no tiene ningún torneo con esa id.',
+				embeds: [
+					EmbedMessage({
+						description: CommonErrors.GuildTournamentNotFound,
+						color: Colors.Red
+					})
+				],
 				ephemeral: true
 			})
 		}
 
 		if (!IsTournamentEditable(tournament))
 			return void await interaction.reply({
-				content: 'No puedes editar la información de este torneo por que está marcado como **TERMINADO**',
+				embeds: [
+					EmbedMessage({
+						description: CommonErrors.TournamentNotEditable,
+						color: Colors.Red
+					})
+				],
 				ephemeral: true
 			})
 
@@ -429,7 +460,12 @@ export class AdminCommands extends Subcommand {
 		await tournament.save()
 
 		return void await interaction.reply({
-			content: `¡El torneo **${tournament.name}** (id ${tournament.id}) ha sido editado con éxito!`,
+			embeds: [
+				EmbedMessage({
+					description: `¡El torneo **${tournament.name}** (id ${tournament.id}) ha sido editado con éxito!`,
+					color: Colors.Green
+				})
+			],
 			ephemeral: false
 		})
 	}
@@ -441,14 +477,31 @@ export class AdminCommands extends Subcommand {
 		}
 
 		if (isNaN(options.idTorneo))
-			return void await interaction.reply({ content: 'La id debe ser un numero o una de las opciones del autocompletado.', ephemeral: true })
+			return void await interaction.reply({
+				embeds: [
+					EmbedMessage({
+						description: CommonErrors.InvalidTournamentId,
+						color: Colors.Red
+					})
+				],
+				ephemeral: true
+			})
 
 		const tournament = await GetTournamentFromGuild(interaction.guildId, options.idTorneo)
+
 		if (!tournament)
-			return void await interaction.reply({ content: 'No existe un torneo con esa id en esta guild.', ephemeral: true })
+			return void await interaction.reply({
+				ephemeral: true,
+				embeds: [
+					EmbedMessage({
+						description: CommonErrors.GuildTournamentNotFound,
+						color: Colors.Red
+					})
+				]
+			})
 
 		if (tournament.status === TournamentStatus.FINISHED)
-			return void await interaction.reply({ content: 'Este torneo ya está marcado como finalizado.', ephemeral: true })
+			return void await interaction.reply({ embeds: [EmbedMessage({ description: CommonErrors.TournamentNotEditable, color: Colors.Red })], ephemeral: true })
 
 		// Prompt the user to confirm this action
 
@@ -486,8 +539,10 @@ export class AdminCommands extends Subcommand {
 		void await FinishTournament(tournament, options.winner?.id)
 
 		return void await action.update({
-			content: `El torneo **${tournament.name}** ha sido marcado como **FINALIZADO** exitósamente.`,
-			embeds: [],
+			embeds: [EmbedMessage({
+				description: `El torneo **${tournament.name}** ha sido marcado como **FINALIZADO** exitósamente.`,
+				color: Colors.Green
+			})],
 			components: [],
 		})
 	}
@@ -496,16 +551,35 @@ export class AdminCommands extends Subcommand {
 		const idTorneo = +interaction.options.getString('nombre-id', true)
 
 		if (isNaN(idTorneo))
-			return void await interaction.reply({ content: 'Debes ingresar la id numérica de un torneo o **usar una de las opciones del autocompletado**.' })
+			return void await interaction.reply({
+				ephemeral: true,
+				embeds: [EmbedMessage({
+					description: CommonErrors.InvalidTournamentId,
+					color: Colors.Red
+				})]
+			})
 
 		const tournament = await GetTournamentFromGuild(interaction.guildId, idTorneo)
-		if (!tournament) return void await interaction.reply({ content: 'Este torneo no existe.', ephemeral: true })
+
+		if (!tournament) return void await interaction.reply({
+			ephemeral: true,
+			embeds: [EmbedMessage({
+				description: CommonErrors.GuildTournamentNotFound,
+				color: Colors.Red
+			})]
+		})
 
 		const format = interaction.options.getString('formato', false) ?? "embed" // default embed
 		const orderBy = (interaction.options.getString('ordenar-por', false) ?? "default") as OrderBy
 		const filterCheckedIn = interaction.options.getBoolean('checked_in', false)
 
-		if (tournament.game !== "TETRIO") return void await interaction.reply({ content: 'El listado de jugadores para torneos que no son de tetrio se implementará prontamente.', ephemeral: true })
+		if (tournament.game !== "TETRIO") return void await interaction.reply({
+			ephemeral: true,
+			embeds: [EmbedMessage({
+				description: CommonErrors.NotImplemented,
+				color: Colors.Red
+			})]
+		})
 		// We basically need to skip all the code below if the tournament is not a TETRIO tournament
 
 		const orderedPlayerList = await OrderPlayerListBy(tournament, orderBy, filterCheckedIn)
@@ -515,7 +589,10 @@ export class AdminCommands extends Subcommand {
 
 			// Send the attachment
 			return void await interaction.reply({
-				content: 'Aquí está la lista de jugadores',
+				embeds: [EmbedMessage({
+					description: `✅ ¡Aquí tienes la lista de los jugadores inscritos en el torneo **${tournament.name}**`,
+					color: Colors.Green
+				})],
 				files: [attachment]
 			})
 		}
@@ -524,8 +601,13 @@ export class AdminCommands extends Subcommand {
 			const players = await BuildTableForChallonge(tournament, orderedPlayerList)
 
 			return void await interaction.reply({
-				content: `¡Aquí está la lista de jugadores del torneo **${tournament.name}**!`,
-				embeds: [players]
+				embeds: [
+					EmbedMessage({
+						description: `✅ ¡Aquí tienes la lista de los jugadores inscritos en el torneo **${tournament.name}**`,
+						color: Colors.Green
+					}),
+					players
+				]
 			})
 		}
 
@@ -533,14 +615,32 @@ export class AdminCommands extends Subcommand {
 			const players = BuildEmbedPlayerList(tournament, orderedPlayerList)
 
 			return void await interaction.reply({
-				content: `¡Aquí está la lista de jugadores del torneo **${tournament.name}**!`,
-				embeds: [players]
+				embeds: [
+					EmbedMessage({
+						description: `✅ ¡Aquí tienes la lista de los jugadores inscritos en el torneo **${tournament.name}**`,
+						color: Colors.Green
+					}),
+					players
+				]
 			})
 		}
 
-
-		if (format === 'csv') void await interaction.reply({ content: 'Este formato aún no está implementado.', ephemeral: true })
-		if (format === 'json') void await interaction.reply({ content: 'Este formato aún no está implementado.', ephemeral: true })
+		if (format === 'csv') void await interaction.reply({
+			embeds: [
+				EmbedMessage({
+					description: CommonErrors.NotImplemented,
+					color: Colors.Red
+				})
+			]
+		})
+		if (format === 'json') void await interaction.reply({
+			embeds: [
+				EmbedMessage({
+					description: CommonErrors.NotImplemented,
+					color: Colors.Red
+				})
+			]
+		})
 	}
 
 	public async autocompleteRun(interaction: Subcommand.AutocompleteInteraction<'cached'>) {
@@ -549,29 +649,4 @@ export class AdminCommands extends Subcommand {
 			return void await SearchTournamentByNameAutocomplete(interaction)
 		}
 	}
-}
-
-
-function BuildEmbedPlayerList(tournament: Tournament, players: RegisteredPlayer[]) {
-
-	const table = new AsciiTable3()
-		.setHeading("POS", "USERNAME", "RANK", "RATING")
-		.setAlignCenter(1)
-		.setAlignCenter(2)
-		.setAlignCenter(3)
-
-	let pos = 1
-
-	for (const player of players) {
-		table.addRow(pos, player.data!.username, player.data!.league.rank.toUpperCase(), player.data!.league.rating.toFixed(2))
-		pos++
-	}
-
-	return new EmbedBuilder()
-		.setTitle(tournament.name)
-		.setDescription(
-			codeBlock(
-				table.toString()
-			)
-		)
 }
