@@ -2,12 +2,12 @@
 * This file will contain tetrio api function calls
 * and maybe other stuff.
 */
-import { AttachmentBuilder, EmbedBuilder, Colors, Snowflake, ColorResolvable } from "discord.js";
+import { AttachmentBuilder, EmbedBuilder, Colors, Snowflake, ColorResolvable, EmbedData } from "discord.js";
 import { AsciiTable3 } from "ascii-table3";
 import { Command } from "@sapphire/framework";
 import { Subcommand } from "@sapphire/plugin-subcommands";
 import { TournamentModel, TournamentStatus, TournamentStatusStrings, Tournament, RegisteredPlayer } from "../sequelize/Tournaments.js";
-import { GuildModel } from "../sequelize/Guilds.js";
+import { GuildConfigs, GuildModel } from "../sequelize/Guilds.js";
 import { request } from "undici"
 import { codeBlock } from "@sapphire/utilities";
 import { Op } from "sequelize";
@@ -640,15 +640,64 @@ export async function ClearTournamentPlayerList(tournament: Tournament) {
 	return true
 }
 
-export function EmbedMessage({
-	description,
-	color
-}: { description: string, color: ColorResolvable }) {
-	return new EmbedBuilder()
-		.setColor(color)
-		.setDescription(description)
+
+export function EmbedMessage(options: Pick<EmbedData, "color" | "author" | "description" | "footer" | "thumbnail">) {
+	const embed = new EmbedBuilder()
+
+	if (options.color) embed.setColor(options.color)
+	if (options.description) embed.setDescription(options.description)
+	if (options.author) embed.setAuthor(options.author)
+	if (options.footer) embed.setFooter(options.footer)
+	if (options.thumbnail) embed.setThumbnail(options.thumbnail.url)
+	return embed
 }
 
 export async function GetGuildConfigs(guild_id: Snowflake) {
-	return await GuildModel.findByPk(guild_id)
+
+	const [guild, _] = await GuildModel.findOrCreate({
+		where: {
+			guild_id: guild_id
+		}
+	})
+
+	return guild
+}
+
+type GuildConfig = Pick<GuildConfigs, "logging_channel" | "allowed_roles">
+
+export async function SaveGuildConfigs(guild_id: Snowflake, configs: GuildConfig) {
+
+	console.log(`[GUILDS] Guardando configuraciones de la guild ${guild_id}...`);
+	const guild = await GuildModel.findByPk(guild_id)
+
+	if (!guild)
+		return null
+
+	return await guild.update({
+		allowed_roles: configs.allowed_roles ?? [],
+		logging_channel: configs.logging_channel
+	})
+}
+export function BuildEmbedPlayerList(tournament: Tournament, players: RegisteredPlayer[]) {
+
+	const table = new AsciiTable3()
+		.setHeading("POS", "USERNAME", "RANK", "RATING")
+		.setAlignCenter(1)
+		.setAlignCenter(2)
+		.setAlignCenter(3);
+
+	let pos = 1;
+
+	for (const player of players) {
+		table.addRow(pos, player.data!.username, player.data!.league.rank.toUpperCase(), player.data!.league.rating.toFixed(2));
+		pos++;
+	}
+
+	return new EmbedBuilder()
+		.setTitle(tournament.name)
+		.setDescription(
+			codeBlock(
+				table.toString()
+			)
+		);
 }
