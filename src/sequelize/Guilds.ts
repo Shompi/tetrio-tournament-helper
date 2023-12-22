@@ -11,15 +11,12 @@ const sequelize = new Sequelize({
 export interface GuildConfigs extends Model<InferAttributes<GuildConfigs>, InferCreationAttributes<GuildConfigs>> {
 	// Some fields are optional when calling UserModel.create() or UserModel.build()
 	guild_id: Snowflake
+	
 	/** The channel where log messages like "User x failed to join tournament because of y" messages are going to. Must be a text based channel */
 	logging_channel: CreationOptional<Snowflake | null>
 
 	/** The roles that are allowed to use admin commands aswell as tournament commands on this guild  */
 	allowed_roles: Snowflake[]
-
-	/**  */
-
-
 }
 
 const GuildModel = sequelize.define<GuildConfigs>('Guild', {
