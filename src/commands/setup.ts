@@ -1,5 +1,6 @@
 import { Command } from "@sapphire/framework"
-import { ChannelType } from "discord.js";
+import { ChannelType, Colors, PermissionFlagsBits } from "discord.js";
+import { EmbedMessage, GetGuildConfigs } from "../helper-functions/index.js";
 
 
 export class SetupCommmand extends Command {
@@ -13,6 +14,8 @@ export class SetupCommmand extends Command {
 	public override registerApplicationCommands(registry: Command.Registry) {
 		registry.registerChatInputCommand((builder) => {
 			builder.setName("setup")
+				.setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
+				.setDMPermission(false)
 				.addRoleOption(role1 =>
 					role1.setName('admin-role')
 						.setDescription('El rol que tiene permitido usar los comandos de admin y de torneos')
@@ -26,10 +29,37 @@ export class SetupCommmand extends Command {
 
 
 	}
-	public async chatInputRun(interaction: Command.ChatInputCommandInteraction) {
+	public async chatInputRun(interaction: Command.ChatInputCommandInteraction<'cached'>) {
 		// Your code goes here
 
-		
+		const options = {
+			allowedRole: interaction.options.getRole("admin-role", false),
+			logChannel: interaction.options.getChannel('log-channel', false)
+		}
 
+		const guildConfigs = await GetGuildConfigs(interaction.guildId)
+
+		if (options.logChannel) {
+			guildConfigs.logging_channel = options.logChannel.id
+		}
+
+		if (options.allowedRole) {
+			const allowed_roles = [options.allowedRole.id]
+
+			guildConfigs.allowed_roles = allowed_roles
+		}
+
+		console.log(`[GUILD CONFIGS] Actualizando configuración de la guild ${interaction.guild.name} (${interaction.guildId})`);
+		await guildConfigs.save()
+		console.log(`[GUILD CONFIGS] ¡Las configuraciones han sido actualizadas!`);
+
+		return void await interaction.reply({
+			embeds: [
+				EmbedMessage({
+					color: Colors.Green,
+					description: "✅ ¡Las configuraciones han sido guardadas!",
+				})
+			]
+		})
 	}
 }
