@@ -2,12 +2,12 @@
 * This file will contain tetrio api function calls
 * and maybe other stuff.
 */
-import { AttachmentBuilder, EmbedBuilder, Colors, Snowflake } from "discord.js";
+import { AttachmentBuilder, EmbedBuilder, Colors, Snowflake, ColorResolvable } from "discord.js";
 import { AsciiTable3 } from "ascii-table3";
 import { Command } from "@sapphire/framework";
 import { Subcommand } from "@sapphire/plugin-subcommands";
 import { TournamentModel, TournamentStatus, TournamentStatusStrings, Tournament, RegisteredPlayer } from "../sequelize/Tournaments.js";
-import { PlayerModel } from "../sequelize/TetrioPlayers.js";
+import { GuildModel } from "../sequelize/Guilds.js";
 import { request } from "undici"
 import { codeBlock } from "@sapphire/utilities";
 import { Op } from "sequelize";
@@ -672,7 +672,6 @@ export async function GetPlayerFromDatabase(discordId: Snowflake) {
 export async function ClearTournamentPlayerList(tournament: Tournament) {
 
 
-
 	console.log(`[TOURNAMENTS] Eliminando jugadores del torneo ${tournament.name}`)
 	await tournament.update({
 		players: [],
@@ -681,4 +680,13 @@ export async function ClearTournamentPlayerList(tournament: Tournament) {
 	console.log(`[TOURNAMENTS] Los jugadores del torneo han sido eliminados.`);
 
 	return true
+}
+
+export function EmbedMessage({
+	description,
+	color
+}: { description: string, color: ColorResolvable }) {
+	return new EmbedBuilder()
+		.setColor(color)
+		.setDescription(description)
 }
