@@ -257,26 +257,6 @@ export function TournamentDetailsEmbed(torneo: Tournament) {
 	)
 }
 
-/** @deprecated This function should not be used */
-export async function AddTetrioPlayerToDatabase({ discordId, tetrioId, challongeId }: { discordId: string; tetrioId: string; challongeId: string | null }, userData: TetrioPlayerRelevantData) {
-
-	if (!discordId || !tetrioId)
-		throw new Error(`Missing one of the arguments. dId: ${discordId}, tId: ${tetrioId}`);
-
-
-	console.log("[DEBUG] Añadiendo nuevo PLAYER a la base de datos...");
-
-	await PlayerModel.create({
-		discord_id: discordId,
-		tetrio_id: tetrioId,
-		challonge_id: challongeId,
-		data: userData
-	});
-
-	console.log(`[PLAYERS DATABASE] => Player (${discordId}) - ${tetrioId} se ha guardado en la base de datos.`);
-
-}
-
 export async function RunTetrioTournamentRegistrationChecks(userData: TetrioPlayerRelevantData, torneo: Tournament, discordId: string): Promise<{ allowed: boolean; reason?: string; }> {
 	// In here we have to check for Tetrio caps like rank, rating and country lock and if the player is already on the tournament.
 
@@ -392,24 +372,6 @@ export async function DeletePlayerFromTournaments(discord_id: string) {
 	}
 
 	return removedFrom;
-}
-
-/** @deprecated This function takes a discord_id and deletes the row from the PLAYERS database */
-export async function DeletePlayerFromDatabase(discord_id: string) {
-	console.log(`[DEBUG: Database PLAYERS] Borrando al usuario ${discord_id} de la base de datos..`);
-
-	const deleted = await PlayerModel.destroy({
-		where: {
-			discord_id: discord_id
-		}
-	});
-
-	console.log(`[DEBUG: Database PLAYERS] Se borraron ${deleted} jugadores de la base de datos.`);
-	const removedFromTournaments = await DeletePlayerFromTournaments(discord_id);
-	return {
-		count: deleted,
-		removed_from_tournaments: removedFromTournaments
-	};
 }
 
 export async function GetTournamentsFromGuild(guild_id: string) {
@@ -665,10 +627,6 @@ export async function AddPlayerToTournamentPlayerList(tournament: Tournament, pl
 	console.log("[TOURNAMENT] El torneo ha sido guardado");
 }
 
-export async function GetPlayerFromDatabase(discordId: Snowflake) {
-	return await PlayerModel.findByPk(discordId);
-}
-
 export async function ClearTournamentPlayerList(tournament: Tournament) {
 
 
@@ -689,4 +647,8 @@ export function EmbedMessage({
 	return new EmbedBuilder()
 		.setColor(color)
 		.setDescription(description)
+}
+
+export async function GetGuildConfigs(guild_id: Snowflake) {
+	return await GuildModel.findByPk(guild_id)
 }
