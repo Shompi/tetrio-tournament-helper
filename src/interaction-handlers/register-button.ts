@@ -55,7 +55,7 @@ async function HandleTetrioRegistration(interaction: ButtonInteraction<'cached'>
 	const modalSubmition = await interaction.awaitModalSubmit(
 		{
 			time: 60_000 * 2,
-			filter: (modalInteraction) => modalInteraction.customId.startsWith(interaction.user.id),
+			filter: (modalInteraction) => modalInteraction.customId.startsWith(interaction.id),
 		}
 	).catch(() => null);
 
@@ -166,7 +166,7 @@ async function HandleTetrioRegistration(interaction: ButtonInteraction<'cached'>
 
 function BuildGeneralRegistrationModal(interaction: ButtonInteraction<'cached'>) {
 	return new ModalBuilder()
-		.setCustomId(`${interaction.user.id}-registration`)
+		.setCustomId(`${interaction.id}-registration`)
 		.setTitle(`Inscripción para torneo`)
 		.addComponents(
 			new ActionRowBuilder<TextInputBuilder>()
@@ -184,7 +184,7 @@ function BuildGeneralRegistrationModal(interaction: ButtonInteraction<'cached'>)
 
 function BuildTetrisEffectModal(interaction: ButtonInteraction<'cached'>) {
 	return new ModalBuilder()
-		.setCustomId(`${interaction.user.id}-registration`)
+		.setCustomId(`${interaction.id}-registration`)
 		.setTitle(`Inscripción para torneo de Tetris Effect`)
 		.addComponents(
 			new ActionRowBuilder<TextInputBuilder>()
@@ -212,7 +212,7 @@ function BuildTetrisEffectModal(interaction: ButtonInteraction<'cached'>) {
 
 function BuildTetrioModal(interaction: ButtonInteraction<"cached">) {
 	return new ModalBuilder()
-		.setCustomId(`${interaction.user.id}-registration`)
+		.setCustomId(`${interaction.id}-registration`)
 		.setTitle(`Inscripción para torneo de TETRIO`)
 		.addComponents(
 			new ActionRowBuilder<TextInputBuilder>()
