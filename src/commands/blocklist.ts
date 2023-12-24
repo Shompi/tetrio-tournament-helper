@@ -1,6 +1,7 @@
 import { Subcommand } from "@sapphire/plugin-subcommands"
-import { PermissionFlagsBits } from "discord.js"
+import { Colors, PermissionFlagsBits } from "discord.js"
 import { BlocklistModel } from "../sequelize/Blocklist.js";
+import { EmbedMessage } from "../helper-functions/index.js";
 
 export class BlocklistCommands extends Subcommand {
 
@@ -101,7 +102,10 @@ export class BlocklistCommands extends Subcommand {
 		})
 
 		return void await interaction.reply({
-			content: '✅ El usuario ha sido permitido nuevamente.',
+			embeds: [EmbedMessage({
+				description: `✅ El usuario <@${user.discord_id} puede utilizar los comandos del bot nuevamente.`,
+				color: Colors.Green
+			})],
 			ephemeral: true
 		})
 	}

@@ -5,6 +5,7 @@ import { EmbedMessage, GetTournamentFromGuild, GetUserDataFromTetrio, TetrioUser
 import { TournamentDetailsEmbed } from "../helper-functions/index.js";
 import { RunTetrioTournamentRegistrationChecks } from '../helper-functions/index.js';
 import { AddPlayerToTournamentPlayerList } from '../helper-functions/index.js';
+import { CommonErrors } from '../helper-functions/common-errors.js';
 
 export class RegisterButtonHandler extends InteractionHandler {
 	public constructor(ctx: InteractionHandler.LoaderContext, options: InteractionHandler.Options) {
@@ -16,9 +17,24 @@ export class RegisterButtonHandler extends InteractionHandler {
 
 		const tournament = await GetTournamentFromGuild(interaction.guildId, +tournamentId)
 
-		if (!tournament) return void await interaction.reply({ content: 'Este torneo no existe.', ephemeral: true });
+		if (!tournament) return void await interaction.reply({
+			ephemeral: true,
+			embeds: [
+				EmbedMessage({
+					description: CommonErrors.GuildTournamentNotFound,
+					color: Colors.Red
+				})
+			]
+		});
 
-		if (tournament.status === TournamentStatus.CLOSED) return void await interaction.reply({ content: 'No puedes inscribirte en este torneo por que ya ha cerrado.', ephemeral: true })
+		if (tournament.status === TournamentStatus.CLOSED || tournament.status === TournamentStatus.FINISHED) {
+			return void await interaction.reply({
+				ephemeral: true,
+				embeds: [EmbedMessage({
+					description: CommonErrors.TournamentNotJoinable,
+				})]
+			})
+		}
 
 		if (tournament.game === "TETRIO") {
 			return void await HandleTetrioRegistration(interaction, tournament);

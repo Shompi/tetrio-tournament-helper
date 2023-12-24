@@ -1,6 +1,8 @@
 import { InteractionHandler, InteractionHandlerTypes } from "@sapphire/framework"
-import { ButtonInteraction } from "discord.js";
-import { TournamentModel, TournamentStatus } from "../sequelize/Tournaments.js";
+import { ButtonInteraction, Colors } from "discord.js";
+import { TournamentStatus } from "../sequelize/Tournaments.js";
+import { EmbedMessage, GetTournamentFromGuild } from "../helper-functions/index.js";
+import { CommonErrors } from "../helper-functions/common-errors.js";
 
 export class CheckinButtonHandler extends InteractionHandler {
 	public constructor(ctx: InteractionHandler.LoaderContext, options: InteractionHandler.Options) {
@@ -8,22 +10,45 @@ export class CheckinButtonHandler extends InteractionHandler {
 	}
 
 	public async run(interaction: ButtonInteraction<'cached'>, tournamentId: string) {
-		const tournament = await TournamentModel.findOne({ where: { id: +tournamentId } })
+		const tournament = await GetTournamentFromGuild(interaction.guildId, +tournamentId)
 
-		if (!tournament) return void await interaction.reply({ content: 'Este torneo no existe.', ephemeral: true })
+		if (!tournament) return void await interaction.reply({
+			ephemeral: true,
+			embeds: [
+				EmbedMessage({
+					description: CommonErrors.GuildTournamentNotFound,
+					color: Colors.Red
+				})
+			]
+		})
 
 		if (tournament.status === TournamentStatus.FINISHED)
-			return void await interaction.reply({ content: 'No puedes hacer Check-in en este torneo por que ya está finalizado.', ephemeral: true })
+			return void await interaction.reply({
+				ephemeral: true,
+				embeds: [EmbedMessage({
+					description: CommonErrors.CheckInNotAllowed,
+					color: Colors.Blue
+				})]
+			})
 
 		// Check if the player is on the registered players list first
 		if (!tournament.players.some(player => player.discordId === interaction.user.id))
-			return void await interaction.reply({ content: 'No puedes hacer Check-in por que no estás inscrito en este torneo.', ephemeral: true })
+			return void await interaction.reply({
+				ephemeral: true,
+				embeds: [EmbedMessage({
+					description: CommonErrors.PlayerNotRegistered,
+					color: Colors.Blue
+				})]
+			})
 
 		// Check if the player is already checked-in
 		if (tournament.checked_in.includes(interaction.user.id))
 			return void await interaction.reply({
-				content: 'Ya estás en la lista de Checked-in.',
-				ephemeral: true
+				ephemeral: true,
+				embeds: [EmbedMessage({
+					description: CommonErrors.AlreadyCheckedIn,
+					color: Colors.Blue
+				})],
 			})
 
 		// Inscribimos al user en la lista de checked in
@@ -34,8 +59,13 @@ export class CheckinButtonHandler extends InteractionHandler {
 		await tournament.save()
 
 		return void await interaction.reply({
-			content: '✅ ¡Has hecho check-in exitosamente!',
-			ephemeral: true
+			ephemeral: true,
+			embeds: [
+				EmbedMessage({
+					description: "✅ ¡Has hecho Check-in exitosamente!",
+					color: Colors.Green
+				})
+			]
 		})
 	}
 

@@ -1,6 +1,7 @@
 import { Command } from "@sapphire/framework"
 import { Colors, EmbedBuilder, GuildTextBasedChannel } from "discord.js";
-import { BlocklistModel } from "../sequelize/Blocklist.js";
+import { EmbedMessage, UserIsBlocked } from "../helper-functions/index.js";
+import { CommonErrors } from "../helper-functions/common-errors.js";
 
 
 export class FeedbackCommand extends Command {
@@ -26,29 +27,47 @@ export class FeedbackCommand extends Command {
 
 		}, { idHints: ["1183537281387204728"] })
 	}
-	public async chatInputRun(interaction: Command.ChatInputCommandInteraction) {
+	public async chatInputRun(interaction: Command.ChatInputCommandInteraction<'cached'>) {
 		// Your code goes here
-		const isBlocked = await BlocklistModel.findOne({ where: { discord_id: interaction.user.id } })
 
-		if (isBlocked && isBlocked.isBlacklisted)
-			return void await interaction.reply({ content: 'No puedes usar este comando.', ephemeral: true })
+		const options = {
+			message: interaction.options.getString('mensaje', true)
+		}
+
+		if (await UserIsBlocked(interaction.user)) {
+			return void await interaction.reply({
+				ephemeral: true,
+				embeds: [EmbedMessage({
+					description: CommonErrors.UserIsBlocked,
+					color: Colors.Red
+				})]
+			})
+		}
 
 		await interaction.deferReply({ ephemeral: true })
 		const feedbackChannel = interaction.client.channels.cache.get(process.env.FEEDBACK_CHANNEL!) as GuildTextBasedChannel
 
-		const feedbackEmbed = new EmbedBuilder()
-			.setTitle(`Feedback de ${interaction.user.username}`)
-			.setFooter({
-				text: interaction.user.id
-			})
-			.setTimestamp()
-			.setDescription(interaction.options.getString('mensaje', true))
-			.setColor(Colors.Blue)
+		void await feedbackChannel.send({
+			embeds: [
+				EmbedMessage({
+					description: options.message,
+					color: interaction.member.displayColor,
+					author: {
+						name: `${interaction.user.displayName} (${interaction.user.id})`,
+						iconURL: interaction.user.displayAvatarURL({ size: 256 })
+					}
+				})
+			]
+		})
 
 
-		void await feedbackChannel.send({ embeds: [feedbackEmbed] })
 		return void await interaction.editReply({
-			content: '¡Tu feedback ha sido recibido con éxito y enviado a los desarrolladores!\nTe recordamos que abusar de este comando podría resultar en la imposibilidad de utilizar este comando en el futuro.'
+			embeds: [
+				EmbedMessage({
+					description: '¡Tu feedback ha sido recibido con éxito y enviado a los desarrolladores!\nTe recordamos que abusar de este comando podría resultar en la imposibilidad de utilizar este comando en el futuro.',
+					color: Colors.Blue
+				})
+			]
 		})
 	}
 }

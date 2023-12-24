@@ -2,7 +2,7 @@
 * This file will contain tetrio api function calls
 * and maybe other stuff.
 */
-import { AttachmentBuilder, EmbedBuilder, Colors, Snowflake, ColorResolvable, EmbedData } from "discord.js";
+import { AttachmentBuilder, EmbedBuilder, Colors, Snowflake, ColorResolvable, EmbedData, User } from "discord.js";
 import { AsciiTable3 } from "ascii-table3";
 import { Command } from "@sapphire/framework";
 import { Subcommand } from "@sapphire/plugin-subcommands";
@@ -11,6 +11,7 @@ import { GuildConfigs, GuildModel } from "../sequelize/Guilds.js";
 import { request } from "undici"
 import { codeBlock } from "@sapphire/utilities";
 import { Op } from "sequelize";
+import { BlocklistModel } from "../sequelize/Blocklist.js";
 
 export type TetrioApiCacheStatus = "hit" | "miss" | "awaited"
 export type TetrioUserRole = "anon" | "user" | "bot" | "halfmod" | "mod" | "admin" | "sysop" | "banned"
@@ -700,4 +701,17 @@ export function BuildEmbedPlayerList(tournament: Tournament, players: Registered
 				table.toString()
 			)
 		);
+}
+
+export async function UserIsBlocked(_user: User) {
+	const [user, created] = await BlocklistModel.findOrCreate({
+		where: {
+			discord_id: _user.id
+		}
+	})
+
+	// If the user is new then they can't be blocked already
+	if (created) return false
+
+	if (user.isBlacklisted) return true
 }

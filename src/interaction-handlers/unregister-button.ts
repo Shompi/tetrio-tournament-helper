@@ -1,7 +1,8 @@
 import { InteractionHandler, InteractionHandlerTypes } from "@sapphire/framework"
-import { ButtonInteraction } from "discord.js"
-import { TournamentModel, TournamentStatus } from "../sequelize/Tournaments.js";
-import { RemovePlayerFromTournament, TournamentDetailsEmbed } from "../helper-functions/index.js";
+import { ButtonInteraction, Colors } from "discord.js"
+import { TournamentStatus } from "../sequelize/Tournaments.js";
+import { EmbedMessage, GetTournamentFromGuild, RemovePlayerFromTournament, TournamentDetailsEmbed } from "../helper-functions/index.js";
+import { CommonErrors } from "../helper-functions/common-errors.js";
 
 
 export class UnregisterButtonHandler extends InteractionHandler {
@@ -10,19 +11,44 @@ export class UnregisterButtonHandler extends InteractionHandler {
 	}
 
 	public async run(interaction: ButtonInteraction<'cached'>, tournamentId: string) {
-		const tournament = await TournamentModel.findOne({ where: { id: +tournamentId } })
+		const tournament = await GetTournamentFromGuild(interaction.guildId, +tournamentId)
 
-		if (!tournament) return void await interaction.reply({ content: 'Este torneo no existe.', ephemeral: true })
+		if (!tournament) return void await interaction.reply({
+			ephemeral: true,
+			embeds: [
+				EmbedMessage({
+					description: CommonErrors.GuildTournamentNotFound,
+					color: Colors.Red
+				})
+			]
+		})
 
-		if (tournament.status === TournamentStatus.CLOSED || tournament.status === TournamentStatus.FINISHED)
-			return void await interaction.reply({ content: 'No te puedes desinscribir de este torneo por que ya está cerrado.', ephemeral: true })
+		if (tournament.status === TournamentStatus.CLOSED || tournament.status === TournamentStatus.FINISHED) {
+			return void await interaction.reply({
+				ephemeral: true,
+				embeds: [
+					EmbedMessage({
+						description: CommonErrors.TournamentNotLeaveable,
+						color: Colors.Red
+					})
+				]
+			})
+		}
 
-		if (!tournament.players.some(player => player.discordId === interaction.user.id))
-			return void await interaction.reply({ content: 'No estás inscrita/o en este torneo.', ephemeral: true })
-
-		await interaction.deferReply({ ephemeral: true })
+		if (!tournament.players.some(player => player.discordId === interaction.user.id)) {
+			return void await interaction.reply({
+				ephemeral: true,
+				embeds: [
+					EmbedMessage({
+						description: CommonErrors.PlayerNotRegistered,
+						color: Colors.Blue
+					})
+				]
+			})
+		}
 
 		try {
+
 			await RemovePlayerFromTournament(tournament, interaction.user.id)
 
 			// Remove roles from member, if tournament has any
@@ -33,12 +59,18 @@ export class UnregisterButtonHandler extends InteractionHandler {
 
 			}
 
-			void await interaction.message.edit({
-				embeds: [TournamentDetailsEmbed(tournament)]
+			void await interaction.reply({
+				ephemeral: true,
+				embeds: [
+					EmbedMessage({
+						description: '✅ Te has desinscrito de este torneo exitosamente!',
+						color: Colors.Blue
+					})
+				]
 			})
 
-			return void await interaction.editReply({
-				content: 'Te has desinscrito de este torneo exitosamente!',
+			return void await interaction.message.edit({
+				embeds: [TournamentDetailsEmbed(tournament)]
 			})
 
 		} catch (e) {
