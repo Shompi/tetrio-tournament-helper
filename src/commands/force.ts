@@ -168,7 +168,7 @@ export class ForceCommands extends Subcommand {
 		})
 
 		return void await selectedOption.update({
-			content: `✅ El jugador ${options.tetrioId.toUpperCase()} (${options.user.username} - ${options.user.id}) ha sido agregado a la base de datos y a la lista de jugadores del torneo **${tournament.name}** exitosamente!`,
+			content: `✅ El jugador ${options.tetrioId.toUpperCase()} (${options.user.username} - ${options.user.id}) ha sido agregado a la lista de jugadores del torneo **${tournament.name}** exitosamente!`,
 			components: [],
 			embeds: [],
 		})
