@@ -756,12 +756,18 @@ export async function GetUserFromBlocklist(userId: Snowflake) {
 }
 
 export async function BlockUser(userId: Snowflake, reason: string) {
+	console.log(`[BLOCKLIST] Bloqueando al usuario ${userId}...`);
+
 	const [user, _] = await GetUserFromBlocklist(userId)
 
-	return await user.update({
+	await user.update({
 		isBlacklisted: true,
 		reason
 	})
+
+	console.log(`[BLOCKLIST] El usuario ha sido bloqueado.`);
+	return true
+
 }
 
 export async function UnblockUser(userId: Snowflake) {
