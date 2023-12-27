@@ -5,7 +5,7 @@ import { EmbedMessage, GetTournamentFromGuild, GetUserDataFromTetrio, TetrioUser
 import { TournamentDetailsEmbed } from "../helper-functions/index.js";
 import { RunTetrioTournamentRegistrationChecks } from '../helper-functions/index.js';
 import { AddPlayerToTournamentPlayerList } from '../helper-functions/index.js';
-import { CommonErrors } from '../helper-functions/common-errors.js';
+import { CommonMessages } from '../helper-functions/common-messages.js';
 
 export class RegisterButtonHandler extends InteractionHandler {
 	public constructor(ctx: InteractionHandler.LoaderContext, options: InteractionHandler.Options) {
@@ -21,7 +21,7 @@ export class RegisterButtonHandler extends InteractionHandler {
 			ephemeral: true,
 			embeds: [
 				EmbedMessage({
-					description: CommonErrors.GuildTournamentNotFound,
+					description: CommonMessages.GuildTournamentNotFound,
 					color: Colors.Red
 				})
 			]
@@ -31,7 +31,7 @@ export class RegisterButtonHandler extends InteractionHandler {
 			return void await interaction.reply({
 				ephemeral: true,
 				embeds: [EmbedMessage({
-					description: CommonErrors.TournamentNotJoinable,
+					description: CommonMessages.TournamentNotJoinable,
 				})]
 			})
 		}

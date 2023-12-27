@@ -5,7 +5,7 @@ import { BuildTableForChallonge, ClearTournamentPlayerList, EmbedMessage, Finish
 import { OrderPlayerListBy } from "../helper-functions/index.js";
 import { BuildASCIITableAttachment } from "../helper-functions/index.js";
 import { BuildEmbedPlayerList } from "../helper-functions/index.js";
-import { CommonErrors } from "../helper-functions/common-errors.js";
+import { CommonMessages } from "../helper-functions/common-messages.js";
 
 
 export class AdminCommands extends Subcommand {
@@ -321,7 +321,7 @@ export class AdminCommands extends Subcommand {
 		if (!tournament)
 			return void await interaction.reply({
 				embeds: [EmbedMessage({
-					description: CommonErrors.GuildTournamentNotFound,
+					description: CommonMessages.GuildTournamentNotFound,
 					color: Colors.Red
 				})]
 			})
@@ -385,7 +385,7 @@ export class AdminCommands extends Subcommand {
 			return void await interaction.reply({
 				embeds: [
 					EmbedMessage({
-						description: CommonErrors.GuildTournamentNotFound,
+						description: CommonMessages.GuildTournamentNotFound,
 						color: Colors.Red
 					})
 				],
@@ -397,7 +397,7 @@ export class AdminCommands extends Subcommand {
 			return void await interaction.reply({
 				embeds: [
 					EmbedMessage({
-						description: CommonErrors.TournamentNotEditable,
+						description: CommonMessages.TournamentNotEditable,
 						color: Colors.Red
 					})
 				],
@@ -462,14 +462,14 @@ export class AdminCommands extends Subcommand {
 				ephemeral: true,
 				embeds: [
 					EmbedMessage({
-						description: CommonErrors.GuildTournamentNotFound,
+						description: CommonMessages.GuildTournamentNotFound,
 						color: Colors.Red
 					})
 				]
 			})
 
 		if (tournament.status === TournamentStatus.FINISHED)
-			return void await interaction.reply({ embeds: [EmbedMessage({ description: CommonErrors.TournamentNotEditable, color: Colors.Red })], ephemeral: true })
+			return void await interaction.reply({ embeds: [EmbedMessage({ description: CommonMessages.TournamentNotEditable, color: Colors.Red })], ephemeral: true })
 
 		// Prompt the user to confirm this action
 
@@ -523,7 +523,7 @@ export class AdminCommands extends Subcommand {
 		if (!tournament) return void await interaction.reply({
 			ephemeral: true,
 			embeds: [EmbedMessage({
-				description: CommonErrors.GuildTournamentNotFound,
+				description: CommonMessages.GuildTournamentNotFound,
 				color: Colors.Red
 			})]
 		})
@@ -535,7 +535,7 @@ export class AdminCommands extends Subcommand {
 		if (tournament.game !== "TETRIO") return void await interaction.reply({
 			ephemeral: true,
 			embeds: [EmbedMessage({
-				description: CommonErrors.NotImplemented,
+				description: CommonMessages.NotImplemented,
 				color: Colors.Red
 			})]
 		})
@@ -587,7 +587,7 @@ export class AdminCommands extends Subcommand {
 		if (format === 'csv') void await interaction.reply({
 			embeds: [
 				EmbedMessage({
-					description: CommonErrors.NotImplemented,
+					description: CommonMessages.NotImplemented,
 					color: Colors.Red
 				})
 			]
@@ -595,7 +595,7 @@ export class AdminCommands extends Subcommand {
 		if (format === 'json') void await interaction.reply({
 			embeds: [
 				EmbedMessage({
-					description: CommonErrors.NotImplemented,
+					description: CommonMessages.NotImplemented,
 					color: Colors.Red
 				})
 			]

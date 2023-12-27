@@ -2,7 +2,7 @@ import { InteractionHandler, InteractionHandlerTypes } from "@sapphire/framework
 import { ButtonInteraction, Colors } from "discord.js"
 import { TournamentStatus } from "../sequelize/Tournaments.js";
 import { EmbedMessage, GetTournamentFromGuild, RemovePlayerFromTournament, TournamentDetailsEmbed } from "../helper-functions/index.js";
-import { CommonErrors } from "../helper-functions/common-errors.js";
+import { CommonMessages } from "../helper-functions/common-messages.js";
 
 
 export class UnregisterButtonHandler extends InteractionHandler {
@@ -17,7 +17,7 @@ export class UnregisterButtonHandler extends InteractionHandler {
 			ephemeral: true,
 			embeds: [
 				EmbedMessage({
-					description: CommonErrors.GuildTournamentNotFound,
+					description: CommonMessages.GuildTournamentNotFound,
 					color: Colors.Red
 				})
 			]
@@ -28,7 +28,7 @@ export class UnregisterButtonHandler extends InteractionHandler {
 				ephemeral: true,
 				embeds: [
 					EmbedMessage({
-						description: CommonErrors.TournamentNotLeaveable,
+						description: CommonMessages.TournamentNotLeaveable,
 						color: Colors.Red
 					})
 				]
@@ -40,7 +40,7 @@ export class UnregisterButtonHandler extends InteractionHandler {
 				ephemeral: true,
 				embeds: [
 					EmbedMessage({
-						description: CommonErrors.PlayerNotRegistered,
+						description: CommonMessages.PlayerNotRegistered,
 						color: Colors.Blue
 					})
 				]

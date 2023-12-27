@@ -2,7 +2,7 @@ import { InteractionHandler, InteractionHandlerTypes } from "@sapphire/framework
 import { ButtonInteraction, Colors } from "discord.js";
 import { TournamentStatus } from "../sequelize/Tournaments.js";
 import { EmbedMessage, GetTournamentFromGuild } from "../helper-functions/index.js";
-import { CommonErrors } from "../helper-functions/common-errors.js";
+import { CommonMessages } from "../helper-functions/common-messages.js";
 
 export class CheckinButtonHandler extends InteractionHandler {
 	public constructor(ctx: InteractionHandler.LoaderContext, options: InteractionHandler.Options) {
@@ -16,7 +16,7 @@ export class CheckinButtonHandler extends InteractionHandler {
 			ephemeral: true,
 			embeds: [
 				EmbedMessage({
-					description: CommonErrors.GuildTournamentNotFound,
+					description: CommonMessages.GuildTournamentNotFound,
 					color: Colors.Red
 				})
 			]
@@ -26,7 +26,7 @@ export class CheckinButtonHandler extends InteractionHandler {
 			return void await interaction.reply({
 				ephemeral: true,
 				embeds: [EmbedMessage({
-					description: CommonErrors.CheckInNotAllowed,
+					description: CommonMessages.CheckInNotAllowed,
 					color: Colors.Blue
 				})]
 			})
@@ -36,7 +36,7 @@ export class CheckinButtonHandler extends InteractionHandler {
 			return void await interaction.reply({
 				ephemeral: true,
 				embeds: [EmbedMessage({
-					description: CommonErrors.PlayerNotRegistered,
+					description: CommonMessages.PlayerNotRegistered,
 					color: Colors.Blue
 				})]
 			})
@@ -46,7 +46,7 @@ export class CheckinButtonHandler extends InteractionHandler {
 			return void await interaction.reply({
 				ephemeral: true,
 				embeds: [EmbedMessage({
-					description: CommonErrors.AlreadyCheckedIn,
+					description: CommonMessages.AlreadyCheckedIn,
 					color: Colors.Blue
 				})],
 			})

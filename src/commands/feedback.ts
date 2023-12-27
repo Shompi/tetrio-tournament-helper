@@ -1,7 +1,7 @@
 import { Command } from "@sapphire/framework"
 import { Colors, EmbedBuilder, GuildTextBasedChannel } from "discord.js";
 import { EmbedMessage, UserIsBlocked } from "../helper-functions/index.js";
-import { CommonErrors } from "../helper-functions/common-errors.js";
+import { CommonMessages } from "../helper-functions/common-messages.js";
 
 
 export class FeedbackCommand extends Command {
@@ -38,7 +38,7 @@ export class FeedbackCommand extends Command {
 			return void await interaction.reply({
 				ephemeral: true,
 				embeds: [EmbedMessage({
-					description: CommonErrors.UserIsBlocked,
+					description: CommonMessages.UserIsBlocked,
 					color: Colors.Red
 				})]
 			})

@@ -753,3 +753,19 @@ export async function SendLogsToGuild(guildId: Snowflake, client: Client<true>, 
 		}
 	}
 }
+
+export async function GetUserFromBlocklist(userId: Snowflake, reason?: string) {
+
+	return await BlocklistModel.findOrCreate({
+		where: {
+			discord_id: userId
+		}
+	})
+}
+
+export async function UnblockUser(userId: Snowflake) {
+	const [user, _] = await GetUserFromBlocklist(userId)
+
+	await user.update('isBlacklisted', false)
+	return true
+}
