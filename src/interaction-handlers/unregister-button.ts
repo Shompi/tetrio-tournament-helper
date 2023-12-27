@@ -17,7 +17,7 @@ export class UnregisterButtonHandler extends InteractionHandler {
 			ephemeral: true,
 			embeds: [
 				EmbedMessage({
-					description: CommonMessages.GuildTournamentNotFound,
+					description: CommonMessages.Tournament.NotFound,
 					color: Colors.Red
 				})
 			]
@@ -28,7 +28,7 @@ export class UnregisterButtonHandler extends InteractionHandler {
 				ephemeral: true,
 				embeds: [
 					EmbedMessage({
-						description: CommonMessages.TournamentNotLeaveable,
+						description: CommonMessages.Tournament.NotLeaveable,
 						color: Colors.Red
 					})
 				]
@@ -40,7 +40,7 @@ export class UnregisterButtonHandler extends InteractionHandler {
 				ephemeral: true,
 				embeds: [
 					EmbedMessage({
-						description: CommonMessages.PlayerNotRegistered,
+						description: CommonMessages.Player.NotRegistered,
 						color: Colors.Blue
 					})
 				]

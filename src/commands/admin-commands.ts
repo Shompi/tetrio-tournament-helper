@@ -321,7 +321,7 @@ export class AdminCommands extends Subcommand {
 		if (!tournament)
 			return void await interaction.reply({
 				embeds: [EmbedMessage({
-					description: CommonMessages.GuildTournamentNotFound,
+					description: CommonMessages.Tournament.NotFound,
 					color: Colors.Red
 				})]
 			})
@@ -385,7 +385,7 @@ export class AdminCommands extends Subcommand {
 			return void await interaction.reply({
 				embeds: [
 					EmbedMessage({
-						description: CommonMessages.GuildTournamentNotFound,
+						description: CommonMessages.Tournament.NotFound,
 						color: Colors.Red
 					})
 				],
@@ -397,7 +397,7 @@ export class AdminCommands extends Subcommand {
 			return void await interaction.reply({
 				embeds: [
 					EmbedMessage({
-						description: CommonMessages.TournamentNotEditable,
+						description: CommonMessages.Tournament.NotEditable,
 						color: Colors.Red
 					})
 				],
@@ -462,14 +462,14 @@ export class AdminCommands extends Subcommand {
 				ephemeral: true,
 				embeds: [
 					EmbedMessage({
-						description: CommonMessages.GuildTournamentNotFound,
+						description: CommonMessages.Tournament.NotFound,
 						color: Colors.Red
 					})
 				]
 			})
 
 		if (tournament.status === TournamentStatus.FINISHED)
-			return void await interaction.reply({ embeds: [EmbedMessage({ description: CommonMessages.TournamentNotEditable, color: Colors.Red })], ephemeral: true })
+			return void await interaction.reply({ embeds: [EmbedMessage({ description: CommonMessages.Tournament.NotEditable, color: Colors.Red })], ephemeral: true })
 
 		// Prompt the user to confirm this action
 
@@ -523,7 +523,7 @@ export class AdminCommands extends Subcommand {
 		if (!tournament) return void await interaction.reply({
 			ephemeral: true,
 			embeds: [EmbedMessage({
-				description: CommonMessages.GuildTournamentNotFound,
+				description: CommonMessages.Tournament.NotFound,
 				color: Colors.Red
 			})]
 		})
@@ -535,7 +535,7 @@ export class AdminCommands extends Subcommand {
 		if (tournament.game !== "TETRIO") return void await interaction.reply({
 			ephemeral: true,
 			embeds: [EmbedMessage({
-				description: CommonMessages.NotImplemented,
+				description: CommonMessages.FunctionNotImplemented,
 				color: Colors.Red
 			})]
 		})
@@ -587,7 +587,7 @@ export class AdminCommands extends Subcommand {
 		if (format === 'csv') void await interaction.reply({
 			embeds: [
 				EmbedMessage({
-					description: CommonMessages.NotImplemented,
+					description: CommonMessages.FunctionNotImplemented,
 					color: Colors.Red
 				})
 			]
@@ -595,7 +595,7 @@ export class AdminCommands extends Subcommand {
 		if (format === 'json') void await interaction.reply({
 			embeds: [
 				EmbedMessage({
-					description: CommonMessages.NotImplemented,
+					description: CommonMessages.FunctionNotImplemented,
 					color: Colors.Red
 				})
 			]

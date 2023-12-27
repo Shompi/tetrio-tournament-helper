@@ -21,7 +21,7 @@ export class RegisterButtonHandler extends InteractionHandler {
 			ephemeral: true,
 			embeds: [
 				EmbedMessage({
-					description: CommonMessages.GuildTournamentNotFound,
+					description: CommonMessages.Tournament.NotFound,
 					color: Colors.Red
 				})
 			]
@@ -31,7 +31,7 @@ export class RegisterButtonHandler extends InteractionHandler {
 			return void await interaction.reply({
 				ephemeral: true,
 				embeds: [EmbedMessage({
-					description: CommonMessages.TournamentNotJoinable,
+					description: CommonMessages.Tournament.NotJoinable,
 				})]
 			})
 		}

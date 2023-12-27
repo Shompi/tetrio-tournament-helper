@@ -16,7 +16,7 @@ export class CheckinButtonHandler extends InteractionHandler {
 			ephemeral: true,
 			embeds: [
 				EmbedMessage({
-					description: CommonMessages.GuildTournamentNotFound,
+					description: CommonMessages.Tournament.NotFound,
 					color: Colors.Red
 				})
 			]
@@ -26,7 +26,7 @@ export class CheckinButtonHandler extends InteractionHandler {
 			return void await interaction.reply({
 				ephemeral: true,
 				embeds: [EmbedMessage({
-					description: CommonMessages.CheckInNotAllowed,
+					description: CommonMessages.Player.CheckInNotAllowed,
 					color: Colors.Blue
 				})]
 			})
@@ -36,7 +36,7 @@ export class CheckinButtonHandler extends InteractionHandler {
 			return void await interaction.reply({
 				ephemeral: true,
 				embeds: [EmbedMessage({
-					description: CommonMessages.PlayerNotRegistered,
+					description: CommonMessages.Player.NotRegistered,
 					color: Colors.Blue
 				})]
 			})
@@ -46,7 +46,7 @@ export class CheckinButtonHandler extends InteractionHandler {
 			return void await interaction.reply({
 				ephemeral: true,
 				embeds: [EmbedMessage({
-					description: CommonMessages.AlreadyCheckedIn,
+					description: CommonMessages.Player.AlreadyCheckedIn,
 					color: Colors.Blue
 				})],
 			})

@@ -70,7 +70,7 @@ export class BlocklistCommands extends Subcommand {
 		return void await interaction.reply({
 			embeds: [EmbedMessage(
 				{
-					description: CommonMessages.BlocklistAdd.replace('{username}', options.target.displayName),
+					description: CommonMessages.Blocklist.Add.replace('{username}', options.target.displayName),
 					color: Colors.Green,
 					footer: {
 						text: options.target.id
@@ -90,7 +90,7 @@ export class BlocklistCommands extends Subcommand {
 
 		return void await interaction.reply({
 			embeds: [EmbedMessage({
-				description: CommonMessages.BlocklistRemove.replace('{username}', options.target.username),
+				description: CommonMessages.Blocklist.Remove.replace('{username}', options.target.username),
 				color: Colors.Green,
 				footer: {
 					text: options.target.id
