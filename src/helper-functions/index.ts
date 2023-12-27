@@ -479,7 +479,7 @@ export async function BuildTableForGeneralInfo(tournament: Tournament, playerLis
 	return table;
 }
 
-export function BuildAsciiTableForTetrio(tournament: Tournament, playerList: RegisteredPlayer[]) {
+function BuildAsciiTableForTetrio(tournament: Tournament, playerList: RegisteredPlayer[]) {
 	// Now we need to build the table
 	// We need to check whether or not this is a TETRIO tournament so we can build different tables for other games.
 	const table = new AsciiTable3(tournament.name)
@@ -579,7 +579,7 @@ export function BuildASCIITableAttachment(tournament: Tournament, orderedPlayerL
 	const table = BuildAsciiTableForTetrio(tournament, orderedPlayerList);
 
 	const TableFile = new AttachmentBuilder(Buffer.from(table.toString()))
-		.setName('playersTable.txt')
+		.setName(`PLAYERS-${tournament.name}.txt`)
 		.setDescription(`Tabla de jugadores del torneo ${tournament.name}`);
 
 	return TableFile;
