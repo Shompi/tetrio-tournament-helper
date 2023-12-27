@@ -1,10 +1,38 @@
 import { Subcommand } from "@sapphire/plugin-subcommands"
 import { TournamentStatus } from "../sequelize/Tournaments.js";
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, Colors, ComponentType, EmbedBuilder, PermissionFlagsBits, ChannelType, GuildTextBasedChannel, ColorResolvable, AttachmentBuilder, Attachment } from "discord.js";
-import { BuildTableForChallonge, ClearTournamentPlayerList, EmbedMessage, FinishTournament, GetRolesToAddArray, GetTournamentFromGuild, IsTournamentEditable, OrderBy, SearchTournamentByNameAutocomplete, TetrioRanksArray, TournamentDetailsEmbed } from "../helper-functions/index.js";
-import { OrderPlayerListBy } from "../helper-functions/index.js";
-import { BuildASCIITableAttachment } from "../helper-functions/index.js";
-import { BuildEmbedPlayerList } from "../helper-functions/index.js";
+import {
+	ActionRowBuilder,
+	AttachmentBuilder,
+	ButtonBuilder,
+	ButtonStyle,
+	ChannelType,
+	ColorResolvable,
+	Colors,
+	ComponentType,
+	EmbedBuilder,
+	GuildTextBasedChannel,
+	PermissionFlagsBits,
+} from "discord.js";
+
+import {
+	BuildASCIITableAttachment,
+	BuildCSVTableAttachment,
+	BuildEmbedPlayerList,
+	BuildJSONAttachment,
+	BuildTableForChallonge,
+	ClearTournamentPlayerList,
+	EmbedMessage,
+	FinishTournament,
+	GetRolesToAddArray,
+	GetTournamentFromGuild,
+	IsTournamentEditable,
+	OrderBy,
+	OrderPlayerListBy,
+	SearchTournamentByNameAutocomplete,
+	TetrioRanksArray,
+	TournamentDetailsEmbed
+} from "../helper-functions/index.js";
+
 import { CommonMessages } from "../helper-functions/common-messages.js";
 
 
@@ -541,13 +569,13 @@ export class AdminCommands extends Subcommand {
 		})
 		// We basically need to skip all the code below if the tournament is not a TETRIO tournament
 
-		const orderedPlayerList = await OrderPlayerListBy(tournament, orderBy, filterCheckedIn)
+		const playersSorted = await OrderPlayerListBy(tournament, orderBy, filterCheckedIn)
 
 		if (['embed', 'challonge'].includes(format)) {
 
 			const players = format === 'embed' ?
-				BuildEmbedPlayerList(tournament, orderedPlayerList) :
-				BuildTableForChallonge(tournament, orderedPlayerList)
+				BuildEmbedPlayerList(tournament, playersSorted) :
+				BuildTableForChallonge(tournament, playersSorted)
 
 			return void await interaction.reply({
 				embeds: [
@@ -560,25 +588,29 @@ export class AdminCommands extends Subcommand {
 			})
 		}
 
-		let attachment: AttachmentBuilder
+		let attachment: AttachmentBuilder | null = null
 
 		if (format === 'csv') {
-
-
+			attachment = BuildCSVTableAttachment(tournament, playersSorted)
 		}
 
 		if (format === 'ascii') {
-			attachment = BuildASCIITableAttachment(tournament, orderedPlayerList)
+			attachment = BuildASCIITableAttachment(tournament, playersSorted)
 		}
 
 		if (format === 'json') {
-			const players = JSON.stringify(orderedPlayerList, null, 2)
-
-			attachment = new AttachmentBuilder(
-				Buffer.from(players),
-				{ name: `PLAYERS-${tournament.name}` }
-			)
+			attachment = BuildJSONAttachment(tournament, playersSorted)
 		}
+
+		return void await interaction.reply({
+			embeds: [
+				EmbedMessage({
+					description: CommonMessages.AdminCommands.SendPlayerList.Success.replace('{tournament}', tournament.name),
+					color: Colors.Green
+				})
+			],
+			files: [attachment!]
+		})
 	}
 
 	public async autocompleteRun(interaction: Subcommand.AutocompleteInteraction<'cached'>) {

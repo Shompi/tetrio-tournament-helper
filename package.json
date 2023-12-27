@@ -16,7 +16,7 @@
     "@sapphire/plugin-subcommands": "^5.1.0",
     "@sapphire/utilities": "^3.13.0",
     "ascii-table3": "^0.9.0",
-    "csv-generate": "^4.3.1",
+    "csv-stringify": "^6.4.5",
     "discord.js": "^14.14.1",
     "dotenv": "^16.3.1",
     "sequelize": "^6.35.1",

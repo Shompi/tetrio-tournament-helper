@@ -12,6 +12,7 @@ import { request } from "undici"
 import { codeBlock } from "@sapphire/utilities";
 import { Op } from "sequelize";
 import { BlocklistModel } from "../sequelize/Blocklist.js";
+import * as csv from "csv-stringify/sync";
 
 export type TetrioApiCacheStatus = "hit" | "miss" | "awaited"
 export type TetrioUserRole = "anon" | "user" | "bot" | "halfmod" | "mod" | "admin" | "sysop" | "banned"
@@ -780,3 +781,58 @@ export async function UnblockUser(userId: Snowflake) {
 	await user.update('isBlacklisted', false)
 	return true
 }
+export function BuildCSVTableAttachment(tournament: Tournament, players: RegisteredPlayer[]): AttachmentBuilder {
+	const Headers = ["DISCORDID", "USERNAME", "CHALLONGE"];
+	const PlayersData: any[] = [];
+
+	if (players[0].data) {
+		Headers.push("TETR");
+		Headers.push("RANK");
+		Headers.push("RATING");
+		Headers.push("COUNTRY");
+		Headers.push("APM");
+		Headers.push("PPS");
+		Headers.push("VS");
+
+		for (const player of players) {
+			const row = [];
+
+
+			row.push(player.data?.username);
+			row.push(player.data?.league.rank);
+			row.push(player.data?.league.rating);
+			row.push(player.data?.country);
+			row.push(player.data?.league.apm);
+			row.push(player.data?.league.pps);
+			row.push(player.data?.league.vs);
+
+			PlayersData.push(row);
+		}
+	} else {
+
+		for (const player of players) {
+			const row = [];
+			row.push(player.discordId);
+			row.push(player.dUsername);
+			row.push(player.challongeId);
+
+			PlayersData.push(row);
+		}
+	}
+
+	const csvdata = csv.stringify([
+		Headers,
+		...PlayersData
+	]);
+
+	return new AttachmentBuilder(
+		Buffer.from(csvdata),
+		{ name: `PLAYERS-${tournament.name}.csv`, description: `Lista de jugadores del torneo ${tournament.name} en formato CSV` }
+	);
+}export function BuildJSONAttachment(tournament: Tournament, players: RegisteredPlayer[]): AttachmentBuilder {
+	return new AttachmentBuilder(
+		Buffer.from(JSON.stringify(players, null, 2)),
+		{ name: `PLAYERS-${tournament.name}.json` }
+	);
+}
+
