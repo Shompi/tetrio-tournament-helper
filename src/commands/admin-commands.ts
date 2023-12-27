@@ -1,7 +1,7 @@
 import { Subcommand } from "@sapphire/plugin-subcommands"
 import { TournamentStatus } from "../sequelize/Tournaments.js";
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, Colors, ComponentType, EmbedBuilder, PermissionFlagsBits, ChannelType, GuildTextBasedChannel, ColorResolvable, AttachmentBuilder, Attachment } from "discord.js";
-import { BuildAsciiTableForTetrio, BuildTableForChallonge, ClearTournamentPlayerList, EmbedMessage, FinishTournament, GetRolesToAddArray, GetTournamentFromGuild, IsTournamentEditable, OrderBy, SearchTournamentByNameAutocomplete, TetrioRanksArray, TournamentDetailsEmbed } from "../helper-functions/index.js";
+import { BuildTableForChallonge, ClearTournamentPlayerList, EmbedMessage, FinishTournament, GetRolesToAddArray, GetTournamentFromGuild, IsTournamentEditable, OrderBy, SearchTournamentByNameAutocomplete, TetrioRanksArray, TournamentDetailsEmbed } from "../helper-functions/index.js";
 import { OrderPlayerListBy } from "../helper-functions/index.js";
 import { BuildASCIITableAttachment } from "../helper-functions/index.js";
 import { BuildEmbedPlayerList } from "../helper-functions/index.js";
@@ -564,13 +564,11 @@ export class AdminCommands extends Subcommand {
 
 		if (format === 'csv') {
 
+
 		}
 
 		if (format === 'ascii') {
-			attachment = new AttachmentBuilder(
-				Buffer.from(
-					BuildAsciiTableForTetrio(tournament, orderedPlayerList)
-				), { name: `PLAYERS-${tournament.name}` })
+			attachment = BuildASCIITableAttachment(tournament, orderedPlayerList)
 		}
 
 		if (format === 'json') {
