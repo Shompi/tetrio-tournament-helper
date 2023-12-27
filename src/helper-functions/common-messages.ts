@@ -1,4 +1,12 @@
 export const CommonMessages = {
+	AdminCommands: {
+		SendPlayerList: {
+			/** Replace {tournament} with tournament name */
+			Success: `✅ ¡Aquí tienes la lista de los jugadores inscritos en el torneo **{tournament}**`,
+			Fail: ``
+		}
+	},
+
 	Tournament: {
 		/** @deprecated */
 		InvalidTournamentId: "❌ La id del torneo que has ingresado no pertenece a este servidor o no existe.\nSi usas el nombre del torneo, asegúrate de que selecciones una de las opciones del **autocompletado**.",
@@ -15,10 +23,12 @@ export const CommonMessages = {
 	},
 
 	Blocklist: {
+		/** Replace {username} with user username */
 		Add: `✅ El usuario {username} ha sido añadido a la blocklist.`,
+		/** Replace {username} with user username */
 		Remove: `✅ El usuario {username} puede utilizar los comandos del bot nuevamente.`,
 	},
-	
+
 	UserIsBlocked: "❌ No tienes permitido usar este comando.",
 	FunctionNotImplemented: "⚠️ Esta opción aún no ha sido implementada.",
 }
