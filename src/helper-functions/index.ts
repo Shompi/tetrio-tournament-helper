@@ -2,7 +2,7 @@
 * This file will contain tetrio api function calls
 * and maybe other stuff.
 */
-import { AttachmentBuilder, EmbedBuilder, Colors, Snowflake, ColorResolvable, EmbedData, User } from "discord.js";
+import { AttachmentBuilder, EmbedBuilder, Colors, Snowflake, ColorResolvable, EmbedData, User, Client, TextChannel, TextBasedChannel } from "discord.js";
 import { AsciiTable3 } from "ascii-table3";
 import { Command } from "@sapphire/framework";
 import { Subcommand } from "@sapphire/plugin-subcommands";
@@ -714,4 +714,40 @@ export async function UserIsBlocked(_user: User) {
 	if (created) return false
 
 	if (user.isBlacklisted) return true
+}
+
+export async function SendLogsToGuild(guildId: Snowflake, client: Client<true>, content: string) {
+
+	const guildConfigs = await GetGuildConfigs(guildId)
+
+	if (!guildConfigs.logging_channel) return
+
+	try {
+
+		(client.channels.cache.get(guildConfigs.logging_channel) as TextBasedChannel).send({
+			embeds: [
+				EmbedMessage({
+					description: content,
+					color: Colors.Yellow,
+					author: {
+						name: client.user.displayName,
+						iconURL: client.user.displayAvatarURL({ size: 256 })
+					}
+				})
+			]
+		})
+
+	} catch (e) {
+
+		console.log(`[GUILDS] Ocurrió un error al intentar enviar un mensaje a la guild: ${guildId}`, e);
+		if (!client.guilds.cache.get(guildId)?.channels.cache.has(guildConfigs.logging_channel)) {
+			console.log(`[GUILDS] El canal ${guildConfigs.logging_channel} no existe en la guild ${guildId}, eliminando...`);
+
+			await guildConfigs.update({
+				logging_channel: null,
+			})
+
+			console.log(`[GUILDS] El canal ha sido actualizado en la base de datos.`);
+		}
+	}
 }
