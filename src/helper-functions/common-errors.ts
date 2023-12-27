@@ -1,6 +1,7 @@
 export const CommonErrors = {
+	/** @deprecated */
 	InvalidTournamentId: "❌ La id del torneo que has ingresado no pertenece a este servidor o no existe.\nSi usas el nombre del torneo, asegúrate de que selecciones una de las opciones del **autocompletado**.",
-	GuildTournamentNotFound: "❌ No encontré ningún torneo con la id que ingresaste en este servidor.",
+	GuildTournamentNotFound: "❌ No encontré ningún torneo con la id que ingresaste en este servidor\nSi usas el nombre del torneo, asegurate de usar una de las opciones del autocompletado.",
 	TournamentNotEditable: '❌ No puedes editar la información de este torneo por que está marcado como **FINALIZADO**',
 	TournamentNotJoinable: 'No te puedes inscribir en este torneo por que está marcado como **Cerrado** o **Finalizado**.',
 	TournamentNotLeaveable: 'No te puedes desinscribir de este torneo por que ya está cerrado.',

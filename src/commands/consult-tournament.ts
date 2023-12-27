@@ -41,9 +41,6 @@ export class TournamentCommands extends Subcommand {
 		// Your code goes here
 		const idTorneo = +interaction.options.getString('nombre-id', true)
 
-		if (isNaN(idTorneo))
-			return void await interaction.reply({ content: 'Debes ingresar la id numérica de un torneo o **usar una de las opciones del autocompletado**.' })
-
 		const tournament = await SearchTournamentById(idTorneo)
 		if (!tournament) return void await interaction.reply({ content: 'No se encontró ningun torneo en la base de datos con los datos ingresados.', ephemeral: true })
 

@@ -316,15 +316,6 @@ export class AdminCommands extends Subcommand {
 		// Your code goes here
 
 		const idTorneo = +interaction.options.getString('nombre-id', true)
-
-		if (isNaN(idTorneo))
-			return void await interaction.reply({
-				embeds: [EmbedMessage({
-					description: CommonErrors.InvalidTournamentId,
-					color: Colors.Red
-				})]
-			})
-
 		const tournament = await GetTournamentFromGuild(interaction.guildId, idTorneo)
 
 		if (!tournament)
@@ -386,19 +377,7 @@ export class AdminCommands extends Subcommand {
 	public async chatInputEditTournamentInfo(interaction: Subcommand.ChatInputCommandInteraction<'cached'>) {
 
 		const tournamentId = +interaction.options.getString('nombre-id', true)
-
-		if (isNaN(tournamentId))
-			return void await interaction.reply({
-				embeds: [
-					EmbedMessage({
-						color: Colors.Red,
-						description: CommonErrors.InvalidTournamentId
-					})
-				],
-				ephemeral: true
-			})
-
-
+		
 		// Try to get the tournament from this guild
 		const tournament = await GetTournamentFromGuild(interaction.guildId, tournamentId)
 
@@ -476,17 +455,6 @@ export class AdminCommands extends Subcommand {
 			idTorneo: +interaction.options.getString('nombre-id', true)
 		}
 
-		if (isNaN(options.idTorneo))
-			return void await interaction.reply({
-				embeds: [
-					EmbedMessage({
-						description: CommonErrors.InvalidTournamentId,
-						color: Colors.Red
-					})
-				],
-				ephemeral: true
-			})
-
 		const tournament = await GetTournamentFromGuild(interaction.guildId, options.idTorneo)
 
 		if (!tournament)
@@ -549,15 +517,6 @@ export class AdminCommands extends Subcommand {
 
 	public async chatInputListPlayers(interaction: Subcommand.ChatInputCommandInteraction<'cached'>) {
 		const idTorneo = +interaction.options.getString('nombre-id', true)
-
-		if (isNaN(idTorneo))
-			return void await interaction.reply({
-				ephemeral: true,
-				embeds: [EmbedMessage({
-					description: CommonErrors.InvalidTournamentId,
-					color: Colors.Red
-				})]
-			})
 
 		const tournament = await GetTournamentFromGuild(interaction.guildId, idTorneo)
 

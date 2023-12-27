@@ -32,10 +32,7 @@ export class CloseRegistrations extends Command {
 	public async chatInputRun(interaction: Command.ChatInputCommandInteraction<'cached'>) {
 		// Your code goes here
 		const tournamentId = +interaction.options.getString('nombre-id', true)
-
-		if (isNaN(tournamentId))
-			return void await interaction.reply({ content: 'Debes ingresar la id numérica de un torneo o **usar una de las opciones del autocompletado**.' })
-
+		
 		const torneo = await GetTournamentFromGuild(interaction.guildId, tournamentId)
 		if (!torneo) return void await interaction.reply({ content: "El torneo no existe.", ephemeral: true })
 

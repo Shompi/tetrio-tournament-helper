@@ -413,6 +413,8 @@ export async function GetAllOngoingTournamentsFromGuild(guild_id: string) {
 /** Gets a single tournament from a guild */
 export async function GetTournamentFromGuild(guild_id: string, tournament_id: number) {
 
+	if (isNaN(tournament_id)) return null
+
 	return await TournamentModel.findOne({
 		where: {
 			guild_id: guild_id,

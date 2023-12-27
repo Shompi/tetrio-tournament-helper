@@ -34,9 +34,6 @@ export class CloseCheckin extends Command {
 
 		const idTorneo = +interaction.options.getString('nombre-id', true)
 
-		if (isNaN(idTorneo))
-			return void await interaction.reply({ content: 'Debes ingresar la id numérica de un torneo o **usar una de las opciones del autocompletado**.' })
-
 		const tournament = await GetTournamentFromGuild(interaction.guildId, idTorneo)
 
 		if (!tournament) return void await interaction.editReply({ content: "No se puede cerrar el check in de este torneo por que no se ha encontrado." })

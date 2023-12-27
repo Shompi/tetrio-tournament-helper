@@ -87,10 +87,7 @@ export class ForceCommands extends Subcommand {
 			idTorneo: +interaction.options.getString('nombre-id', true),
 			challongeId: interaction.options.getString('challonge-id', false),
 		}
-
-		if (isNaN(options.idTorneo))
-			return void await interaction.reply({ content: 'La id debe ser una id numérica o una de las opciones del autocompletado.', ephemeral: true })
-
+		
 		const tournament = await GetTournamentFromGuild(interaction.guildId, options.idTorneo)
 
 		if (!tournament)
@@ -177,9 +174,6 @@ export class ForceCommands extends Subcommand {
 	public async chatInputForzarDesinscripcion(interaction: Subcommand.ChatInputCommandInteraction<'cached'>) {
 		// Your code goes here
 		const idTorneo = +interaction.options.getString('nombre-id', true)
-
-		if (isNaN(idTorneo))
-			return void await interaction.reply({ content: 'Debes ingresar la id o el nombre de algun torneo (usando las opciones del autocompletado)', ephemeral: true })
 
 		const tournament = await GetTournamentFromGuild(interaction.guildId, idTorneo)
 

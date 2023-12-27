@@ -38,10 +38,6 @@ export class OpenCheckin extends Command {
 			channel: interaction.options.getChannel('canal', true) as TextChannel,
 			idTorneo: +interaction.options.getString('nombre-id', true)
 		}
-
-		if (isNaN(options.idTorneo))
-			return void await interaction.reply({ content: 'Debes ingresar la id numérica de un torneo o **usar una de las opciones del autocompletado**.' })
-
 		const tournament = await GetTournamentFromGuild(interaction.guildId, options.idTorneo)
 
 		if (!tournament) return void await interaction.reply({ content: "El mensaje no ha sido enviado por que el torneo no existe." })
