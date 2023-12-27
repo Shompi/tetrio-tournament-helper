@@ -441,7 +441,7 @@ export function GetRolesToAddArray(interaction: Command.ChatInputCommandInteract
 	return roles;
 }
 
-export async function BuildTableForChallonge(tournament: Tournament, players: RegisteredPlayer[]) {
+export function BuildTableForChallonge(tournament: Tournament, players: RegisteredPlayer[]) {
 
 	// Challonge bulk add accepts a string like [displayName, email or challonge username]
 	return new EmbedBuilder()
@@ -509,7 +509,7 @@ export function BuildAsciiTableForTetrio(tournament: Tournament, playerList: Reg
 		);
 	}
 
-	return table;
+	return table.toString();
 }
 
 export async function OrderPlayerListBy(tournament: Tournament, orderBy: OrderBy, filter_checked_in: boolean | null): Promise<RegisteredPlayer[]> {
