@@ -1,7 +1,6 @@
 import { Subcommand } from "@sapphire/plugin-subcommands"
 import { Colors, PermissionFlagsBits } from "discord.js"
-import { BlocklistModel } from "../sequelize/Blocklist.js";
-import { EmbedMessage, GetUserFromBlocklist, UnblockUser } from "../helper-functions/index.js";
+import { BlockUser, EmbedMessage, UnblockUser } from "../helper-functions/index.js";
 import { CommonMessages } from "../helper-functions/common-messages.js";
 
 export class BlocklistCommands extends Subcommand {
@@ -66,10 +65,20 @@ export class BlocklistCommands extends Subcommand {
 			reason: interaction.options.getString('reason', true),
 		}
 
-		// Find user in database
-		const [user, created] = await GetUserFromBlocklist(options.target.id)
+		await BlockUser(options.target.id, options.reason)
 
-		return void await interaction.reply({ content: `✅ El usuario ${options.target} ha sido añadido a la blocklist.`, ephemeral: true })
+		return void await interaction.reply({
+			embeds: [EmbedMessage(
+				{
+					description: CommonMessages.BlocklistAdd.replace('{username}', options.target.displayName),
+					color: Colors.Green,
+					footer: {
+						text: options.target.id
+					}
+				}
+			)],
+			ephemeral: true
+		})
 	}
 
 	public async chatInputRemoveFromBlocklist(interaction: Subcommand.ChatInputCommandInteraction) {
@@ -81,8 +90,11 @@ export class BlocklistCommands extends Subcommand {
 
 		return void await interaction.reply({
 			embeds: [EmbedMessage({
-				description: CommonMessages.UserWhitelisted.replace('{username}', options.target.username),
+				description: CommonMessages.BlocklistRemove.replace('{username}', options.target.username),
 				color: Colors.Green,
+				footer: {
+					text: options.target.id
+				}
 			})],
 			ephemeral: true
 		})
