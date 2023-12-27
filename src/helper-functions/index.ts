@@ -793,32 +793,28 @@ export function BuildCSVTableAttachment(tournament: Tournament, players: Registe
 		Headers.push("APM");
 		Headers.push("PPS");
 		Headers.push("VS");
-
-		for (const player of players) {
-			const row = [];
-
-
-			row.push(player.data?.username);
-			row.push(player.data?.league.rank);
-			row.push(player.data?.league.rating);
-			row.push(player.data?.country);
-			row.push(player.data?.league.apm);
-			row.push(player.data?.league.pps);
-			row.push(player.data?.league.vs);
-
-			PlayersData.push(row);
-		}
-	} else {
-
-		for (const player of players) {
-			const row = [];
-			row.push(player.discordId);
-			row.push(player.dUsername);
-			row.push(player.challongeId);
-
-			PlayersData.push(row);
-		}
 	}
+
+	for (const player of players) {
+		const row = [];
+
+		row.push(player.discordId);
+		row.push(player.dUsername);
+		row.push(player.challongeId);
+
+		if (player.data) {
+			row.push(player.data.username);
+			row.push(player.data.league.rank);
+			row.push(player.data.league.rating);
+			row.push(player.data.country);
+			row.push(player.data.league.apm);
+			row.push(player.data.league.pps);
+			row.push(player.data.league.vs);
+		}
+
+		PlayersData.push(row);
+	}
+
 
 	const csvdata = csv.stringify([
 		Headers,
@@ -829,7 +825,7 @@ export function BuildCSVTableAttachment(tournament: Tournament, players: Registe
 		Buffer.from(csvdata),
 		{ name: `PLAYERS-${tournament.name}.csv`, description: `Lista de jugadores del torneo ${tournament.name} en formato CSV` }
 	);
-}export function BuildJSONAttachment(tournament: Tournament, players: RegisteredPlayer[]): AttachmentBuilder {
+} export function BuildJSONAttachment(tournament: Tournament, players: RegisteredPlayer[]): AttachmentBuilder {
 	return new AttachmentBuilder(
 		Buffer.from(JSON.stringify(players, null, 2)),
 		{ name: `PLAYERS-${tournament.name}.json` }
