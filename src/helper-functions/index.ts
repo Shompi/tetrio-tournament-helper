@@ -16,7 +16,7 @@ import * as csv from "csv-stringify/sync";
 
 export type TetrioApiCacheStatus = "hit" | "miss" | "awaited"
 export type TetrioUserRole = "anon" | "user" | "bot" | "halfmod" | "mod" | "admin" | "sysop" | "banned"
-export type OrderBy = "default" | "apm" | "pps" | "tr" | "rank" | null
+export type OrderBy = "default" | "apm" | "pps" | "rating" | "rank" | "vs"
 
 type TetrioUserLeagueStats = {
 	gamesplayed: number;
@@ -528,7 +528,6 @@ export async function OrderPlayerListBy(tournament: Tournament, orderBy: OrderBy
 		PlayersArray.push(player);
 	}
 
-
 	if (tournament.game === AllowedGames.TETRIO) {
 		// At this point we should have a list of players
 		if (orderBy === "rank") {
@@ -544,30 +543,12 @@ export async function OrderPlayerListBy(tournament: Tournament, orderBy: OrderBy
 			});
 		}
 
-		if (orderBy === 'tr') {
+		if (["pps", "apm", "vs", "rating"].includes(orderBy)) {
 			PlayersArray.sort((playerA, playerB) => {
-				const ratingA = playerA.data!.league.rating;
-				const ratingB = playerB.data!.league.rating;
+				const valA = playerA.data!.league[orderBy as "pps" | "apm" | "vs" | "rating"] ?? 0;
+				const valB = playerB.data!.league[orderBy as "pps" | "apm" | "vs" | "rating"] ?? 0;
 
-				return ratingB - ratingA;
-			});
-		}
-
-		if (orderBy === 'apm') {
-			PlayersArray.sort((playerA, playerB) => {
-				const apmA = playerA.data!.league.apm ?? 0;
-				const apmB = playerB.data!.league.apm ?? 0;
-
-				return apmB - apmA;
-			});
-		}
-
-		if (orderBy === 'pps') {
-			PlayersArray.sort((playerA, playerB) => {
-				const apmA = playerA.data!.league.pps ?? 0;
-				const apmB = playerB.data!.league.pps ?? 0;
-
-				return apmB - apmA;
+				return valB - valA;
 			});
 		}
 	}

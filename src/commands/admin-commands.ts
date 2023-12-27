@@ -257,25 +257,25 @@ export class AdminCommands extends Subcommand {
 								.setDescription('El tipo de ordenamiento de los jugadores en la tabla (SOLO TETRIO)')
 								.setChoices(
 									{
-										name: 'Inscripción',
-										value: "default",
+										name: 'Tetra Rating',
+										value: 'rating',
 									},
 									{
 										name: 'Rank (e.g: S, S+, SS, X)',
 										value: 'rank',
 									},
 									{
-										name: 'Tetra Rating',
-										value: 'tr',
-									},
-									{
-										name: 'Ataque Por Minuto (APM)',
+										name: 'APM (Ataque Por Minuto)',
 										value: 'apm',
 									},
 									{
-										name: 'Piezas Por Segundo (PPS)',
+										name: 'PPS (Piezas Por Segundo)',
 										value: 'pps',
 									},
+									{
+										name: 'VS (Versus Score)',
+										value: 'vs'
+									}
 								)
 
 						)
