@@ -226,6 +226,32 @@ export class AdminCommands extends Subcommand {
 								.setRequired(true)
 								.setAutocomplete(true)
 						)
+						.addStringOption(format =>
+							format.setName('formato')
+								.setChoices(
+									{
+										name: 'ASCII',
+										value: 'ascii',
+									},
+									{
+										name: 'Embed',
+										value: 'embed'
+									},
+									{
+										name: 'Challonge Friendly',
+										value: 'challonge'
+									},
+									{
+										name: "CSV",
+										value: "csv",
+									},
+									{
+										name: 'JSON',
+										value: 'json',
+									},
+								)
+								.setDescription('El formato en el que quieres exportar la lista de jugadores')
+						)
 						.addStringOption(order =>
 							order.setName('ordenar-por')
 								.setDescription('El tipo de ordenamiento de los jugadores en la tabla (SOLO TETRIO)')
@@ -253,37 +279,10 @@ export class AdminCommands extends Subcommand {
 								)
 
 						)
-						.addStringOption(format =>
-							format.setName('formato')
-								.setChoices(
-									{
-										name: 'ASCII',
-										value: 'ascii',
-									},
-									{
-										name: 'Embed',
-										value: 'embed'
-									},
-									{
-										name: 'Challonge Friendly',
-										value: 'challonge'
-									},
-									{
-										name: "CSV",
-										value: "csv",
-									},
-									{
-										name: 'JSON',
-										value: 'json',
-									},
-								)
-								.setDescription('El formato en el que quieres exportar la lista de jugadores')
-						)
 						.addBooleanOption(checkedin =>
 							checkedin.setName('checked-in')
 								.setDescription('Filtrar jugadores que hayan hecho Check-in en el torneo')
 						)
-
 				)
 		}, { idHints: ["1183537285761859665"] })
 	}
