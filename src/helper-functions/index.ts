@@ -706,16 +706,8 @@ export function BuildEmbedPlayerList(tournament: Tournament, players: Registered
 }
 
 export async function UserIsBlocked(_user: User) {
-	const [user, created] = await BlocklistModel.findOrCreate({
-		where: {
-			discord_id: _user.id
-		}
-	})
-
-	// If the user is new then they can't be blocked already
-	if (created) return false
-
-	if (user.isBlacklisted) return true
+	const [user, _] = await GetUserFromBlocklist(_user.id)
+	return user.isBlacklisted
 }
 
 export async function SendLogsToGuild(guildId: Snowflake, client: Client<true>, content: string) {
@@ -754,7 +746,7 @@ export async function SendLogsToGuild(guildId: Snowflake, client: Client<true>, 
 	}
 }
 
-export async function GetUserFromBlocklist(userId: Snowflake, reason?: string) {
+export async function GetUserFromBlocklist(userId: Snowflake) {
 
 	return await BlocklistModel.findOrCreate({
 		where: {
@@ -763,8 +755,21 @@ export async function GetUserFromBlocklist(userId: Snowflake, reason?: string) {
 	})
 }
 
-export async function UnblockUser(userId: Snowflake) {
+export async function BlockUser(userId: Snowflake, reason: string) {
 	const [user, _] = await GetUserFromBlocklist(userId)
+
+	return await user.update({
+		isBlacklisted: true,
+		reason
+	})
+}
+
+export async function UnblockUser(userId: Snowflake) {
+	console.log(`[BLOCKLIST] Desbloqueando al usuario ${userId}...`);
+
+	const [user, _] = await GetUserFromBlocklist(userId)
+
+	_ ? console.log(`[BLOCKLIST] El usuario ha sido creado!`) : null
 
 	await user.update('isBlacklisted', false)
 	return true

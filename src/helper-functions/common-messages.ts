@@ -10,6 +10,7 @@ export const CommonMessages = {
 	AlreadyCheckedIn: '⚠️ Ya estás en la lista de Checked-in.',
 	NotImplemented: "⚠️ Esta opción aún no ha sido implementada.",
 	UserIsBlocked: "❌ No tienes permitido usar este comando.",
-	UserWhitelisted: `✅ El usuario {username} puede utilizar los comandos del bot nuevamente.`,
+	BlocklistRemove: `✅ El usuario {username} puede utilizar los comandos del bot nuevamente.`,
+	BlocklistAdd: `✅ El usuario {username} ha sido añadido a la blocklist.`
 }
 
