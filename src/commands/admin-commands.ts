@@ -1,7 +1,7 @@
 import { Subcommand } from "@sapphire/plugin-subcommands"
 import { TournamentStatus } from "../sequelize/Tournaments.js";
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, Colors, ComponentType, EmbedBuilder, PermissionFlagsBits, ChannelType, GuildTextBasedChannel, ColorResolvable } from "discord.js";
-import { BuildTableForChallonge, ClearTournamentPlayerList, EmbedMessage, FinishTournament, GetRolesToAddArray, GetTournamentFromGuild, IsTournamentEditable, OrderBy, SearchTournamentByNameAutocomplete, TetrioRanksArray, TournamentDetailsEmbed } from "../helper-functions/index.js";
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, Colors, ComponentType, EmbedBuilder, PermissionFlagsBits, ChannelType, GuildTextBasedChannel, ColorResolvable, AttachmentBuilder, Attachment } from "discord.js";
+import { BuildAsciiTableForTetrio, BuildTableForChallonge, ClearTournamentPlayerList, EmbedMessage, FinishTournament, GetRolesToAddArray, GetTournamentFromGuild, IsTournamentEditable, OrderBy, SearchTournamentByNameAutocomplete, TetrioRanksArray, TournamentDetailsEmbed } from "../helper-functions/index.js";
 import { OrderPlayerListBy } from "../helper-functions/index.js";
 import { BuildASCIITableAttachment } from "../helper-functions/index.js";
 import { BuildEmbedPlayerList } from "../helper-functions/index.js";
@@ -242,7 +242,7 @@ export class AdminCommands extends Subcommand {
 									},
 									{
 										name: "CSV",
-										value: "cvs",
+										value: "csv",
 									},
 									{
 										name: 'JSON',
@@ -377,7 +377,7 @@ export class AdminCommands extends Subcommand {
 	public async chatInputEditTournamentInfo(interaction: Subcommand.ChatInputCommandInteraction<'cached'>) {
 
 		const tournamentId = +interaction.options.getString('nombre-id', true)
-		
+
 		// Try to get the tournament from this guild
 		const tournament = await GetTournamentFromGuild(interaction.guildId, tournamentId)
 
@@ -543,63 +543,44 @@ export class AdminCommands extends Subcommand {
 
 		const orderedPlayerList = await OrderPlayerListBy(tournament, orderBy, filterCheckedIn)
 
+		if (['embed', 'challonge'].includes(format)) {
+
+			const players = format === 'embed' ?
+				BuildEmbedPlayerList(tournament, orderedPlayerList) :
+				BuildTableForChallonge(tournament, orderedPlayerList)
+
+			return void await interaction.reply({
+				embeds: [
+					EmbedMessage({
+						description: CommonMessages.AdminCommands.SendPlayerList.Success.replace('{tournament}', tournament.name),
+						color: Colors.Green
+					}),
+					players
+				]
+			})
+		}
+
+		let attachment: AttachmentBuilder
+
+		if (format === 'csv') {
+
+		}
+
 		if (format === 'ascii') {
-			const attachment = BuildASCIITableAttachment(tournament, orderedPlayerList)
-
-			// Send the attachment
-			return void await interaction.reply({
-				embeds: [EmbedMessage({
-					description: `✅ ¡Aquí tienes la lista de los jugadores inscritos en el torneo **${tournament.name}**`,
-					color: Colors.Green
-				})],
-				files: [attachment]
-			})
+			attachment = new AttachmentBuilder(
+				Buffer.from(
+					BuildAsciiTableForTetrio(tournament, orderedPlayerList)
+				), { name: `PLAYERS-${tournament.name}` })
 		}
 
-		if (format === 'challonge') {
-			const players = await BuildTableForChallonge(tournament, orderedPlayerList)
+		if (format === 'json') {
+			const players = JSON.stringify(orderedPlayerList, null, 2)
 
-			return void await interaction.reply({
-				embeds: [
-					EmbedMessage({
-						description: `✅ ¡Aquí tienes la lista de los jugadores inscritos en el torneo **${tournament.name}**`,
-						color: Colors.Green
-					}),
-					players
-				]
-			})
+			attachment = new AttachmentBuilder(
+				Buffer.from(players),
+				{ name: `PLAYERS-${tournament.name}` }
+			)
 		}
-
-		if (format === 'embed') {
-			const players = BuildEmbedPlayerList(tournament, orderedPlayerList)
-
-			return void await interaction.reply({
-				embeds: [
-					EmbedMessage({
-						description: `✅ ¡Aquí tienes la lista de los jugadores inscritos en el torneo **${tournament.name}**`,
-						color: Colors.Green
-					}),
-					players
-				]
-			})
-		}
-
-		if (format === 'csv') void await interaction.reply({
-			embeds: [
-				EmbedMessage({
-					description: CommonMessages.FunctionNotImplemented,
-					color: Colors.Red
-				})
-			]
-		})
-		if (format === 'json') void await interaction.reply({
-			embeds: [
-				EmbedMessage({
-					description: CommonMessages.FunctionNotImplemented,
-					color: Colors.Red
-				})
-			]
-		})
 	}
 
 	public async autocompleteRun(interaction: Subcommand.AutocompleteInteraction<'cached'>) {
