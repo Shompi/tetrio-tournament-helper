@@ -2,7 +2,7 @@
 * This file will contain tetrio api function calls
 * and maybe other stuff.
 */
-import { AttachmentBuilder, EmbedBuilder, Colors, Snowflake, ColorResolvable, EmbedData, User, Client, TextChannel, TextBasedChannel } from "discord.js";
+import { AttachmentBuilder, EmbedBuilder, Colors, Snowflake, EmbedData, User, Client, TextBasedChannel } from "discord.js";
 import { AsciiTable3 } from "ascii-table3";
 import { Command } from "@sapphire/framework";
 import { Subcommand } from "@sapphire/plugin-subcommands";

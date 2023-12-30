@@ -1,5 +1,5 @@
 import { Command } from "@sapphire/framework"
-import { Colors, EmbedBuilder, GuildTextBasedChannel } from "discord.js";
+import { Colors, GuildTextBasedChannel } from "discord.js";
 import { EmbedMessage, UserIsBlocked } from "../helper-functions/index.js";
 import { CommonMessages } from "../helper-functions/common-messages.js";
 
