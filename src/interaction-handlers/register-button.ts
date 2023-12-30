@@ -1,7 +1,7 @@
 import { InteractionHandler, InteractionHandlerTypes } from '@sapphire/framework';
 import { ActionRowBuilder, ButtonBuilder, ButtonInteraction, ButtonStyle, Colors, ComponentType, ModalBuilder, TextInputBuilder, TextInputStyle } from "discord.js"
 import { Tournament, TournamentStatus } from '../sequelize/Tournaments.js';
-import { EmbedMessage, GetTournamentFromGuild, GetUserDataFromTetrio, TetrioUserProfileEmbed } from '../helper-functions/index.js';
+import { EmbedMessage, GetTournamentFromGuild, GetUserDataFromTetrio, SendLogsToGuild, TetrioUserProfileEmbed } from '../helper-functions/index.js';
 import { TournamentDetailsEmbed } from "../helper-functions/index.js";
 import { RunTetrioTournamentRegistrationChecks } from '../helper-functions/index.js';
 import { AddPlayerToTournamentPlayerList } from '../helper-functions/index.js';
@@ -88,69 +88,12 @@ async function HandleTetrioRegistration(interaction: ButtonInteraction<'cached'>
 		ephemeral: true
 	})
 
-	// const profileEmbed = TetrioUserProfileEmbed(playerdata)
-
-	// const confirmButton = new ButtonBuilder()
-	// 	.setCustomId(`t-profile-confirm`)
-	// 	.setLabel("Si")
-	// 	.setEmoji("✅")
-	// 	.setStyle(ButtonStyle.Secondary)
-
-	// const cancelButton = new ButtonBuilder()
-	// 	.setCustomId(`t-profile-cancel`)
-	// 	.setLabel("Cancelar")
-	// 	.setStyle(ButtonStyle.Danger)
-
-	// const confirmOrCancel = new ActionRowBuilder<ButtonBuilder>()
-	// 	.setComponents(confirmButton, cancelButton)
-
-
-	// // Interaction is deferred at this point
-	// const profileReply = await modalSubmition.reply({
-	// 	content: '¿Es este tu perfil de TETRIO?',
-	// 	embeds: [profileEmbed],
-	// 	components: [confirmOrCancel],
-	// 	ephemeral: true
-	// })
-
-	// const pressedButton = await profileReply.awaitMessageComponent({
-	// 	componentType: ComponentType.Button,
-	// 	time: 60_000 * 2,
-	// 	filter: (bint) => {
-	// 		console.log('Received button pressed');
-	// 		return true
-	// 	}
-
-	// }).catch(() => null);
-
-	// if (!pressedButton) {
-	// 	return void await profileReply.edit({
-	// 		content: 'La interacción ha expirado, si quieres continuar con el proceso, por favor presiona el boton de inscripción nuevamente.',
-	// 		components: [],
-	// 		embeds: [],
-	// 	})
-	// }
-
-	// console.log(`[DEBUG] Received button interaction!`);
-	// if (pressedButton.customId === "t-profile-cancel") {
-	// 	return void await pressedButton.update({
-	// 		content: 'La interacción ha sido cancelada.\nSi quieres comenzar el proceso de inscripción de nuevo, debes presionar nuevamente el botón.',
-	// 		components: [],
-	// 		embeds: []
-	// 	})
-	// }
-
-	// if (pressedButton.customId === 't-profile-confirm') {
-	// 	console.log("[REGISTER BUTTON] EL usuario confirmo su perfil...");
-
-
-	// Run tournament checks
 	console.log("[DEBUG] Running tournament inscription checks...");
 	const check = await RunTetrioTournamentRegistrationChecks(playerdata, tournament, interaction.user.id)
 
 
 	if (!check.allowed) {
-		return void await modalSubmition.reply({
+		void await modalSubmition.reply({
 			embeds: [
 				EmbedMessage({
 					description: `No te puedes inscribir en este torneo.\nRazón: **${check.reason}**`,
@@ -159,9 +102,14 @@ async function HandleTetrioRegistration(interaction: ButtonInteraction<'cached'>
 			],
 			ephemeral: true
 		})
+
+		return void await SendLogsToGuild(
+			interaction.guildId,
+			interaction.client,
+			`❌ Error registrando al jugador ${playerdata.username}.\n**Razón:** ${check.reason}`
+		)
 	}
 	console.log("[DEBUG] Tournament checks passed!");
-
 
 	console.log("[DEBUG] Adding player to tournament players list");
 
@@ -183,8 +131,10 @@ async function HandleTetrioRegistration(interaction: ButtonInteraction<'cached'>
 		embeds: [TournamentDetailsEmbed(tournament)]
 	})
 }
-// }
 
+
+
+/** TODO: Implement this for general tournaments */
 function BuildGeneralRegistrationModal(interaction: ButtonInteraction<'cached'>) {
 	return new ModalBuilder()
 		.setCustomId(`${interaction.id}-registration`)
