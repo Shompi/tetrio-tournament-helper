@@ -106,7 +106,7 @@ async function HandleTetrioRegistration(interaction: ButtonInteraction<'cached'>
 		return void await SendLogsToGuild(
 			interaction.guildId,
 			interaction.client,
-			`❌ Error registrando al jugador ${playerdata.username}.\n**Razón:** ${check.reason}`
+			`⚠️ Error registrando al jugador ${playerdata.username}.\n**Razón:** ${check.reason}`
 		)
 	}
 	console.log("[DEBUG] Tournament checks passed!");
