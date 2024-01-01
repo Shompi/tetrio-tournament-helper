@@ -1,7 +1,7 @@
 import { InteractionHandler, InteractionHandlerTypes } from '@sapphire/framework';
 import { ActionRowBuilder, ButtonBuilder, ButtonInteraction, ButtonStyle, Colors, ComponentType, ModalBuilder, TextInputBuilder, TextInputStyle } from "discord.js"
 import { Tournament, TournamentStatus } from '../sequelize/Tournaments.js';
-import { EmbedMessage, GetTournamentFromGuild, GetUserDataFromTetrio, SendLogsToGuild, TetrioUserProfileEmbed } from '../helper-functions/index.js';
+import { EmbedMessage, GetTournamentFromGuild, GetUserDataFromTetrio, CreateTournamentLogMessage, TetrioUserProfileEmbed } from '../helper-functions/index.js';
 import { TournamentDetailsEmbed } from "../helper-functions/index.js";
 import { RunTetrioTournamentRegistrationChecks } from '../helper-functions/index.js';
 import { AddPlayerToTournamentPlayerList } from '../helper-functions/index.js';
@@ -103,9 +103,8 @@ async function HandleTetrioRegistration(interaction: ButtonInteraction<'cached'>
 			ephemeral: true
 		})
 
-		return void await SendLogsToGuild(
-			interaction.guildId,
-			interaction.client,
+		return void await CreateTournamentLogMessage(
+			interaction,
 			`⚠️ Error registrando al jugador ${playerdata.username} en el torneo **${tournament.name} (${tournament.id})**.\n**Razón:** ${check.reason}`
 		)
 	}
@@ -121,7 +120,7 @@ async function HandleTetrioRegistration(interaction: ButtonInteraction<'cached'>
 	})
 
 	void await modalSubmition.reply({
-		content: '✅ !Has sido añadido exitosamente al torneo!\nEl perfil con el que te inscribiste es el que te muestro abajo en este mensaje ⬇️\nEn caso de que te hayas equivocado de perfil, por favor desinscribete e inscribite nuevamente.',
+		content: '✅ !Has sido añadido exitosamente al torneo!\nEl perfil con el que te inscribiste es el que te muestro abajo en este mensaje ⬇️\nEn caso de que te hayas equivocado de perfil, por favor desinscribete e inscribete nuevamente.',
 		embeds: [TetrioUserProfileEmbed(playerdata)],
 		ephemeral: true
 	})

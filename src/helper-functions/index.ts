@@ -2,7 +2,7 @@
 * This file will contain tetrio api function calls
 * and maybe other stuff.
 */
-import { AttachmentBuilder, EmbedBuilder, Colors, Snowflake, EmbedData, User, Client, TextBasedChannel } from "discord.js";
+import { AttachmentBuilder, EmbedBuilder, Colors, Snowflake, EmbedData, User, Client, TextBasedChannel, CommandInteraction, Guild, GuildTextBasedChannel, ButtonInteraction } from "discord.js";
 import { AsciiTable3 } from "ascii-table3";
 import { Command } from "@sapphire/framework";
 import { Subcommand } from "@sapphire/plugin-subcommands";
@@ -692,40 +692,44 @@ export async function UserIsBlocked(_user: User) {
 	return user.isBlacklisted
 }
 
-export async function SendLogsToGuild(guildId: Snowflake, client: Client<true>, content: string) {
+export async function GetGuildLogsChannel(guild: Guild) {
+	const guildConfigs = await GetGuildConfigs(guild.id)
 
-	const guildConfigs = await GetGuildConfigs(guildId)
+	if (!guildConfigs.logging_channel) return null
 
-	if (!guildConfigs.logging_channel) return
+	const channel = guild.channels.cache.get(guildConfigs.logging_channel)
 
-	try {
+	if (channel) return channel as GuildTextBasedChannel
 
-		(client.channels.cache.get(guildConfigs.logging_channel) as TextBasedChannel).send({
-			embeds: [
-				EmbedMessage({
-					description: content,
-					color: Colors.Yellow,
-					author: {
-						name: client.user.displayName,
-						iconURL: client.user.displayAvatarURL({ size: 256 })
-					}
-				})
-			]
-		})
+	console.log(`[GUILDS] Logging channel en la guild ${guild.name} (${guild.id}) no se encontró`);
 
-	} catch (e) {
+	await guildConfigs.update({
+		logging_channel: null
+	})
 
-		console.log(`[GUILDS] Ocurrió un error al intentar enviar un mensaje a la guild: ${guildId}`, e);
-		if (!client.guilds.cache.get(guildId)?.channels.cache.has(guildConfigs.logging_channel)) {
-			console.log(`[GUILDS] El canal ${guildConfigs.logging_channel} no existe en la guild ${guildId}, eliminando...`);
+	console.log(`[GUILDS] El canal ha sido eliminado de la base de datos.`);
 
-			await guildConfigs.update({
-				logging_channel: null,
+
+	return null
+}
+
+export async function CreateTournamentLogMessage(interaction: CommandInteraction<'cached'> | ButtonInteraction<'cached'>, content: string) {
+
+	const channel = await GetGuildLogsChannel(interaction.guild)
+	if (!channel) return
+
+	channel.send({
+		embeds: [
+			EmbedMessage({
+				description: content,
+				color: Colors.Yellow,
+				author: {
+					name: interaction.client.user.displayName,
+					iconURL: interaction.client.user.displayAvatarURL({ size: 256 })
+				}
 			})
-
-			console.log(`[GUILDS] El canal ha sido actualizado en la base de datos.`);
-		}
-	}
+		]
+	})
 }
 
 export async function GetUserFromBlocklist(userId: Snowflake) {
