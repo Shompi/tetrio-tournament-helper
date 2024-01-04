@@ -196,6 +196,7 @@ export class TournamentCommands extends Subcommand {
 								.setDescription('El nombre o la id numérica del torneo')
 								.setRequired(true)
 								.setMaxLength(255)
+								.setAutocomplete(true)
 						)
 
 				)
