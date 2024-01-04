@@ -390,6 +390,12 @@ export async function FinishTournament(tournament: Tournament, /** Discord ID of
 	console.log(`[TOURNAMENT] Marcando torneo ${tournament.id} - ${tournament.name} como FINALIZADO`);
 
 	await tournament.update({
+		registration_channel: null,
+		registration_message: null,
+		registration_open_until: null,
+		checkin_channel: null,
+		checkin_message: null,
+		checkin_threadId: null,
 		winner_id: winner,
 		status: TournamentStatus.FINISHED
 	})

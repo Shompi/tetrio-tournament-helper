@@ -1,7 +1,8 @@
 import { Command } from "@sapphire/framework"
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ChannelType, GuildTextBasedChannel, PermissionFlagsBits, TextChannel } from "discord.js";
-import { GetTournamentFromGuild, SearchTournamentByNameAutocomplete } from "../helper-functions/index.js";
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ChannelType, Colors, GuildTextBasedChannel, PermissionFlagsBits, TextChannel } from "discord.js";
+import { EmbedMessage, GetTournamentFromGuild, SearchTournamentByNameAutocomplete } from "../helper-functions/index.js";
 import { TournamentStatus } from "../sequelize/Tournaments.js";
+import { CommonMessages } from "../helper-functions/common-messages.js";
 
 export class OpenCheckin extends Command {
 
@@ -43,7 +44,12 @@ export class OpenCheckin extends Command {
 		if (!tournament) return void await interaction.reply({ content: "El mensaje no ha sido enviado por que el torneo no existe." })
 
 		if (tournament.status === TournamentStatus.FINISHED)
-			return void await interaction.reply({ content: '❌ No puedes abrir el checkin de un torneo que ya está **FINALIZADO**' })
+			return void await interaction.reply({
+				embeds: [EmbedMessage({
+					description: CommonMessages.Tournament.IsFinished,
+					color: Colors.Red
+				})]
+			})
 
 		await interaction.deferReply()
 
