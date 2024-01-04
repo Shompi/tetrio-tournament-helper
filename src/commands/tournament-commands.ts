@@ -199,7 +199,7 @@ export class TournamentCommands extends Subcommand {
 						)
 
 				)
-		}, { idHints: [""] })
+		}, { idHints: ["1192271675186749560"] })
 	}
 
 	public async chatInputClearPlayerList(interaction: Subcommand.ChatInputCommandInteraction<'cached'>) {
