@@ -26,9 +26,14 @@ export class TournamentCommands extends Subcommand {
 				{
 					name: 'listar-jugadores',
 					chatInputRun: 'chatInputListPlayers'
-				}, {
+				},
+				{
 					name: 're-add-roles',
 					chatInputRun: 'chatInputReAddRoles'
+				},
+				{
+					name: 'mencionar-jugadores',
+					chatInputRun: "chatInputMentionPlayers"
 				}
 			]
 		});
@@ -186,6 +191,20 @@ export class TournamentCommands extends Subcommand {
 						.addBooleanOption(checkedin =>
 							checkedin.setName('checked-in')
 								.setDescription('Filtrar jugadores que hayan hecho Check-in en el torneo')
+						)
+				)
+				.addSubcommand(mentionPlayers =>
+					mentionPlayers.setName('mencionar-jugadores')
+						.setDescription('Menciona a todos los jugadores inscritos en este torneo')
+						.addStringOption(torneo =>
+							torneo.setName('nombre-id')
+								.setDescription('ID o nombre del torneo')
+								.setAutocomplete(true)
+								.setRequired(true)
+						)
+						.addBooleanOption(checkin =>
+							checkin.setName('filtrar-checkin')
+								.setDescription('¿Solo mencionar a los jugadores que hayan hecho check-in?')
 						)
 				)
 				.addSubcommand(readdroles =>
@@ -473,6 +492,33 @@ export class TournamentCommands extends Subcommand {
 				})
 			],
 			files: [attachment!]
+		})
+	}
+
+	public async chatInputMentionPlayers(interaction: Subcommand.ChatInputCommandInteraction<'cached'>) {
+		const options = {
+			idTorneo: +interaction.options.getString('nombre-id', true),
+			filterCheckedIn: interaction.options.getBoolean('filtrar-checkin', false)
+		}
+
+		const tournament = await GetTournamentFromGuild(interaction.guildId, options.idTorneo)
+
+		if (!tournament)
+			return void await interaction.reply({
+				embeds: [
+					EmbedMessage({
+						description: CommonMessages.Tournament.NotFound,
+						color: Colors.Red
+					})
+				]
+			})
+
+		const mentions = options.filterCheckedIn ?
+			tournament.checked_in.map(id => `<@${id}>`).join(" ") :
+			tournament.players.map(player => `<@${player.discordId}>`).join(" ");
+
+		return void await interaction.reply({
+			content: mentions
 		})
 	}
 
