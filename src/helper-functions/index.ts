@@ -425,7 +425,12 @@ export async function GetTournamentFromGuild(guild_id: string, tournament_id: nu
 	return await TournamentModel.findOne({
 		where: {
 			guild_id: guild_id,
-			id: tournament_id
+			id: tournament_id,
+			[Op.and]: {
+				status: {
+					[Op.ne]: TournamentStatus.FINISHED
+				}
+			}
 		}
 	})
 }
@@ -492,7 +497,7 @@ function BuildAsciiTableForTetrio(tournament: Tournament, playerList: Registered
 	const table = new AsciiTable3(tournament.name)
 		.setTitleAlignCenter()
 		.setHeadingAlignCenter()
-		.setHeading("POSICION", "DISCORD", "TETRIO ID", "PAIS", "RANK", "TR", "APM", "PPS")
+		.setHeading("POS", "DISCORD", "TETRIO ID", "PAIS", "RANK", "TR", "APM", "PPS")
 		.setAlignCenter(1)
 		.setAlignCenter(2)
 		.setAlignCenter(3)
