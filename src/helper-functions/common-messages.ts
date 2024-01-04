@@ -11,15 +11,17 @@ export const CommonMessages = {
 		/** @deprecated */
 		InvalidTournamentId: "❌ La id del torneo que has ingresado no pertenece a este servidor o no existe.\nSi usas el nombre del torneo, asegúrate de que selecciones una de las opciones del **autocompletado**.",
 		NotFound: "❌ No encontré ningún torneo con la id que ingresaste en este servidor\nSi usas el nombre del torneo, asegurate de usar una de las opciones del autocompletado.",
-		NotEditable: '❌ No puedes editar la información de este torneo por que está marcado como **FINALIZADO**',
-		NotJoinable: '❌ No te puedes inscribir en este torneo por que está marcado como **Cerrado** o **Finalizado**.',
-		NotLeaveable: '❌ No te puedes desinscribir de este torneo por que ya está cerrado.',
+		NotEditable: '❌ No puedes editar la información de este torneo por que está marcado como **Finalizado**.',
+		IsFinished: '❌ No puedes ejecutar esta acción en este torneo por que está marcado como **Finalizado**.',
+		CheckinNotStarted: '❌ El torneo no tiene un proceso de check in activo.',
 	},
 
 	Player: {
 		NotRegistered: '⚠️ No estás inscrito/a en este torneo.',
 		AlreadyCheckedIn: '⚠️ Ya estás en la lista de Checked-in.',
 		CheckInNotAllowed: '⚠️ No puedes hacer Check-in en este torneo por que ya ha finalizado.',
+		UnableToJoinTournament: '❌ No te puedes inscribir en este torneo por que está marcado como **Cerrado** o **Finalizado**.',
+		UnableToLeaveTournament: '❌ No te puedes desinscribir de este torneo por que ya está cerrado.',
 	},
 
 	Blocklist: {
