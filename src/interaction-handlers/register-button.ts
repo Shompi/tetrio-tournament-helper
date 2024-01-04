@@ -31,7 +31,7 @@ export class RegisterButtonHandler extends InteractionHandler {
 			return void await interaction.reply({
 				ephemeral: true,
 				embeds: [EmbedMessage({
-					description: CommonMessages.Tournament.NotJoinable,
+					description: CommonMessages.Player.UnableToJoinTournament,
 				})]
 			})
 		}

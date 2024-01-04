@@ -28,7 +28,7 @@ export class UnregisterButtonHandler extends InteractionHandler {
 				ephemeral: true,
 				embeds: [
 					EmbedMessage({
-						description: CommonMessages.Tournament.NotLeaveable,
+						description: CommonMessages.Player.UnableToLeaveTournament,
 						color: Colors.Red
 					})
 				]
