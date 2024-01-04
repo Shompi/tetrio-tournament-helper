@@ -1,7 +1,8 @@
 import { Command } from "@sapphire/framework"
-import { GetTournamentFromGuild, SearchTournamentByNameAutocomplete } from "../helper-functions/index.js";
-import { ActionRowBuilder, ButtonBuilder, ButtonComponent, PermissionFlagsBits, TextChannel } from "discord.js";
+import { EmbedMessage, GetTournamentFromGuild, SearchTournamentByNameAutocomplete } from "../helper-functions/index.js";
+import { ActionRowBuilder, ButtonBuilder, ButtonComponent, Colors, PermissionFlagsBits, TextChannel } from "discord.js";
 import { TournamentStatus } from "../sequelize/Tournaments.js";
+import { CommonMessages } from "../helper-functions/common-messages.js";
 
 
 export class CloseCheckin extends Command {
@@ -39,10 +40,22 @@ export class CloseCheckin extends Command {
 		if (!tournament) return void await interaction.editReply({ content: "No se puede cerrar el check in de este torneo por que no se ha encontrado." })
 
 		if (tournament.status === TournamentStatus.FINISHED)
-			return void await interaction.reply({ content: '❌ No puedes ejecutar esta acción en un torneo que ya está finalizado.' })
+			return void await interaction.reply({
+				embeds: [
+					EmbedMessage({
+						description: CommonMessages.Tournament.IsFinished,
+						color: Colors.Red
+					})
+				]
+			})
 
 		if (!tournament.is_checkin_open)
-			return void await interaction.reply({ content: '❌ El torneo no tiene un proceso de check in activo.' })
+			return void await interaction.reply({
+				embeds: [EmbedMessage({
+					description: CommonMessages.Tournament.CheckinNotStarted,
+					color: Colors.Red
+				})]
+			})
 
 		await interaction.deferReply()
 
@@ -71,7 +84,7 @@ export class CloseCheckin extends Command {
 			.setComponents(disabledButton)
 
 		await checkinMessage.edit({
-			content:'El check-in para este torneo ha finalizado.',
+			content: 'El check-in para este torneo ha finalizado.',
 			components: [newRow]
 		})
 
