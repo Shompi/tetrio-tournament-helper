@@ -193,6 +193,7 @@ export class TournamentCommands extends Subcommand {
 						.setDescription('Añade el / los roles a los jugadores inscritos en este torneo')
 						.addStringOption(id =>
 							id.setName('nombre-id')
+								.setDescription('El nombre o la id numérica del torneo')
 								.setRequired(true)
 								.setMaxLength(255)
 						)
