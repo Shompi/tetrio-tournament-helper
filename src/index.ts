@@ -7,7 +7,8 @@ import { GatewayIntentBits } from "discord.js";
 
 const client = new SapphireClient({
 	intents: [
-		GatewayIntentBits.Guilds
+		GatewayIntentBits.Guilds,
+		GatewayIntentBits.GuildMembers
 	],
 	logger: { level: LogLevel.Debug },
 });
