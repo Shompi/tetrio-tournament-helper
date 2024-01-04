@@ -1,7 +1,8 @@
 import { Command } from "@sapphire/framework"
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ChannelType, GuildTextBasedChannel, PermissionsBitField, TextBasedChannel } from "discord.js"
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ChannelType, Colors, GuildTextBasedChannel, PermissionsBitField, TextBasedChannel } from "discord.js"
 import { TournamentStatus } from "../sequelize/Tournaments.js";
-import { GetTournamentFromGuild, SearchTournamentByNameAutocomplete, TournamentDetailsEmbed } from "../helper-functions/index.js";
+import { EmbedMessage, GetTournamentFromGuild, SearchTournamentByNameAutocomplete, TournamentDetailsEmbed } from "../helper-functions/index.js";
+import { CommonMessages } from "../helper-functions/common-messages.js";
 
 const DefaultMessage = `{userid} ha abierto las inscripciones para el torneo \"**{nombre_torneo}**\". \n¡Presiona el botón de abajo para comenzar la inscripción!`
 export class OpenRegistration extends Command {
@@ -34,6 +35,10 @@ export class OpenRegistration extends Command {
 						.setDescription('Mensaje customizado para enviar junto con este mensaje')
 						.setMaxLength(1000)
 				)
+				.addAttachmentOption(banner =>
+					banner.setName('tournament-banner')
+						.setDescription('Imagen o banner del torneo')
+				)
 
 		}, { idHints: ["1181535689226063924"] })
 	}
@@ -41,14 +46,30 @@ export class OpenRegistration extends Command {
 	public async chatInputRun(interaction: Command.ChatInputCommandInteraction<'cached'>) {
 		// Your code goes here
 		void await interaction.deferReply({ ephemeral: true })
-		const idTorneo = +interaction.options.getString('nombre-id', true)
 
-		const tournament = await GetTournamentFromGuild(interaction.guildId, idTorneo)
+		const options = {
+			idTorneo: +interaction.options.getString('nombre-id', true),
+			channel: interaction.options.getChannel('canal', true),
+			message: interaction.options.getString('mensaje', false),
+			banner: interaction.options.getAttachment('tournament-banner', false)
+		}
 
-		if (!tournament) return void await interaction.editReply({ content: "El mensaje no ha sido enviado por que el torneo no existe." })
+		const tournament = await GetTournamentFromGuild(interaction.guildId, options.idTorneo)
+
+		if (!tournament) return void await interaction.editReply({
+			embeds: [EmbedMessage({
+				description: CommonMessages.Tournament.NotFound,
+				color: Colors.Yellow
+			})]
+		})
 
 		if (tournament.status === TournamentStatus.FINISHED)
-			return void await interaction.editReply({ content: "No se pueden abrir las inscripciones para este torneo por que está marcado como **TERMINADO**." })
+			return void await interaction.editReply({
+				embeds: [EmbedMessage({
+					description: CommonMessages.Tournament.IsFinished,
+					color: Colors.Red
+				})]
+			})
 
 		if (tournament.status === TournamentStatus.CLOSED) {
 			// Reopen this tournament registrations if it was closed
@@ -57,13 +78,13 @@ export class OpenRegistration extends Command {
 
 		// Create a button that users can click to begin the registration flow
 		const RegisterButton = new ButtonBuilder()
-			.setCustomId(`t-register-${idTorneo}`)
+			.setCustomId(`t-register-${options.idTorneo}`)
 			.setLabel('Inscribete aquí')
 			.setStyle(ButtonStyle.Primary)
 			.setEmoji('📩')
 
 		const UnregisterButton = new ButtonBuilder()
-			.setCustomId(`t-unregister-${idTorneo}`)
+			.setCustomId(`t-unregister-${options.idTorneo}`)
 			.setLabel('Retirar inscripción')
 			.setStyle(ButtonStyle.Secondary)
 			.setEmoji('⬅️')
@@ -79,6 +100,7 @@ export class OpenRegistration extends Command {
 
 		try {
 			const registrationMessage = await channel.send({
+				files: [],
 				content: interaction.options.getString('mensaje', false) ?? DefaultMessage.replace('{userid}', interaction.user.toString()).replace('{nombre_torneo}', tournament.name),
 				components: [ActionRow],
 				embeds: [TournamentDetailsEmbed(tournament)]
