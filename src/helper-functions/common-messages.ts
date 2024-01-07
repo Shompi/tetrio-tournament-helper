@@ -14,6 +14,7 @@ export const CommonMessages = {
 		NotEditable: '❌ No puedes editar la información de este torneo por que está marcado como **Finalizado**.',
 		IsFinished: '❌ No puedes ejecutar esta acción en este torneo por que está marcado como **Finalizado**.',
 		CheckinNotStarted: '❌ El torneo no tiene un proceso de check in activo.',
+		CheckinStartedDefault: `{userid} ha abierto las inscripciones para el torneo \"**{nombre_torneo}**\". \n¡Presiona el botón de abajo para comenzar la inscripción!`,
 	},
 
 	Player: {

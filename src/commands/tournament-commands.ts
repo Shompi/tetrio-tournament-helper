@@ -1,5 +1,5 @@
 import { Subcommand } from "@sapphire/plugin-subcommands"
-import { ActionRowBuilder, AttachmentBuilder, ButtonBuilder, ButtonStyle, Colors, ComponentType, EmbedBuilder, GuildMember, PermissionFlagsBits, PermissionsBitField, Snowflake } from "discord.js";
+import { ActionRowBuilder, AttachmentBuilder, ButtonBuilder, ButtonStyle, ChannelType, Colors, ComponentType, EmbedBuilder, GuildMember, GuildTextBasedChannel, PermissionFlagsBits, PermissionsBitField, Snowflake, TextChannel } from "discord.js";
 import { BuildASCIITableAttachment, BuildCSVTableAttachment, BuildEmbedPlayerList, BuildJSONAttachment, BuildTableForChallonge, ClearTournamentPlayerList, EmbedMessage, FinishTournament, GameName, GetRolesToAddArray, GetTournamentFromGuild, IsTournamentEditable, OrderBy, OrderPlayerListBy, SearchTournamentByNameAutocomplete, TetrioRanksArray, TournamentDetailsEmbed } from "../helper-functions/index.js";
 import { CommonMessages } from "../helper-functions/common-messages.js";
 import { TournamentModel, TournamentStatus } from "../sequelize/Tournaments.js";
@@ -11,6 +11,14 @@ export class TournamentCommands extends Subcommand {
 		super(context, {
 			...options,
 			subcommands: [
+				{
+					name: 'abrir-inscripciones',
+					chatInputRun: 'chatInputOpenRegistration'
+				},
+				{
+					name: 'comenzar-checkin',
+					chatInputRun: 'chatInputBeginCheckin'
+				},
 				{
 					name: 'crear',
 					chatInputRun: 'chatInputCreateTournament'
@@ -50,6 +58,47 @@ export class TournamentCommands extends Subcommand {
 				.setDMPermission(false)
 				.setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
 				.setDescription('Comandos especificos de torneos')
+				.addSubcommand(beginRegistration =>
+					beginRegistration.setName("abrir-inscripciones")
+						.setDescription("Abre las inscripciones para un torneo")
+						.addStringOption(id =>
+							id.setName('nombre-id')
+								.setDescription('La id numérica o el nombre del torneo que quieres abrir las inscripciones')
+								.setRequired(true)
+								.setAutocomplete(true)
+						)
+						.addChannelOption(channel =>
+							channel.setName('canal')
+								.setDescription("Canal en el cual los usuarios podran iniciar el proceso de registro")
+								.setRequired(true)
+								.addChannelTypes(ChannelType.GuildText)
+						)
+						.addStringOption(message =>
+							message.setName('mensaje')
+								.setDescription('Mensaje customizado para enviar junto con este mensaje')
+								.setMaxLength(1000)
+						)
+						.addAttachmentOption(banner =>
+							banner.setName('tournament-banner')
+								.setDescription('Imagen o banner del torneo')
+						)
+				)
+				.addSubcommand((beginCheckin) =>
+					beginCheckin.setName("comenzar-checkin")
+						.setDescription("Abre el proceso de Check-in para un torneo")
+						.addStringOption(tournamentId =>
+							tournamentId.setName('nombre-id')
+								.setDescription('La id del torneo o una de las opciones del autocompletado')
+								.setRequired(true)
+								.setAutocomplete(true)
+						)
+						.addChannelOption(channel =>
+							channel.setName('canal')
+								.setDescription('Canal en el cual se abrirá el Thread para iniciar el proceso de check-in')
+								.setRequired(true)
+								.addChannelTypes(ChannelType.GuildText)
+						)
+				)
 				.addSubcommand(create =>
 					create.setName("crear")
 						.setNameLocalizations({
@@ -323,6 +372,152 @@ export class TournamentCommands extends Subcommand {
 
 				)
 		}, { idHints: ["1192271675186749560"] })
+	}
+
+	public async chatInputOpenRegistration(interaction: Subcommand.ChatInputCommandInteraction<'cached'>) {
+		// Your code goes here
+		void await interaction.deferReply({ ephemeral: true })
+
+		const options = {
+			idTorneo: +interaction.options.getString('nombre-id', true),
+			channel: interaction.options.getChannel('canal', true),
+			message: interaction.options.getString('mensaje', false),
+			banner: interaction.options.getAttachment('tournament-banner', false)
+		}
+
+		const tournament = await GetTournamentFromGuild(interaction.guildId, options.idTorneo)
+
+		if (!tournament) return void await interaction.editReply({
+			embeds: [EmbedMessage({
+				description: CommonMessages.Tournament.NotFound,
+				color: Colors.Yellow
+			})]
+		})
+
+		if (tournament.status === TournamentStatus.FINISHED)
+			return void await interaction.editReply({
+				embeds: [EmbedMessage({
+					description: CommonMessages.Tournament.IsFinished,
+					color: Colors.Red
+				})]
+			})
+
+		if (tournament.status === TournamentStatus.CLOSED) {
+			// Reopen this tournament registrations if it was closed
+			await tournament.update('status', TournamentStatus.OPEN)
+		}
+
+		// Create a button that users can click to begin the registration flow
+		const RegisterButton = new ButtonBuilder()
+			.setCustomId(`t-register-${options.idTorneo}`)
+			.setLabel('Inscribete aquí')
+			.setStyle(ButtonStyle.Primary)
+			.setEmoji('📩')
+
+		const UnregisterButton = new ButtonBuilder()
+			.setCustomId(`t-unregister-${options.idTorneo}`)
+			.setLabel('Retirar inscripción')
+			.setStyle(ButtonStyle.Secondary)
+			.setEmoji('⬅️')
+
+		// We have to add the button to an action row
+		const ActionRow = new ActionRowBuilder<ButtonBuilder>()
+			.setComponents(RegisterButton, UnregisterButton)
+
+
+		// Send the message to the selected channel
+
+		const channel = interaction.options.getChannel('canal', true) as GuildTextBasedChannel
+
+		try {
+			const registrationMessage = await channel.send({
+				files: [],
+				content: interaction.options.getString('mensaje', false) ?? CommonMessages.Tournament.CheckinStartedDefault.replace('{userid}', interaction.user.toString()).replace('{nombre_torneo}', tournament.name),
+				components: [ActionRow],
+				embeds: [TournamentDetailsEmbed(tournament)]
+			})
+
+			await tournament.update({
+				registration_message: registrationMessage.id,
+				registration_channel: registrationMessage.channel.id
+			})
+
+		} catch (e) {
+
+			console.error(e)
+			return void await interaction.editReply({ content: 'Ocurrió un error intentando enviar el mensaje en ese canal.' })
+		}
+
+		// Confirm to the user that the message was succesfully sent or otherwise
+		return void await interaction.editReply({ content: `El mensaje ha sido enviado exitosamente en el canal ${interaction.options.getChannel('canal', true)}` })
+	}
+
+	public async chatInputBeginCheckin(interaction: Subcommand.ChatInputCommandInteraction<'cached'>) {
+		// Your code goes here
+
+		const options = {
+			channel: interaction.options.getChannel('canal', true) as TextChannel,
+			idTorneo: +interaction.options.getString('nombre-id', true)
+		}
+		const tournament = await GetTournamentFromGuild(interaction.guildId, options.idTorneo)
+
+		if (!tournament) return void await interaction.reply({ content: "El mensaje no ha sido enviado por que el torneo no existe." })
+
+		if (tournament.status === TournamentStatus.FINISHED)
+			return void await interaction.reply({
+				embeds: [EmbedMessage({
+					description: CommonMessages.Tournament.IsFinished,
+					color: Colors.Red
+				})]
+			})
+
+		await interaction.deferReply()
+
+		try {
+
+			// Create the thread
+			const thread = await options.channel.threads.create({
+				name: 'Check In',
+			})
+
+			const CheckinButton = new ButtonBuilder()
+				.setLabel('Check In')
+				.setStyle(ButtonStyle.Primary)
+				.setEmoji("➡️")
+				.setCustomId(`checkin-${tournament.id}`)
+
+			const CheckinRow = new ActionRowBuilder<ButtonBuilder>()
+				.setComponents(CheckinButton)
+
+			const checkinMessage = await thread.send({
+				content: `${tournament.add_roles.length > 0 ? `${tournament.add_roles.map(id => `<@&${id}>`).join(", ")}\n` : ""}¡Presiona el botón de abajo para completar el Check-In en el torneo **${tournament.name}**!`,
+				components: [CheckinRow]
+			})
+
+			tournament.is_checkin_open = true
+			tournament.status = TournamentStatus.CLOSED
+			tournament.checkin_channel = options.channel.id
+			tournament.checkin_threadId = thread.id
+			tournament.checkin_message = checkinMessage.id
+
+			console.log(`[CHECKIN] Guardando mensaje de checkin para el torneo ${tournament.game}`);
+
+			await tournament.save()
+
+			console.log(`[CHECKIN] El mensaje ha sido guardado en el torneo.`);
+
+			return void await interaction.editReply({
+				content: `✅ ¡El mensaje ha sido enviado en el hilo ${thread}!`
+			})
+		} catch (e) {
+			console.log(e)
+
+			return void await interaction.editReply({
+				content: '❌ Ocurrió un error con esta interacción.'
+			})
+		}
+
+
 	}
 
 	public async chatInputCreateTournament(interaction: Subcommand.ChatInputCommandInteraction) {
