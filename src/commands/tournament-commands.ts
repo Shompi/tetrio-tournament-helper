@@ -1,6 +1,40 @@
 import { Subcommand } from "@sapphire/plugin-subcommands"
-import { ActionRowBuilder, AttachmentBuilder, ButtonBuilder, ButtonStyle, ChannelType, Colors, ComponentType, EmbedBuilder, GuildMember, GuildTextBasedChannel, PermissionFlagsBits, PermissionsBitField, Snowflake, TextChannel } from "discord.js";
-import { BuildASCIITableAttachment, BuildCSVTableAttachment, BuildEmbedPlayerList, BuildJSONAttachment, BuildTableForChallonge, ClearTournamentPlayerList, EmbedMessage, FinishTournament, GameName, GetRolesToAddArray, GetTournamentFromGuild, IsTournamentEditable, OrderBy, OrderPlayerListBy, SearchTournamentByNameAutocomplete, TetrioRanksArray, TournamentDetailsEmbed } from "../helper-functions/index.js";
+import {
+	ActionRowBuilder,
+	AttachmentBuilder,
+	ButtonBuilder,
+	ButtonComponent,
+	ButtonStyle,
+	ChannelType,
+	Colors,
+	ComponentType,
+	EmbedBuilder,
+	GuildMember,
+	GuildTextBasedChannel,
+	PermissionFlagsBits,
+	Snowflake,
+	TextChannel
+} from "discord.js";
+import {
+	BuildASCIITableAttachment,
+	BuildCSVTableAttachment,
+	BuildEmbedPlayerList,
+	BuildJSONAttachment,
+	BuildTableForChallonge,
+	ClearTournamentPlayerList,
+	EmbedMessage,
+	FinishTournament,
+	GameName,
+	GetRolesToAddArray,
+	GetTournamentFromGuild,
+	IsTournamentEditable,
+	OrderBy,
+	OrderPlayerListBy,
+	SearchTournamentByNameAutocomplete,
+	TetrioRanksArray,
+	TournamentDetailsEmbed
+} from "../helper-functions/index.js";
+
 import { CommonMessages } from "../helper-functions/common-messages.js";
 import { TournamentModel, TournamentStatus } from "../sequelize/Tournaments.js";
 import { setTimeout } from "node:timers/promises"
@@ -18,6 +52,10 @@ export class TournamentCommands extends Subcommand {
 				{
 					name: 'comenzar-checkin',
 					chatInputRun: 'chatInputBeginCheckin'
+				},
+				{
+					name: 'cerrar-checkin',
+					chatInputRun: 'chatInputCloseCheckin'
 				},
 				{
 					name: 'crear',
@@ -83,7 +121,7 @@ export class TournamentCommands extends Subcommand {
 								.setDescription('Imagen o banner del torneo')
 						)
 				)
-				.addSubcommand((beginCheckin) =>
+				.addSubcommand(beginCheckin =>
 					beginCheckin.setName("comenzar-checkin")
 						.setDescription("Abre el proceso de Check-in para un torneo")
 						.addStringOption(tournamentId =>
@@ -97,6 +135,16 @@ export class TournamentCommands extends Subcommand {
 								.setDescription('Canal en el cual se abrirá el Thread para iniciar el proceso de check-in')
 								.setRequired(true)
 								.addChannelTypes(ChannelType.GuildText)
+						)
+				)
+				.addSubcommand(closeCheckin =>
+					closeCheckin.setName("cerrar-checkin")
+						.setDescription('Cierra el proceso de check in para un torneo')
+						.addStringOption(tournamentId =>
+							tournamentId.setName('nombre-id')
+								.setDescription('La id numérica de un torneo o una de las opciones del autocompletado')
+								.setRequired(true)
+								.setAutocomplete(true)
 						)
 				)
 				.addSubcommand(create =>
@@ -518,6 +566,76 @@ export class TournamentCommands extends Subcommand {
 		}
 
 
+	}
+
+	public async chatInputCloseCheckin(interaction: Subcommand.ChatInputCommandInteraction<'cached'>) {
+		// Your code goes here
+
+		const idTorneo = +interaction.options.getString('nombre-id', true)
+
+		const tournament = await GetTournamentFromGuild(interaction.guildId, idTorneo)
+
+		if (!tournament) return void await interaction.editReply({ content: "No se puede cerrar el check in de este torneo por que no se ha encontrado." })
+
+		if (tournament.status === TournamentStatus.FINISHED)
+			return void await interaction.reply({
+				embeds: [
+					EmbedMessage({
+						description: CommonMessages.Tournament.IsFinished,
+						color: Colors.Red
+					})
+				]
+			})
+
+		if (!tournament.is_checkin_open)
+			return void await interaction.reply({
+				embeds: [EmbedMessage({
+					description: CommonMessages.Tournament.CheckinNotStarted,
+					color: Colors.Red
+				})]
+			})
+
+		await interaction.deferReply()
+
+		// El check in está abierto, y debemos cerrarlo
+		const checkinChannel = interaction.client.channels.cache.get(tournament.checkin_channel!) as TextChannel
+		const checkinThread = await checkinChannel.threads.fetch(tournament.checkin_threadId!)
+
+		if (!checkinThread) {
+			tournament.is_checkin_open = false
+			tournament.checkin_message = null
+			tournament.checkin_threadId = null
+			tournament.checkin_channel = null
+
+			await tournament.save()
+
+			return void await interaction.reply({
+				embeds: [
+					EmbedMessage({
+						description: `✅ El checkin ha sido cerrado.`,
+						color: Colors.Green
+					})
+				]
+			})
+		}
+
+		const checkinMessage = await checkinThread.messages.fetch(tournament.checkin_message!)
+
+		const disabledButton = ButtonBuilder.from(checkinMessage.resolveComponent(`checkin-${tournament.id}`) as ButtonComponent)
+		disabledButton.setDisabled(true)
+			.setCustomId('checkin-disabled')
+
+		const newRow = new ActionRowBuilder<ButtonBuilder>()
+			.setComponents(disabledButton)
+
+		await checkinMessage.edit({
+			content: 'El check-in para este torneo ha finalizado.',
+			components: [newRow]
+		})
+
+		return void await interaction.editReply({
+			content: `✅ ¡El Check-in para el torneo **${tournament.name}** ha sido cerrado!`
+		})
 	}
 
 	public async chatInputCreateTournament(interaction: Subcommand.ChatInputCommandInteraction) {
