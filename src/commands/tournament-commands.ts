@@ -16,6 +16,7 @@ import {
 	TextChannel
 } from "discord.js";
 import {
+	AddPlayerToTournamentPlayerList,
 	BuildASCIITableAttachment,
 	BuildCSVTableAttachment,
 	BuildEmbedPlayerList,
@@ -27,11 +28,14 @@ import {
 	GameName,
 	GetRolesToAddArray,
 	GetTournamentFromGuild,
+	GetUserDataFromTetrio,
 	IsTournamentEditable,
 	OrderBy,
 	OrderPlayerListBy,
+	RemovePlayerFromTournament,
 	SearchTournamentByNameAutocomplete,
 	TetrioRanksArray,
+	TetrioUserProfileEmbed,
 	TournamentDetailsEmbed
 } from "../helper-functions/index.js";
 
@@ -48,6 +52,10 @@ export class TournamentCommands extends Subcommand {
 				{
 					name: 'abrir-inscripciones',
 					chatInputRun: 'chatInputOpenRegistration'
+				},
+				{
+					name: 'cerrar-inscripciones',
+					chatInputRun: 'chatInputCloseRegistration'
 				},
 				{
 					name: 'comenzar-checkin',
@@ -74,6 +82,14 @@ export class TournamentCommands extends Subcommand {
 					chatInputRun: "chatInputFinishTournament"
 				},
 				{
+					name:'quitar-jugador',
+					chatInputRun:'chatInputRemovePlayer'
+				},
+				{
+					name:'inscribir-jugador',
+					chatInputRun:'chatInputRegisterPlayer'
+				},
+				{
 					name: 'listar-jugadores',
 					chatInputRun: 'chatInputListPlayers'
 				},
@@ -92,7 +108,7 @@ export class TournamentCommands extends Subcommand {
 
 	public override registerApplicationCommands(registry: Subcommand.Registry) {
 		registry.registerChatInputCommand((builder) => {
-			builder.setName("tournament")
+			builder.setName("torneo")
 				.setDMPermission(false)
 				.setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
 				.setDescription('Comandos especificos de torneos')
@@ -119,6 +135,16 @@ export class TournamentCommands extends Subcommand {
 						.addAttachmentOption(banner =>
 							banner.setName('tournament-banner')
 								.setDescription('Imagen o banner del torneo')
+						)
+				)
+				.addSubcommand(closeRegistration =>
+					closeRegistration.setName("cerrar-inscripciones")
+						.setDescription('Cierra las inscripciones de un torneo')
+						.addStringOption(idTorneo =>
+							idTorneo.setName('nombre-id')
+								.setDescription('Nombre o id del torneo')
+								.setAutocomplete(true)
+								.setMaxLength(255)
 						)
 				)
 				.addSubcommand(beginCheckin =>
@@ -326,6 +352,49 @@ export class TournamentCommands extends Subcommand {
 								.setDescription('El usuario que ganó el torneo')
 						)
 				)
+				.addSubcommand(register =>
+					register.setName('inscribir-jugador')
+						.setDescription('Forza la inscripción de un jugador en un torneo (TETRIO)')
+						.addStringOption(nameOrId =>
+							nameOrId.setName('nombre-id')
+								.setDescription('ID del torneo (Puedes usar las opciones del autocompletado)')
+								.setRequired(true)
+								.setMaxLength(255)
+								.setAutocomplete(true)
+						)
+						.addUserOption(discordid =>
+							discordid.setName('discord-id')
+								.setDescription('La id de Discord del jugador que estás inscribiendo')
+								.setRequired(true)
+						)
+						.addStringOption(tetrioId =>
+							tetrioId.setName('tetrio-id')
+								.setDescription('La id o username de un jugador de TETRIO')
+								.setMaxLength(100)
+								.setRequired(true)
+						)
+						.addStringOption(challongeId =>
+							challongeId.setName('challonge-id')
+								.setDescription('La id de challonge de este usuario (OPCIONAL)')
+								.setMaxLength(100)
+						)
+				)
+				.addSubcommand(unregister =>
+					unregister.setName('quitar-jugador')
+						.setDescription('Elimina la inscripción de un jugador de un torneo')
+						.addStringOption(nameOrId =>
+							nameOrId.setName('nombre-id')
+								.setDescription('El nombre o la Id numérica de un torneo')
+								.setRequired(true)
+								.setMaxLength(255)
+								.setAutocomplete(true)
+						)
+						.addUserOption(dId =>
+							dId.setName('discord-id')
+								.setDescription('ID de Discord del jugador que quieres quitar del torneo')
+								.setRequired(true)
+						)
+				)
 				.addSubcommand(list =>
 					list.setName('listar-jugadores')
 						.setDescription('Obtén una lista con los jugadores inscritos en un torneo')
@@ -498,6 +567,22 @@ export class TournamentCommands extends Subcommand {
 
 		// Confirm to the user that the message was succesfully sent or otherwise
 		return void await interaction.editReply({ content: `El mensaje ha sido enviado exitosamente en el canal ${interaction.options.getChannel('canal', true)}` })
+	}
+
+	public async chatInputCloseRegistration(interaction: Subcommand.ChatInputCommandInteraction<'cached'>) {
+		// Your code goes here
+		const tournamentId = +interaction.options.getString('nombre-id', true)
+
+		const torneo = await GetTournamentFromGuild(interaction.guildId, tournamentId)
+		if (!torneo) return void await interaction.reply({ content: "El torneo no existe.", ephemeral: true })
+
+		await torneo.update({
+			status: TournamentStatus.CLOSED
+		})
+
+		return void await interaction.reply({
+			content: `Las inscripciones al torneo **${torneo.name}** han sido **cerradas**.`
+		})
 	}
 
 	public async chatInputBeginCheckin(interaction: Subcommand.ChatInputCommandInteraction<'cached'>) {
@@ -883,6 +968,121 @@ export class TournamentCommands extends Subcommand {
 			})],
 			components: [],
 		})
+	}
+
+	public async chatInputRegisterPlayer(interaction: Subcommand.ChatInputCommandInteraction<'cached'>) {
+		// Your code goes here
+		const options = {
+			user: interaction.options.getUser('discord-id', true),
+			tetrioId: interaction.options.getString('tetrio-id', true),
+			idTorneo: +interaction.options.getString('nombre-id', true),
+			challongeId: interaction.options.getString('challonge-id', false),
+		}
+
+		const tournament = await GetTournamentFromGuild(interaction.guildId, options.idTorneo)
+
+		if (!tournament)
+			return void await interaction.reply({ content: 'El torneo que ingresaste no existe en este servidor', ephemeral: true })
+
+		if (tournament.players.some(player => player.discordId === options.user.id))
+			return void await interaction.reply({ content: 'Este usuario ya se encuentra en la lista de inscritos en el torneo.', ephemeral: true })
+
+		await interaction.deferReply({ ephemeral: true })
+
+		// Check if the user exists on tetrio
+		const TetrioUserData = await GetUserDataFromTetrio(options.tetrioId)
+
+		if (!TetrioUserData)
+			return void await interaction.editReply({
+				content: `El usuario ${options.tetrioId} no es un usuario válido en TETRIO.`,
+			})
+
+		const userdetails = TetrioUserProfileEmbed(TetrioUserData)
+
+		const userSecondaryDetails = new EmbedBuilder()
+			.setTitle('Otros Datos')
+			.setDescription(
+				`**Discord id**: ${options.user} (${options.user.id})` +
+				`\n**Discord Username**: ${options.user.username}` +
+				`\n**Torneo**: ${tournament.name}`)
+			.setThumbnail(options.user.avatarURL({ size: 512 }))
+			.setColor(Colors.Blue)
+
+		const acceptButton = new ButtonBuilder()
+			.setCustomId('accept')
+			.setLabel('Confirmar')
+			.setStyle(ButtonStyle.Success)
+
+		const cancelButton = new ButtonBuilder()
+			.setCustomId('cancel')
+			.setLabel('Cancelar')
+			.setStyle(ButtonStyle.Secondary)
+
+		const buttonRow = new ActionRowBuilder<ButtonBuilder>()
+			.setComponents(acceptButton, cancelButton)
+
+		const initialReply = await interaction.editReply({
+			content: '¿Es esta información correcta?',
+			embeds: [userdetails, userSecondaryDetails],
+			components: [buttonRow]
+		})
+
+		const selectedOption = await initialReply.awaitMessageComponent({
+			componentType: ComponentType.Button,
+			time: 60_000,
+			filter: (btn => ["accept", "cancel"].includes(btn.customId))
+		}).catch(() => null)
+
+		if (!selectedOption) return void await interaction.editReply({ content: 'La interacción ha expirado.', components: [], embeds: [] })
+
+		if (selectedOption.customId === 'cancel')
+			return void await interaction.editReply({
+				content: 'La interacción ha sido cancelada.',
+				components: [],
+				embeds: []
+			})
+
+		// await AddTetrioPlayerToDatabase({
+		// 	challongeId: options.challongeId,
+		// 	discordId: options.user.id,
+		// 	tetrioId: options.tetrioId
+		// }, TetrioUserData)
+
+		await AddPlayerToTournamentPlayerList(tournament, {
+			challongeId: options.challongeId,
+			discordId: options.user.id,
+			dUsername: options.user.username,
+			data: TetrioUserData
+		})
+
+		return void await selectedOption.update({
+			content: `✅ El jugador ${options.tetrioId.toUpperCase()} (${options.user.username} - ${options.user.id}) ha sido agregado a la lista de jugadores del torneo **${tournament.name}** exitosamente!`,
+			components: [],
+			embeds: [],
+		})
+	}
+
+	public async chatInputRemovePlayer(interaction: Subcommand.ChatInputCommandInteraction<'cached'>) {
+		// Your code goes here
+		const idTorneo = +interaction.options.getString('nombre-id', true)
+
+		const tournament = await GetTournamentFromGuild(interaction.guildId, idTorneo)
+
+		if (!tournament) return void await interaction.reply({ content: 'No encontré ningun torneo.', ephemeral: true })
+		if (tournament.status === TournamentStatus.FINISHED)
+			return void await interaction.reply({ content: 'No puedes desinscribir a un jugador de un torneo que está marcado como **FINALIZADO**', ephemeral: true })
+
+		try {
+
+			await RemovePlayerFromTournament(tournament, interaction.options.getUser('discord-id', true).id);
+
+			return void await interaction.reply({ content: `✅ El jugador ${interaction.options.getUser('discord-id', true)} ha sido quitado del torneo.` })
+		} catch (e) {
+			console.log(e);
+
+			return void await interaction.reply({ content: 'Ocurrió un error intentando actualizar la base de datos.', ephemeral: true })
+
+		}
 	}
 
 	public async chatInputListPlayers(interaction: Subcommand.ChatInputCommandInteraction<'cached'>) {
