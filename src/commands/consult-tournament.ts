@@ -2,7 +2,7 @@ import { Subcommand } from "@sapphire/plugin-subcommands"
 import { TournamentDetailsEmbed } from "../helper-functions/index.js"
 import { SearchTournamentByNameAutocomplete, SearchTournamentById } from "../helper-functions/index.js"
 
-export class TournamentCommands extends Subcommand {
+export class GeneralCommands extends Subcommand {
 
 	public constructor(context: Subcommand.LoaderContext, options: Subcommand.Options) {
 		super(context, {
