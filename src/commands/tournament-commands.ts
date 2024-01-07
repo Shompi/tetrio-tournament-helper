@@ -1,8 +1,8 @@
 import { Subcommand } from "@sapphire/plugin-subcommands"
-import { ActionRowBuilder, AttachmentBuilder, ButtonBuilder, ButtonStyle, Colors, ComponentType, EmbedBuilder, GuildMember, PermissionFlagsBits, Snowflake } from "discord.js";
-import { BuildASCIITableAttachment, BuildCSVTableAttachment, BuildEmbedPlayerList, BuildJSONAttachment, BuildTableForChallonge, ClearTournamentPlayerList, EmbedMessage, FinishTournament, GetRolesToAddArray, GetTournamentFromGuild, IsTournamentEditable, OrderBy, OrderPlayerListBy, SearchTournamentByNameAutocomplete, TetrioRanksArray, TournamentDetailsEmbed } from "../helper-functions/index.js";
+import { ActionRowBuilder, AttachmentBuilder, ButtonBuilder, ButtonStyle, Colors, ComponentType, EmbedBuilder, GuildMember, PermissionFlagsBits, PermissionsBitField, Snowflake } from "discord.js";
+import { BuildASCIITableAttachment, BuildCSVTableAttachment, BuildEmbedPlayerList, BuildJSONAttachment, BuildTableForChallonge, ClearTournamentPlayerList, EmbedMessage, FinishTournament, GameName, GetRolesToAddArray, GetTournamentFromGuild, IsTournamentEditable, OrderBy, OrderPlayerListBy, SearchTournamentByNameAutocomplete, TetrioRanksArray, TournamentDetailsEmbed } from "../helper-functions/index.js";
 import { CommonMessages } from "../helper-functions/common-messages.js";
-import { TournamentStatus } from "../sequelize/Tournaments.js";
+import { TournamentModel, TournamentStatus } from "../sequelize/Tournaments.js";
 import { setTimeout } from "node:timers/promises"
 
 export class TournamentCommands extends Subcommand {
@@ -12,7 +12,11 @@ export class TournamentCommands extends Subcommand {
 			...options,
 			subcommands: [
 				{
-					name: 'editar-torneo',
+					name: 'crear',
+					chatInputRun: 'chatInputCreateTournament'
+				},
+				{
+					name: 'editar',
 					chatInputRun: 'chatInputEditTournamentInfo'
 				},
 				{
@@ -20,7 +24,7 @@ export class TournamentCommands extends Subcommand {
 					chatInputRun: 'chatInputClearPlayerList'
 				},
 				{
-					name: 'finalizar-torneo',
+					name: 'finalizar',
 					chatInputRun: "chatInputFinishTournament"
 				},
 				{
@@ -28,13 +32,13 @@ export class TournamentCommands extends Subcommand {
 					chatInputRun: 'chatInputListPlayers'
 				},
 				{
+					name: 'mencionar-jugadores',
+					chatInputRun: "chatInputMentionPlayers"
+				},
+				{
 					name: 're-add-roles',
 					chatInputRun: 'chatInputReAddRoles'
 				},
-				{
-					name: 'mencionar-jugadores',
-					chatInputRun: "chatInputMentionPlayers"
-				}
 			]
 		});
 	}
@@ -46,6 +50,105 @@ export class TournamentCommands extends Subcommand {
 				.setDMPermission(false)
 				.setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
 				.setDescription('Comandos especificos de torneos')
+				.addSubcommand(create =>
+					create.setName("crear")
+						.setNameLocalizations({
+							"en-US": "create"
+						})
+						.setDescription("Abre las inscripciones para un torneo")
+						.setDescriptionLocalizations({
+							"en-US": "Create a new tournament"
+						})
+						.addStringOption(name =>
+							name.setName('nombre')
+								.setNameLocalizations({
+									"en-US": "name",
+								})
+								.setDescription('Nombre del torneo')
+								.setDescriptionLocalizations({
+									"en-US": "The name of the tournament"
+								})
+								.setRequired(true)
+						)
+						.addStringOption(game =>
+							game.setName('juego')
+								.setNameLocalizations({
+									"en-US": "game"
+								})
+								.setDescription("El juego que se usará en este torneo")
+								.setDescriptionLocalizations({
+									"en-US": "The game that will be played in this tournament"
+								})
+								.setChoices(
+									{
+										name: "TETRIO",
+										value: "TETRIO",
+									},
+									{
+										name: "Tetris Effect: Connected",
+										value: "Tetris Effect: Connected",
+									},
+									{
+										name: "Puyo Puyo Tetris",
+										value: "Puyo Puyo Tetris"
+									},
+									{
+										name: "Puyo Puyo Tetris 2",
+										value: "Puyo Puyo Tetris 2"
+									}
+								)
+								.setRequired(true)
+						)
+						.addStringOption(description =>
+							description.setName('descripcion')
+								.setDescription('La descripción de este torneo (Máximo 2000 caracteres)')
+								.setMaxLength(1000)
+						)
+						.addStringOption(rankCap =>
+							rankCap.setName('rank_cap')
+								.setDescription('El rank máximo que pueden tener los jugadores (SOLO TETRIO)')
+								.setDescriptionLocalizations({
+									"en-US": "The highest rank allowed to join this tournament (TETRIO ONLY)"
+								})
+								.addChoices(...TetrioRanksArray.map(rank => ({ name: rank.toUpperCase(), value: rank })))
+						)
+						.addIntegerOption(trCap =>
+							trCap.setName('tr_cap')
+								.setDescription('El cap de TR para este torneo (1 - 25000) (SOLO TETRIO)')
+								.setMinValue(1)
+								.setMaxValue(25000)
+						)
+						.addStringOption(countryLock =>
+							countryLock.setName('pais')
+								.setDescription('El pais al cual está cerrado este torneo (ej: CL, AR, US) (TETRIO ONLY)')
+								.setMaxLength(2)
+						)
+						/** TODO: Add maximum and minimum values */
+						.addIntegerOption(maxPlayers =>
+							maxPlayers.setName('maximo-jugadores')
+								.setNameLocalizations({
+									"en-US": 'max-players'
+								})
+								.setDescription('Máximo de jugadores que pueden inscribirse en este torneo')
+								.setDescriptionLocalizations({
+									"en-US": "Maximum number of players that can join this tournament"
+								})
+								.setMinValue(8)
+								.setMaxValue(256)
+						)
+						.addRoleOption(role =>
+							role.setName('role-1')
+								.setDescription('Rol que quieres añadir a los miembros que se unan a este torneo')
+						)
+						.addRoleOption(role =>
+							role.setName('role-2')
+								.setDescription('Rol que quieres añadir a los miembros que se unan a este torneo')
+						)
+						.addRoleOption(role =>
+							role.setName('role-3')
+								.setDescription('Rol que quieres añadir a los miembros que se unan a este torneo')
+						)
+				)
 				.addSubcommand(clearPlayers =>
 					clearPlayers.setName('eliminar-jugadores')
 						.setDescription('Elimina a todos los jugadores inscritos en un torneo.')
@@ -57,7 +160,7 @@ export class TournamentCommands extends Subcommand {
 						)
 				)
 				.addSubcommand(editTournament =>
-					editTournament.setName('editar-torneo')
+					editTournament.setName('editar')
 						.setDescription('Edita la información de un torneo que ya está creado.')
 						.addStringOption(name =>
 							name.setName('nombre-id')
@@ -113,7 +216,7 @@ export class TournamentCommands extends Subcommand {
 						)
 				)
 				.addSubcommand(finishTournament =>
-					finishTournament.setName('finalizar-torneo')
+					finishTournament.setName('finalizar')
 						.setDescription('Marca un torneo como FINALIZADO')
 						.addStringOption(name =>
 							name.setName('nombre-id')
@@ -220,6 +323,50 @@ export class TournamentCommands extends Subcommand {
 
 				)
 		}, { idHints: ["1192271675186749560"] })
+	}
+
+	public async chatInputCreateTournament(interaction: Subcommand.ChatInputCommandInteraction) {
+
+		/** Only accept tournament creation from guilds */
+		if (!interaction.inCachedGuild()) return;
+
+		const options = {
+			name: interaction.options.getString("nombre", true),
+			game: interaction.options.getString("juego", true) as GameName,
+			description: interaction.options.getString('descripcion', false),
+			rank_cap: interaction.options.getString('rank_cap', false),
+			tr_cap: interaction.options.getInteger('tr_cap', false),
+			country_lock: interaction.options.getString('pais', false),
+			max_players: interaction.options.getInteger('maximo-jugadores', false),
+		}
+
+		try {
+
+			const createdTournament = await TournamentModel.create({
+				organized_by: interaction.user.id,
+				guild_id: interaction.guildId,
+				name: options.name,
+				game: options.game,
+				description: options.description,
+				is_rank_capped: !!options.rank_cap,
+				rank_cap: options.rank_cap,
+				is_country_locked: !!options.country_lock,
+				country_lock: options.country_lock,
+				is_tr_capped: !!options.tr_cap,
+				tr_cap: options.tr_cap,
+				max_players: options.max_players,
+				players: [],
+				checked_in: [],
+				// We create this tournament open by default
+				status: TournamentStatus.OPEN,
+				add_roles: GetRolesToAddArray(interaction)
+			})
+
+			return void await interaction.reply({ content: "El torneo ha sido creado exitosamente.", embeds: [TournamentDetailsEmbed(createdTournament)] })
+		} catch (e) {
+			return void await interaction.reply({ content: 'Ocurrió un error intentando crear este torneo.', ephemeral: true })
+		}
+
 	}
 
 	public async chatInputClearPlayerList(interaction: Subcommand.ChatInputCommandInteraction<'cached'>) {
