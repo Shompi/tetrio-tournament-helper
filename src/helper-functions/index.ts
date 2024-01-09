@@ -205,7 +205,7 @@ export async function GetUserDataFromTetrio(_username: string): Promise<TetrioPl
 			banner_revision: apiResponse.data!.user.banner_revision,
 			bio: apiResponse.data!.user.bio
 		})
-		
+
 		// Delete the entry after some time
 		console.log(`[CACHE] Añadiendo a ${apiResponse.data?.user.username} al cache`);
 
@@ -235,10 +235,14 @@ export async function GetUserDataFromTetrio(_username: string): Promise<TetrioPl
 	}
 }
 
-/** avatar_revision? (int) - This user's avatar ID.
-	* Get their avatar at https://tetr.io/user-content/avatars/{ USERID }.jpg?rv={ AVATAR_REVISION }
-	*
-	*/
+/**
+ * Gets the URL to the avatar of this user, if any
+ * Get their avatar at
+ * @example `https://tetr.io/user-content/avatars/{ USERID }.jpg?rv={ AVATAR_REVISION }`
+ * @param {string} userId The _id or username of this user
+ * @param {(number | undefined)} avatar_revision The avatar_revision value of the user
+ * @returns {string} URL to the avatar resource
+ */
 export function GenerateTetrioAvatarURL(userId: string, avatar_revision: number | undefined) {
 
 	if (!avatar_revision) return null;
