@@ -660,7 +660,7 @@ export async function ClearTournamentPlayerList(tournament: Tournament) {
 	return true
 }
 
-
+/** Utility function to quickly create embeds */
 export function PrettyMsg(options: Pick<EmbedData, "color" | "author" | "description" | "footer" | "thumbnail">) {
 	const embed = new EmbedBuilder()
 
@@ -672,6 +672,7 @@ export function PrettyMsg(options: Pick<EmbedData, "color" | "author" | "descrip
 	return embed
 }
 
+/** Gets a guild's configs for the bot */
 export async function GetGuildConfigs(guild_id: Snowflake) {
 
 	const [guild, _] = await GuildModel.findOrCreate({
@@ -683,21 +684,19 @@ export async function GetGuildConfigs(guild_id: Snowflake) {
 	return guild
 }
 
-type GuildConfig = Pick<GuildConfigs, "logging_channel" | "allowed_roles">
 
+type GuildConfig = Pick<GuildConfigs, "logging_channel" | "allowed_roles">
 export async function SaveGuildConfigs(guild_id: Snowflake, configs: GuildConfig) {
 
 	console.log(`[GUILDS] Guardando configuraciones de la guild ${guild_id}...`);
-	const guild = await GuildModel.findByPk(guild_id)
-
-	if (!guild)
-		return null
+	const guild = await GetGuildConfigs(guild_id)
 
 	return await guild.update({
 		allowed_roles: configs.allowed_roles ?? [],
 		logging_channel: configs.logging_channel
 	})
 }
+
 export function BuildEmbedPlayerList(tournament: Tournament, players: RegisteredPlayer[]) {
 
 	const table = new AsciiTable3()
