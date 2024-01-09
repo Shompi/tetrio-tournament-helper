@@ -30,24 +30,24 @@ export type TetrioUserRole = "anon" | "user" | "bot" | "halfmod" | "mod" | "admi
 export type OrderBy = "default" | "apm" | "pps" | "rating" | "rank" | "vs"
 
 type TetrioUserLeagueStats = {
+	apm?: number;
+	bestrank: string;
+	decaying: boolean;
 	gamesplayed: number;
 	gameswon: number;
-	rating: number;
-	rank: string;
-	bestrank: string;
-	standing: number;
-	standing_local: number;
-	next_rank: string | null;
-	prev_rank: string | null;
-	next_at: number;
-	prev_at: number;
-	percentile: number;
 	glicko?: number;
-	rd?: number;
-	apm?: number;
+	next_at: number;
+	next_rank: string | null;
+	percentile: number;
 	pps?: number;
+	prev_at: number;
+	prev_rank: string | null;
+	rank: string;
+	rating: number;
+	rd?: number;
+	standing_local: number;
+	standing: number;
 	vs?: number;
-	decaying: boolean;
 }
 interface TetrioApiUser {
 	_id: string;
