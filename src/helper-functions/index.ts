@@ -2,17 +2,28 @@
 * This file will contain tetrio api function calls
 * and maybe other stuff.
 */
-import { AttachmentBuilder, EmbedBuilder, Colors, Snowflake, EmbedData, User, Client, TextBasedChannel, CommandInteraction, Guild, GuildTextBasedChannel, ButtonInteraction } from "discord.js";
-import { AsciiTable3 } from "ascii-table3";
+import {
+	AttachmentBuilder,
+	ButtonInteraction,
+	Colors,
+	CommandInteraction,
+	EmbedBuilder,
+	EmbedData,
+	Guild, GuildTextBasedChannel,
+	Snowflake,
+	User
+} from "discord.js";
+
 import { Command } from "@sapphire/framework";
 import { Subcommand } from "@sapphire/plugin-subcommands";
-import { TournamentModel, TournamentStatus, TournamentStatusStrings, Tournament, RegisteredPlayer } from "../sequelize/Tournaments.js";
-import { GuildConfigs, GuildModel } from "../sequelize/Guilds.js";
-import { request } from "undici"
 import { codeBlock } from "@sapphire/utilities";
-import { Op } from "sequelize";
-import { BlocklistModel } from "../sequelize/Blocklist.js";
+import { AsciiTable3 } from "ascii-table3";
 import * as csv from "csv-stringify/sync";
+import { Op } from "sequelize";
+import { request } from "undici";
+import { BlocklistModel } from "../sequelize/Blocklist.js";
+import { GuildConfigs, GuildModel } from "../sequelize/Guilds.js";
+import { RegisteredPlayer, Tournament, TournamentModel, TournamentStatus, TournamentStatusStrings } from "../sequelize/Tournaments.js";
 
 export type TetrioApiCacheStatus = "hit" | "miss" | "awaited"
 export type TetrioUserRole = "anon" | "user" | "bot" | "halfmod" | "mod" | "admin" | "sysop" | "banned"
