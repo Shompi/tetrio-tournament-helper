@@ -473,19 +473,6 @@ export function IsTournamentEditable(tournament: Tournament) {
 	return tournament.status !== TournamentStatus.FINISHED
 }
 
-export function GetRolesToAddArray(interaction: Command.ChatInputCommandInteraction<'cached'>) {
-	const roles = [];
-	const role1 = interaction.options.getRole('role-1', false);
-	const role2 = interaction.options.getRole('role-2', false);
-	const role3 = interaction.options.getRole('role-3', false);
-
-	if (role1) roles.push(role1.id);
-	if (role2) roles.push(role2.id);
-	if (role3) roles.push(role3.id);
-
-	return roles;
-}
-
 export function BuildTableForChallonge(tournament: Tournament, players: RegisteredPlayer[]) {
 
 	// Challonge bulk add accepts a string like [displayName, email or challonge username]
