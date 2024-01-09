@@ -450,7 +450,7 @@ export async function GetAllOngoingTournamentsFromGuild(guild_id: string) {
 	})
 }
 
-/** Gets a single tournament from a guild */
+/** Gets a single tournament from a guild, this function calls isNaN on the tournament ID internally. */
 export async function GetTournamentFromGuild(guild_id: string, tournament_id: number) {
 
 	if (isNaN(tournament_id)) return null
