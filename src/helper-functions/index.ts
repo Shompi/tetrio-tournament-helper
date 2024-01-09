@@ -172,7 +172,11 @@ type TetrioUsername = string
 /** Cache for tetrio requests */
 const TetrioCache = new Map<TetrioUsername, TetrioPlayerRelevantData>()
 
-/** Gets data of an user from the TETRIO API, calls toLowerCase() internally */
+/**
+ * Gets basic Player information from the TETRIO API 
+ * @param {string} _username The username or _id of the player
+ * @returns {Promise<TetrioPlayerRelevantData | null>}
+ */
 export async function GetUserDataFromTetrio(_username: string): Promise<TetrioPlayerRelevantData | null> {
 
 	// We can actually implement a little cache here i guess
@@ -201,6 +205,7 @@ export async function GetUserDataFromTetrio(_username: string): Promise<TetrioPl
 			banner_revision: apiResponse.data!.user.banner_revision,
 			bio: apiResponse.data!.user.bio
 		})
+		
 		// Delete the entry after some time
 		console.log(`[CACHE] Añadiendo a ${apiResponse.data?.user.username} al cache`);
 
