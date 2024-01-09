@@ -341,7 +341,8 @@ export async function SearchTournamentByNameAutocomplete(interaction: Subcommand
 	const focusedOption = interaction.options.getFocused()
 	const torneos = await TournamentModel.findAll({
 		where: {
-			guild_id: interaction.guildId
+			guild_id: interaction.guildId,
+
 		}
 	})
 
@@ -353,7 +354,7 @@ export async function SearchTournamentByNameAutocomplete(interaction: Subcommand
 }
 
 export async function SearchTournamentById(id: number) {
-	return await TournamentModel.findOne({ where: { id } })
+	return await TournamentModel.findByPk(id)
 }
 
 /** Function used to remove a player from a tournament */
