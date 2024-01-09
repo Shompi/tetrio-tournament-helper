@@ -266,7 +266,7 @@ export function TournamentDetailsEmbed(torneo: Tournament) {
 			/** This probably will need change if later i want to implement more statuses. */
 			.setTitle(`${torneo.name} (${TournamentStatusStrings[torneo.status]})`)
 			.setDescription(
-				`**ID del torneo**: ${torneo.id}` +
+				`**ID del torneo**: ${torneo.id.toString().padStart(4, "0")}` +
 				`\n**Organizado por**: <@${torneo.organized_by}>` +
 				`\n**Juego**: ${torneo.game}` +
 				`\n**Descripción**: ${torneo.description ?? "N/A"}` +
