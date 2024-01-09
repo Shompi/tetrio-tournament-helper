@@ -510,6 +510,7 @@ export async function BuildTableForGeneralInfo(tournament: Tournament, playerLis
 			i + 1,
 			playerList[i].discordId,
 			`<@${playerList[i].discordId}>`,
+			playerList[i].challongeId ?? "N/A"
 		);
 	}
 
