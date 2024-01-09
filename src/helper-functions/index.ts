@@ -28,6 +28,48 @@ import { RegisteredPlayer, Tournament, TournamentModel, TournamentStatus, Tourna
 export type TetrioApiCacheStatus = "hit" | "miss" | "awaited"
 export type TetrioUserRole = "anon" | "user" | "bot" | "halfmod" | "mod" | "admin" | "sysop" | "banned"
 export type OrderBy = "default" | "apm" | "pps" | "rating" | "rank" | "vs"
+export type TetrioPlayerRelevantData = Pick<TetrioApiUser, "bio" | "league" | "country" | "username" | "avatar_revision" | "banner_revision" | "badstanding" | "_id">
+
+export enum AllowedGames {
+	TETRIO = "TETRIO",
+	TETRISEFFECT = "Tetris Effect: Connected",
+	PuyoTetris = "Puyo Puyo Tetris",
+	PuyoTetrisTwo = "Puyo Puyo Tetris 2"
+}
+
+export type GameName = typeof AllowedGames[keyof typeof AllowedGames]
+
+export const TetrioRanksArray = ["z", "d", "d+", "c-", "c", "c+", "b-", "b", "b+", "a-", "a", "a+", "s-", "s", "s+", "ss", "u", "x"] as const
+
+/** Your are not supposed to use this, use TetrioRanksMap instead */
+const TetrioRanksEmojis = [
+	"UNRANKED",
+	"<:rankD:884557291121180754>",
+	"<:rankDplus:884557291116957726>",
+	"<:rankCminus:884557291112787998>",
+	"<:rankC:884557290777227315>",
+	"<:rankCplus:884557291095994369>",
+	"<:rankBminus:884557290714316801>",
+	"<:rankB:884557291234422804>",
+	"<:rankBplus:884557291205066773>",
+	"<:rankAminus:884557290907250761>",
+	"<:rankA:884557291200851979>",
+	"<:rankAplus:884557291356049459>",
+	"<:rankSminus:884557290970153012>",
+	"<:rankS:884557291515424769>",
+	"<:rankSplus:884557291788058664>",
+	"<:rankSS:884557291465084929>",
+	"<:rankU:884557290756276225>",
+	"<:rankX:884557291016319078>",
+] as const
+
+type EmojiString = `<:${string}:${Snowflake}>` | "UNRANKED";
+
+type TetrioRankObject = {
+	index: number,
+	emoji: EmojiString,
+}
+
 
 type TetrioUserLeagueStats = {
 	apm?: number;
@@ -104,51 +146,9 @@ interface TetrioAPIUserResponse {
 	data?: TetrioAPIUserData
 }
 
-export type TetrioPlayerRelevantData = Pick<TetrioApiUser, "bio" | "league" | "country" | "username" | "avatar_revision" | "banner_revision" | "badstanding" | "_id">
-
 const TETRIO_BASE = "https://ch.tetr.io/api"
 const TETRIO_ENDPOINTS = {
 	USERS: TETRIO_BASE + "/users/",
-}
-
-export enum AllowedGames {
-	TETRIO = "TETRIO",
-	TETRISEFFECT = "Tetris Effect: Connected",
-	PuyoTetris = "Puyo Puyo Tetris",
-	PuyoTetrisTwo = "Puyo Puyo Tetris 2"
-}
-
-export type GameName = typeof AllowedGames[keyof typeof AllowedGames]
-
-export const TetrioRanksArray = ["z", "d", "d+", "c-", "c", "c+", "b-", "b", "b+", "a-", "a", "a+", "s-", "s", "s+", "ss", "u", "x"] as const
-
-/** Your are not supposed to use this, use TetrioRanksMap instead */
-const TetrioRanksEmojis = [
-	"UNRANKED",
-	"<:rankD:884557291121180754>",
-	"<:rankDplus:884557291116957726>",
-	"<:rankCminus:884557291112787998>",
-	"<:rankC:884557290777227315>",
-	"<:rankCplus:884557291095994369>",
-	"<:rankBminus:884557290714316801>",
-	"<:rankB:884557291234422804>",
-	"<:rankBplus:884557291205066773>",
-	"<:rankAminus:884557290907250761>",
-	"<:rankA:884557291200851979>",
-	"<:rankAplus:884557291356049459>",
-	"<:rankSminus:884557290970153012>",
-	"<:rankS:884557291515424769>",
-	"<:rankSplus:884557291788058664>",
-	"<:rankSS:884557291465084929>",
-	"<:rankU:884557290756276225>",
-	"<:rankX:884557291016319078>",
-] as const
-
-type EmojiString = `<:${string}:${Snowflake}>` | "UNRANKED";
-
-type TetrioRankObject = {
-	index: number,
-	emoji: EmojiString,
 }
 
 /** This function creates a map for the ranks, so we can have a numeric value for comparisons */
@@ -240,6 +240,7 @@ export function GetUserProfileURL(username: string) {
 	return `https://ch.tetr.io/u/${username}`
 }
 
+/** @deprecated This is not used - Prefer the use of RunTetrioTournamentRegistrationChecks */
 export function TournamentIsJoinableByTetrioPlayer(playerData: TetrioApiUser, caps: { rank_cap?: string; tr_cap?: number; country_lock?: string }) {
 }
 
