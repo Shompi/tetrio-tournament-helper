@@ -380,7 +380,10 @@ export async function RemovePlayerFromTournament(torneo: Tournament, discord_id:
 	console.log(`[TOURNAMENT] El jugador ${discord_id} ha sido desinscrito.`)
 }
 
-/** This function will unregister this player from every OPEN tournament they are registered for. */
+/** 
+	* @deprecated	
+	*This function will unregister this player from every OPEN tournament they are registered for.
+*/
 export async function DeletePlayerFromTournaments(discord_id: string) {
 
 	const tournaments = await TournamentModel.findAll({
@@ -410,7 +413,7 @@ export async function GetTournamentsFromGuild(guild_id: string) {
 
 	return await TournamentModel.findAll({
 		where: {
-			guild_id
+			guild_id,
 		}
 	})
 }
