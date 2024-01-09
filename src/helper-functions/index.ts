@@ -473,6 +473,31 @@ export function IsTournamentEditable(tournament: Tournament) {
 	return tournament.status !== TournamentStatus.FINISHED
 }
 
+/** Builds a player list in an embed for better display on the Discord App */
+export function BuildEmbedPlayerList(tournament: Tournament, players: RegisteredPlayer[]) {
+
+	const table = new AsciiTable3()
+		.setHeading("POS", "USERNAME", "RANK", "RATING")
+		.setAlignCenter(1)
+		.setAlignCenter(2)
+		.setAlignCenter(3);
+
+	let pos = 1;
+
+	for (const player of players) {
+		table.addRow(pos, player.data!.username, player.data!.league.rank.toUpperCase(), player.data!.league.rating.toFixed(2));
+		pos++;
+	}
+
+	return new EmbedBuilder()
+		.setTitle(tournament.name)
+		.setDescription(
+			codeBlock(
+				table.toString()
+			)
+		);
+}
+
 /** Exports an embed with players information in a challonge friendly display */
 export function BuildTableForChallonge(tournament: Tournament, players: RegisteredPlayer[]) {
 
@@ -695,30 +720,6 @@ export async function SaveGuildConfigs(guild_id: Snowflake, configs: GuildConfig
 		allowed_roles: configs.allowed_roles ?? [],
 		logging_channel: configs.logging_channel
 	})
-}
-
-export function BuildEmbedPlayerList(tournament: Tournament, players: RegisteredPlayer[]) {
-
-	const table = new AsciiTable3()
-		.setHeading("POS", "USERNAME", "RANK", "RATING")
-		.setAlignCenter(1)
-		.setAlignCenter(2)
-		.setAlignCenter(3);
-
-	let pos = 1;
-
-	for (const player of players) {
-		table.addRow(pos, player.data!.username, player.data!.league.rank.toUpperCase(), player.data!.league.rating.toFixed(2));
-		pos++;
-	}
-
-	return new EmbedBuilder()
-		.setTitle(tournament.name)
-		.setDescription(
-			codeBlock(
-				table.toString()
-			)
-		);
 }
 
 export async function UserIsBlocked(_user: User) {
