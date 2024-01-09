@@ -599,7 +599,7 @@ export function BuildASCIITableAttachment(tournament: Tournament, orderedPlayerL
 
 	const table = BuildAsciiTableForTetrio(tournament, orderedPlayerList);
 
-	const TableFile = new AttachmentBuilder(Buffer.from(table.toString()))
+	const TableFile = new AttachmentBuilder(Buffer.from(table))
 		.setName(`PLAYERS-${tournament.name}.txt`)
 		.setDescription(`Tabla de jugadores del torneo ${tournament.name}`);
 
@@ -627,11 +627,6 @@ export function TetrioUserProfileEmbed(userData: TetrioPlayerRelevantData) {
 	return embed
 }
 
-type BasePlayer = {
-	discordId: string
-	challongeId: string | null,
-	data?: TetrioPlayerRelevantData
-}
 
 /** This function will add a base player (discordId, challongeId, data? to the players array) */
 export async function AddPlayerToTournamentPlayerList(tournament: Tournament, player: RegisteredPlayer) {
