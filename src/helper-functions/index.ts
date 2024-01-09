@@ -287,7 +287,7 @@ export function TournamentDetailsEmbed(torneo: Tournament) {
 export async function RunTetrioTournamentRegistrationChecks(userData: TetrioPlayerRelevantData, torneo: Tournament, discordId: string): Promise<{ allowed: boolean; reason?: string; }> {
 	// In here we have to check for Tetrio caps like rank, rating and country lock and if the player is already on the tournament.
 
-	if (torneo.status === TournamentStatus.CLOSED) {
+	if (torneo.status === TournamentStatus.CLOSED || torneo.status === TournamentStatus.FINISHED) {
 		return ({ allowed: false, reason: "Las inscripciones para este torneo no se encuentran abiertas." })
 	}
 
