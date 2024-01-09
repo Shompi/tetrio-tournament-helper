@@ -4,7 +4,7 @@ import { Tournament, TournamentStatus } from '../sequelize/Tournaments.js';
 import { EmbedMessage, GetTournamentFromGuild, GetUserDataFromTetrio, CreateTournamentLogMessage, TetrioUserProfileEmbed } from '../helper-functions/index.js';
 import { TournamentDetailsEmbed } from "../helper-functions/index.js";
 import { RunTetrioTournamentRegistrationChecks } from '../helper-functions/index.js';
-import { AddPlayerToTournamentPlayerList } from '../helper-functions/index.js';
+import { AddPlayerToTournament } from '../helper-functions/index.js';
 import { CommonMessages } from '../helper-functions/common-messages.js';
 
 export class RegisterButtonHandler extends InteractionHandler {
@@ -43,7 +43,7 @@ export class RegisterButtonHandler extends InteractionHandler {
 		// If the tournament is from a game that does not track player stats then we can just add this player to the db
 		// Although I wanna add something like an SR question / modal to help seeding Tetris Effect Tournaments and add it into the data prop.
 
-		return void await AddPlayerToTournamentPlayerList(tournament, {
+		return void await AddPlayerToTournament(tournament, {
 			discordId: interaction.user.id,
 			dUsername: interaction.user.username,
 			challongeId: null,
@@ -112,7 +112,7 @@ async function HandleTetrioRegistration(interaction: ButtonInteraction<'cached'>
 
 	console.log("[DEBUG] Adding player to tournament players list");
 
-	void await AddPlayerToTournamentPlayerList(tournament, {
+	void await AddPlayerToTournament(tournament, {
 		discordId: interaction.user.id,
 		dUsername: interaction.user.username,
 		challongeId: challongeUsername,

@@ -629,7 +629,7 @@ export function TetrioUserProfileEmbed(userData: TetrioPlayerRelevantData) {
 
 
 /** This function will add a base player (discordId, challongeId, data? to the players array) */
-export async function AddPlayerToTournamentPlayerList(tournament: Tournament, player: RegisteredPlayer) {
+export async function AddPlayerToTournament(tournament: Tournament, player: RegisteredPlayer) {
 
 	// Add player to the tournament
 	console.log(`[TOURNAMENT] Añadiendo nuevo jugador ${player.discordId} al torneo ${tournament.name}`);

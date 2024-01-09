@@ -16,7 +16,7 @@ import {
 	TextChannel
 } from "discord.js";
 import {
-	AddPlayerToTournamentPlayerList,
+	AddPlayerToTournament,
 	BuildASCIITableAttachment,
 	BuildCSVTableAttachment,
 	BuildEmbedPlayerList,
@@ -1047,7 +1047,7 @@ export class TournamentCommands extends Subcommand {
 		// 	tetrioId: options.tetrioId
 		// }, TetrioUserData)
 
-		await AddPlayerToTournamentPlayerList(tournament, {
+		await AddPlayerToTournament(tournament, {
 			challongeId: options.challongeId,
 			discordId: options.user.id,
 			dUsername: options.user.username,
