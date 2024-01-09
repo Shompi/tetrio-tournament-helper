@@ -473,6 +473,7 @@ export function IsTournamentEditable(tournament: Tournament) {
 	return tournament.status !== TournamentStatus.FINISHED
 }
 
+/** Exports an embed with players information in a challonge friendly display */
 export function BuildTableForChallonge(tournament: Tournament, players: RegisteredPlayer[]) {
 
 	// Challonge bulk add accepts a string like [displayName, email or challonge username]
