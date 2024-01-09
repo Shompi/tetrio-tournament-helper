@@ -497,7 +497,7 @@ export async function BuildTableForGeneralInfo(tournament: Tournament, playerLis
 	const table = new AsciiTable3(tournament.name)
 		.setTitleAlignCenter()
 		.setHeadingAlignCenter()
-		.setHeading("POSICION", "DISCORD ID", "MENTION", "CHALLONGE ID")
+		.setHeading("POS", "DISCORD ID", "USERNAME", "CHALLONGE")
 		.setAlignCenter(1)
 		.setAlignCenter(2)
 		.setAlignCenter(3)
@@ -514,7 +514,7 @@ export async function BuildTableForGeneralInfo(tournament: Tournament, playerLis
 		);
 	}
 
-	return table;
+	return table.toString();
 }
 
 function BuildAsciiTableForTetrio(tournament: Tournament, playerList: RegisteredPlayer[]) {
@@ -523,7 +523,7 @@ function BuildAsciiTableForTetrio(tournament: Tournament, playerList: Registered
 	const table = new AsciiTable3(tournament.name)
 		.setTitleAlignCenter()
 		.setHeadingAlignCenter()
-		.setHeading("POS", "DISCORD", "TETRIO ID", "PAIS", "RANK", "TR", "APM", "PPS")
+		.setHeading("POS", "DISCORD ID", "USERNAME", "CHALLONGE", "TETRIO USERNAME", "PAIS", "RANK", "TR", "APM", "PPS")
 		.setAlignCenter(1)
 		.setAlignCenter(2)
 		.setAlignCenter(3)
@@ -531,20 +531,26 @@ function BuildAsciiTableForTetrio(tournament: Tournament, playerList: Registered
 		.setAlignCenter(5)
 		.setAlignCenter(6)
 		.setAlignCenter(7)
-		.setAlignCenter(8);
+		.setAlignCenter(8)
+		.setAlignCenter(9)
+		.setAlignCenter(10)
 
-	// Good old for loop
-	for (let i = 0; i < playerList.length; i++) {
+
+	let i = 1
+	for (const player of playerList) {
 		table.addRow(
-			i + 1,
-			playerList[i].discordId,
-			playerList[i].data!.username.toUpperCase(),
-			playerList[i].data!.country?.toUpperCase() ?? "OCULTO",
-			playerList[i].data!.league.rank.toUpperCase(),
-			playerList[i].data!.league.rating.toFixed(2),
-			playerList[i].data!.league.apm ?? "0.00",
-			playerList[i].data!.league.pps ?? "0.00"
-		);
+			i,
+			player.discordId,
+			player.dUsername,
+			player.challongeId ?? "N/A",
+			player.data!.username.toUpperCase(),
+			player.data!.country?.toUpperCase() ?? "OCULTO",
+			player.data!.league.rank.toUpperCase(),
+			player.data!.league.rating.toFixed(2),
+			player.data!.league.apm ?? "0.00",
+			player.data!.league.pps ?? "0.00"
+		)
+		i++
 	}
 
 	return table.toString();
