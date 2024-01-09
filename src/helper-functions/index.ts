@@ -284,45 +284,49 @@ export function TournamentDetailsEmbed(torneo: Tournament) {
 	)
 }
 
-export async function RunTetrioTournamentRegistrationChecks(userData: TetrioPlayerRelevantData, torneo: Tournament, discordId: string): Promise<{ allowed: boolean; reason?: string; }> {
+export async function RunTetrioTournamentRegistrationChecks(userData: TetrioPlayerRelevantData, tournament: Tournament, discordId: string): Promise<{ allowed: boolean; reason?: string; }> {
 	// In here we have to check for Tetrio caps like rank, rating and country lock and if the player is already on the tournament.
 
-	if (torneo.status === TournamentStatus.CLOSED || torneo.status === TournamentStatus.FINISHED) {
+	if (tournament.status === TournamentStatus.CLOSED || tournament.status === TournamentStatus.FINISHED) {
 		return ({ allowed: false, reason: "Las inscripciones para este torneo no se encuentran abiertas." })
 	}
 
-	if (torneo.players.some(player => player.discordId === discordId)) {
+	if (tournament.players.some(player => player.discordId === discordId)) {
 		return ({ allowed: false, reason: "Ya te encuentras en la lista de participantes de este torneo." });
 	}
 
-	if (torneo.is_country_locked && torneo.country_lock?.toUpperCase() !== userData.country?.toUpperCase()) {
+	if (tournament.players.some(player => player.data!._id === userData._id)) {
+		return ({ allowed: false, reason: "Ya hay un jugador de tetrio con esta id inscrito en este torneo." })
+	}
+
+	if (tournament.is_country_locked && tournament.country_lock?.toUpperCase() !== userData.country?.toUpperCase()) {
 		// The country of the player doesn't match the tournament country lock
 		return ({ allowed: false, reason: "El pais del jugador es distinto al pais del torneo." });
 	}
 
-	if (torneo.is_tr_capped) {
+	if (tournament.is_tr_capped) {
 		if (userData.league.rank === 'z')
-			return ({ allowed: false, reason: "El jugador no posee un rank actualmente." });
+			return ({ allowed: false, reason: "El jugador es actualmente UNRANKED y el torneo requiere de un rango para la inscripción." });
 
 
-		if (userData.league.rating > torneo.tr_cap!) {
+		if (userData.league.rating > tournament.tr_cap!) {
 			return ({ allowed: false, reason: "El rating del jugador está por sobre el limite de TR del torneo." });
 		}
 	}
 
-	if (torneo.is_rank_capped) {
+	if (tournament.is_rank_capped) {
 
 		if (userData.league.rank === 'z')
 			return ({ allowed: false, reason: "El jugador es actualmente UNRANKED en Tetra League." });
 
-		const tournamentRankIndex = TetrioRanksArray.findIndex((rank) => rank === torneo.rank_cap);
+		const tournamentRankIndex = TetrioRanksArray.findIndex((rank) => rank === tournament.rank_cap);
 		const userRankIndex = TetrioRanksArray.findIndex((rank) => rank === userData.league.bestrank);
 
 		if (tournamentRankIndex < userRankIndex)
 			return ({ allowed: false, reason: "El rank del jugador está por sobre el límite de rank impuesto por el torneo." });
 	}
 
-	if (torneo.max_players && torneo.players.length >= torneo.max_players) {
+	if (tournament.max_players && tournament.players.length >= tournament.max_players) {
 		return ({ allowed: false, reason: "El torneo ha alcanzado el máximo de participantes." });
 	}
 
