@@ -25,6 +25,7 @@ import { BlocklistModel } from "../sequelize/Blocklist.js";
 import { GuildConfigs, GuildModel } from "../sequelize/Guilds.js";
 import { RegisteredPlayer, Tournament, TournamentModel, TournamentStatus, TournamentStatusStrings } from "../sequelize/Tournaments.js";
 
+//#region Declaration stuff
 export type TetrioApiCacheStatus = "hit" | "miss" | "awaited"
 export type TetrioUserRole = "anon" | "user" | "bot" | "halfmod" | "mod" | "admin" | "sysop" | "banned"
 export type OrderBy = "default" | "apm" | "pps" | "rating" | "rank" | "vs"
@@ -162,6 +163,9 @@ const CreateRanksMap = (ranks: typeof TetrioRanksArray) => {
 
 	return tempMap
 }
+//#endregion
+
+/** ----- BEGIN OF FUNCTIONS ----- */
 export const TetrioRanksMap: Map<string, TetrioRankObject> = CreateRanksMap(TetrioRanksArray)
 
 type TetrioUsername = string
