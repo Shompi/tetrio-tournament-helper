@@ -1,7 +1,7 @@
 import { InteractionHandler, InteractionHandlerTypes } from "@sapphire/framework"
 import { ButtonInteraction, Colors } from "discord.js";
 import { TournamentStatus } from "../sequelize/Tournaments.js";
-import { EmbedMessage, GetTournamentFromGuild } from "../helper-functions/index.js";
+import { PrettyMsg, GetTournamentFromGuild } from "../helper-functions/index.js";
 import { CommonMessages } from "../helper-functions/common-messages.js";
 
 export class CheckinButtonHandler extends InteractionHandler {
@@ -15,7 +15,7 @@ export class CheckinButtonHandler extends InteractionHandler {
 		if (!tournament) return void await interaction.reply({
 			ephemeral: true,
 			embeds: [
-				EmbedMessage({
+				PrettyMsg({
 					description: CommonMessages.Tournament.NotFound,
 					color: Colors.Red
 				})
@@ -25,7 +25,7 @@ export class CheckinButtonHandler extends InteractionHandler {
 		if (tournament.status === TournamentStatus.FINISHED)
 			return void await interaction.reply({
 				ephemeral: true,
-				embeds: [EmbedMessage({
+				embeds: [PrettyMsg({
 					description: CommonMessages.Player.CheckInNotAllowed,
 					color: Colors.Blue
 				})]
@@ -35,7 +35,7 @@ export class CheckinButtonHandler extends InteractionHandler {
 		if (!tournament.players.some(player => player.discordId === interaction.user.id))
 			return void await interaction.reply({
 				ephemeral: true,
-				embeds: [EmbedMessage({
+				embeds: [PrettyMsg({
 					description: CommonMessages.Player.NotRegistered,
 					color: Colors.Blue
 				})]
@@ -45,7 +45,7 @@ export class CheckinButtonHandler extends InteractionHandler {
 		if (tournament.checked_in.includes(interaction.user.id))
 			return void await interaction.reply({
 				ephemeral: true,
-				embeds: [EmbedMessage({
+				embeds: [PrettyMsg({
 					description: CommonMessages.Player.AlreadyCheckedIn,
 					color: Colors.Blue
 				})],
@@ -61,7 +61,7 @@ export class CheckinButtonHandler extends InteractionHandler {
 		return void await interaction.reply({
 			ephemeral: true,
 			embeds: [
-				EmbedMessage({
+				PrettyMsg({
 					description: "✅ ¡Has hecho Check-in exitosamente!",
 					color: Colors.Green
 				})

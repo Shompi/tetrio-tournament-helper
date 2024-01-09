@@ -23,7 +23,7 @@ import {
 	BuildJSONAttachment,
 	BuildTableForChallonge,
 	ClearTournamentPlayerList,
-	EmbedMessage,
+	PrettyMsg,
 	FinishTournament,
 	GameName,
 	GetTournamentFromGuild,
@@ -504,7 +504,7 @@ export class TournamentCommands extends Subcommand {
 		const tournament = await GetTournamentFromGuild(interaction.guildId, options.idTorneo)
 
 		if (!tournament) return void await interaction.editReply({
-			embeds: [EmbedMessage({
+			embeds: [PrettyMsg({
 				description: CommonMessages.Tournament.NotFound,
 				color: Colors.Yellow
 			})]
@@ -512,7 +512,7 @@ export class TournamentCommands extends Subcommand {
 
 		if (tournament.status === TournamentStatus.FINISHED)
 			return void await interaction.editReply({
-				embeds: [EmbedMessage({
+				embeds: [PrettyMsg({
 					description: CommonMessages.Tournament.IsFinished,
 					color: Colors.Red
 				})]
@@ -597,7 +597,7 @@ export class TournamentCommands extends Subcommand {
 
 		if (tournament.status === TournamentStatus.FINISHED)
 			return void await interaction.reply({
-				embeds: [EmbedMessage({
+				embeds: [PrettyMsg({
 					description: CommonMessages.Tournament.IsFinished,
 					color: Colors.Red
 				})]
@@ -664,7 +664,7 @@ export class TournamentCommands extends Subcommand {
 		if (tournament.status === TournamentStatus.FINISHED)
 			return void await interaction.reply({
 				embeds: [
-					EmbedMessage({
+					PrettyMsg({
 						description: CommonMessages.Tournament.IsFinished,
 						color: Colors.Red
 					})
@@ -673,7 +673,7 @@ export class TournamentCommands extends Subcommand {
 
 		if (!tournament.is_checkin_open)
 			return void await interaction.reply({
-				embeds: [EmbedMessage({
+				embeds: [PrettyMsg({
 					description: CommonMessages.Tournament.CheckinNotStarted,
 					color: Colors.Red
 				})]
@@ -695,7 +695,7 @@ export class TournamentCommands extends Subcommand {
 
 			return void await interaction.reply({
 				embeds: [
-					EmbedMessage({
+					PrettyMsg({
 						description: `✅ El checkin ha sido cerrado.`,
 						color: Colors.Green
 					})
@@ -774,7 +774,7 @@ export class TournamentCommands extends Subcommand {
 
 		if (!tournament)
 			return void await interaction.reply({
-				embeds: [EmbedMessage({
+				embeds: [PrettyMsg({
 					description: CommonMessages.Tournament.NotFound,
 					color: Colors.Red
 				})]
@@ -818,7 +818,7 @@ export class TournamentCommands extends Subcommand {
 
 		return void await Action.update({
 			embeds: [
-				EmbedMessage({
+				PrettyMsg({
 					description: `✅ ¡La lista de jugadores del torneo **${tournament.name}** ha sido borrada!`,
 					color: Colors.Green
 				})
@@ -838,7 +838,7 @@ export class TournamentCommands extends Subcommand {
 		if (!tournament) {
 			return void await interaction.reply({
 				embeds: [
-					EmbedMessage({
+					PrettyMsg({
 						description: CommonMessages.Tournament.NotFound,
 						color: Colors.Red
 					})
@@ -850,7 +850,7 @@ export class TournamentCommands extends Subcommand {
 		if (!IsTournamentEditable(tournament))
 			return void await interaction.reply({
 				embeds: [
-					EmbedMessage({
+					PrettyMsg({
 						description: CommonMessages.Tournament.NotEditable,
 						color: Colors.Red
 					})
@@ -894,7 +894,7 @@ export class TournamentCommands extends Subcommand {
 
 		return void await interaction.reply({
 			embeds: [
-				EmbedMessage({
+				PrettyMsg({
 					description: `¡El torneo **${tournament.name}** (id ${tournament.id}) ha sido editado con éxito!`,
 					color: Colors.Green
 				})
@@ -915,7 +915,7 @@ export class TournamentCommands extends Subcommand {
 			return void await interaction.reply({
 				ephemeral: true,
 				embeds: [
-					EmbedMessage({
+					PrettyMsg({
 						description: CommonMessages.Tournament.NotFound,
 						color: Colors.Red
 					})
@@ -923,7 +923,7 @@ export class TournamentCommands extends Subcommand {
 			})
 
 		if (tournament.status === TournamentStatus.FINISHED)
-			return void await interaction.reply({ embeds: [EmbedMessage({ description: CommonMessages.Tournament.NotEditable, color: Colors.Red })], ephemeral: true })
+			return void await interaction.reply({ embeds: [PrettyMsg({ description: CommonMessages.Tournament.NotEditable, color: Colors.Red })], ephemeral: true })
 
 		// Prompt the user to confirm this action
 
@@ -961,7 +961,7 @@ export class TournamentCommands extends Subcommand {
 		void await FinishTournament(tournament, options.winner?.id)
 
 		return void await action.update({
-			embeds: [EmbedMessage({
+			embeds: [PrettyMsg({
 				description: `El torneo **${tournament.name}** ha sido marcado como **FINALIZADO** exitósamente.`,
 				color: Colors.Green
 			})],
@@ -1091,7 +1091,7 @@ export class TournamentCommands extends Subcommand {
 
 		if (!tournament) return void await interaction.reply({
 			ephemeral: true,
-			embeds: [EmbedMessage({
+			embeds: [PrettyMsg({
 				description: CommonMessages.Tournament.NotFound,
 				color: Colors.Red
 			})]
@@ -1103,7 +1103,7 @@ export class TournamentCommands extends Subcommand {
 
 		if (tournament.game !== "TETRIO") return void await interaction.reply({
 			ephemeral: true,
-			embeds: [EmbedMessage({
+			embeds: [PrettyMsg({
 				description: CommonMessages.FunctionNotImplemented,
 				color: Colors.Red
 			})]
@@ -1120,7 +1120,7 @@ export class TournamentCommands extends Subcommand {
 
 			return void await interaction.reply({
 				embeds: [
-					EmbedMessage({
+					PrettyMsg({
 						description: CommonMessages.AdminCommands.SendPlayerList.Success.replace('{tournament}', tournament.name),
 						color: Colors.Green
 					}),
@@ -1145,7 +1145,7 @@ export class TournamentCommands extends Subcommand {
 
 		return void await interaction.reply({
 			embeds: [
-				EmbedMessage({
+				PrettyMsg({
 					description: CommonMessages.AdminCommands.SendPlayerList.Success.replace('{tournament}', tournament.name),
 					color: Colors.Green
 				})
@@ -1165,7 +1165,7 @@ export class TournamentCommands extends Subcommand {
 		if (!tournament)
 			return void await interaction.reply({
 				embeds: [
-					EmbedMessage({
+					PrettyMsg({
 						description: CommonMessages.Tournament.NotFound,
 						color: Colors.Red
 					})
@@ -1187,7 +1187,7 @@ export class TournamentCommands extends Subcommand {
 		const tournament = await GetTournamentFromGuild(interaction.guildId, idTorneo)
 
 		if (!tournament) return void await interaction.reply({
-			embeds: [EmbedMessage({
+			embeds: [PrettyMsg({
 				description: CommonMessages.Tournament.NotFound,
 				color: Colors.Red
 			})]
@@ -1216,7 +1216,7 @@ export class TournamentCommands extends Subcommand {
 
 		await interaction.editReply({
 			embeds: [
-				EmbedMessage({
+				PrettyMsg({
 					description: `⏳ Añadiendo rol/es a **${membersWithoutTheRoles}** miembros...\n**Tiempo estimado**: ${membersWithoutTheRoles} segundos.`,
 					color: Colors.Yellow
 				})
@@ -1227,7 +1227,7 @@ export class TournamentCommands extends Subcommand {
 
 		return void await interaction.editReply({
 			embeds: [
-				EmbedMessage({
+				PrettyMsg({
 					description: `✅ El comando ha finalizado.\nSe añadieron roles a **${result.success}** miembros.\n**Fallaron**: ${result.errors}`,
 					color: Colors.Green
 				})

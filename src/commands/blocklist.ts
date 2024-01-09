@@ -1,6 +1,6 @@
 import { Subcommand } from "@sapphire/plugin-subcommands"
 import { Colors, PermissionFlagsBits } from "discord.js"
-import { BlockUser, EmbedMessage, UnblockUser } from "../helper-functions/index.js";
+import { BlockUser, PrettyMsg, UnblockUser } from "../helper-functions/index.js";
 import { CommonMessages } from "../helper-functions/common-messages.js";
 
 export class BlocklistCommands extends Subcommand {
@@ -68,7 +68,7 @@ export class BlocklistCommands extends Subcommand {
 		await BlockUser(options.target.id, options.reason)
 
 		return void await interaction.reply({
-			embeds: [EmbedMessage(
+			embeds: [PrettyMsg(
 				{
 					description: CommonMessages.Blocklist.Add.replace('{username}', options.target.displayName),
 					color: Colors.Green,
@@ -89,7 +89,7 @@ export class BlocklistCommands extends Subcommand {
 		await UnblockUser(options.target.id)
 
 		return void await interaction.reply({
-			embeds: [EmbedMessage({
+			embeds: [PrettyMsg({
 				description: CommonMessages.Blocklist.Remove.replace('{username}', options.target.username),
 				color: Colors.Green,
 				footer: {

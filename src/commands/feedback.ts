@@ -1,6 +1,6 @@
 import { Command } from "@sapphire/framework"
 import { Colors, GuildTextBasedChannel } from "discord.js";
-import { EmbedMessage, UserIsBlocked } from "../helper-functions/index.js";
+import { PrettyMsg, UserIsBlocked } from "../helper-functions/index.js";
 import { CommonMessages } from "../helper-functions/common-messages.js";
 
 
@@ -37,7 +37,7 @@ export class FeedbackCommand extends Command {
 		if (await UserIsBlocked(interaction.user)) {
 			return void await interaction.reply({
 				ephemeral: true,
-				embeds: [EmbedMessage({
+				embeds: [PrettyMsg({
 					description: CommonMessages.UserIsBlocked,
 					color: Colors.Red
 				})]
@@ -49,7 +49,7 @@ export class FeedbackCommand extends Command {
 
 		void await feedbackChannel.send({
 			embeds: [
-				EmbedMessage({
+				PrettyMsg({
 					description: options.message,
 					color: interaction.member.displayColor,
 					author: {
@@ -63,7 +63,7 @@ export class FeedbackCommand extends Command {
 
 		return void await interaction.editReply({
 			embeds: [
-				EmbedMessage({
+				PrettyMsg({
 					description: '¡Tu feedback ha sido recibido con éxito y enviado a los desarrolladores!\nTe recordamos que abusar de este comando podría resultar en la imposibilidad de utilizar este comando en el futuro.',
 					color: Colors.Blue
 				})

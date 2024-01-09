@@ -1,6 +1,6 @@
 import { Command } from "@sapphire/framework"
 import { ChannelType, Colors, PermissionFlagsBits } from "discord.js";
-import { EmbedMessage, GetGuildConfigs } from "../helper-functions/index.js";
+import { PrettyMsg, GetGuildConfigs } from "../helper-functions/index.js";
 
 
 export class SetupCommmand extends Command {
@@ -56,7 +56,7 @@ export class SetupCommmand extends Command {
 
 		return void await interaction.reply({
 			embeds: [
-				EmbedMessage({
+				PrettyMsg({
 					color: Colors.Green,
 					description: "✅ ¡Las configuraciones han sido guardadas!",
 				})

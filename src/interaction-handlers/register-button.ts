@@ -1,7 +1,7 @@
 import { InteractionHandler, InteractionHandlerTypes } from '@sapphire/framework';
 import { ActionRowBuilder, ButtonBuilder, ButtonInteraction, ButtonStyle, Colors, ComponentType, ModalBuilder, TextInputBuilder, TextInputStyle } from "discord.js"
 import { Tournament, TournamentStatus } from '../sequelize/Tournaments.js';
-import { EmbedMessage, GetTournamentFromGuild, GetUserDataFromTetrio, CreateTournamentLogMessage, TetrioUserProfileEmbed } from '../helper-functions/index.js';
+import { PrettyMsg, GetTournamentFromGuild, GetUserDataFromTetrio, CreateTournamentLogMessage, TetrioUserProfileEmbed } from '../helper-functions/index.js';
 import { TournamentDetailsEmbed } from "../helper-functions/index.js";
 import { RunTetrioTournamentRegistrationChecks } from '../helper-functions/index.js';
 import { AddPlayerToTournament } from '../helper-functions/index.js';
@@ -20,7 +20,7 @@ export class RegisterButtonHandler extends InteractionHandler {
 		if (!tournament) return void await interaction.reply({
 			ephemeral: true,
 			embeds: [
-				EmbedMessage({
+				PrettyMsg({
 					description: CommonMessages.Tournament.NotFound,
 					color: Colors.Red
 				})
@@ -30,7 +30,7 @@ export class RegisterButtonHandler extends InteractionHandler {
 		if (tournament.status === TournamentStatus.CLOSED || tournament.status === TournamentStatus.FINISHED) {
 			return void await interaction.reply({
 				ephemeral: true,
-				embeds: [EmbedMessage({
+				embeds: [PrettyMsg({
 					description: CommonMessages.Player.UnableToJoinTournament,
 				})]
 			})
@@ -95,7 +95,7 @@ async function HandleTetrioRegistration(interaction: ButtonInteraction<'cached'>
 	if (!check.allowed) {
 		void await modalSubmition.reply({
 			embeds: [
-				EmbedMessage({
+				PrettyMsg({
 					description: `No te puedes inscribir en este torneo.\nRazón: **${check.reason}**`,
 					color: Colors.Red
 				})

@@ -646,6 +646,7 @@ export async function AddPlayerToTournament(tournament: Tournament, player: Regi
 	console.log("[TOURNAMENT] El torneo ha sido guardado");
 }
 
+/** This function will EMPTY the entire player list of a selected tournament, USE WITH CAUTION */
 export async function ClearTournamentPlayerList(tournament: Tournament) {
 
 
@@ -660,7 +661,7 @@ export async function ClearTournamentPlayerList(tournament: Tournament) {
 }
 
 
-export function EmbedMessage(options: Pick<EmbedData, "color" | "author" | "description" | "footer" | "thumbnail">) {
+export function PrettyMsg(options: Pick<EmbedData, "color" | "author" | "description" | "footer" | "thumbnail">) {
 	const embed = new EmbedBuilder()
 
 	if (options.color) embed.setColor(options.color)
@@ -754,7 +755,7 @@ export async function CreateTournamentLogMessage(interaction: CommandInteraction
 
 	channel.send({
 		embeds: [
-			EmbedMessage({
+			PrettyMsg({
 				description: content,
 				color: Colors.Yellow,
 				author: {
