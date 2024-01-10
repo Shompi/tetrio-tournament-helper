@@ -31,6 +31,14 @@ export type TetrioUserRole = "anon" | "user" | "bot" | "halfmod" | "mod" | "admi
 export type OrderBy = "default" | "apm" | "pps" | "rating" | "rank" | "vs"
 export type TetrioPlayerRelevantData = Pick<TetrioApiUser, "bio" | "league" | "country" | "username" | "avatar_revision" | "banner_revision" | "badstanding" | "_id">
 
+export enum CustomLogLevels {
+	Success = "Green",
+	Danger = "Red",
+	Warning = "Yellow",
+	Info = "Blue",
+	Default = "White"
+}
+
 export enum AllowedGames {
 	TETRIO = "TETRIO",
 	TETRISEFFECT = "Tetris Effect: Connected",
@@ -747,16 +755,11 @@ export async function GetGuildLogsChannel(guild: Guild) {
 	return null
 }
 
-const enum LogLevel {
-	Success = "Green",
-	Danger = "Red",
-	Warning = "Yellow",
-	Info = "Blue",
-	Default = "White"
-}
-export async function SendMessageToChannel(interaction: CommandInteraction<'cached'> | ButtonInteraction<'cached'>, content: string, level?: LogLevel) {
 
-	const color = level ?? LogLevel.Default
+
+export async function SendMessageToChannel(interaction: CommandInteraction<'cached'> | ButtonInteraction<'cached'>, content: string, level?: CustomLogLevels) {
+
+	const color = level ?? CustomLogLevels.Default
 
 	const channel = await GetGuildLogsChannel(interaction.guild)
 	if (!channel) return

@@ -1,7 +1,7 @@
 import { InteractionHandler, InteractionHandlerTypes } from '@sapphire/framework';
 import { ActionRowBuilder, ButtonBuilder, ButtonInteraction, ButtonStyle, Colors, ComponentType, ModalBuilder, TextInputBuilder, TextInputStyle } from "discord.js"
 import { Tournament, TournamentStatus } from '../sequelize/Tournaments.js';
-import { PrettyMsg, GetTournamentFromGuild, GetUserDataFromTetrio, SendMessageToChannel, TetrioUserProfileEmbed } from '../helper-functions/index.js';
+import { PrettyMsg, GetTournamentFromGuild, GetUserDataFromTetrio, SendMessageToChannel, TetrioUserProfileEmbed, CustomLogLevels } from '../helper-functions/index.js';
 import { TournamentDetailsEmbed } from "../helper-functions/index.js";
 import { RunTetrioTournamentRegistrationChecks } from '../helper-functions/index.js';
 import { AddPlayerToTournament } from '../helper-functions/index.js';
@@ -105,7 +105,8 @@ async function HandleTetrioRegistration(interaction: ButtonInteraction<'cached'>
 
 		return void await SendMessageToChannel(
 			interaction,
-			`⚠️ Error registrando al jugador ${playerdata.username} en el torneo **${tournament.name} (${tournament.id})**.\n**Razón:** ${check.reason}`
+			`⚠️ Error registrando al jugador ${playerdata.username} en el torneo **${tournament.name} (${tournament.id})**.\n**Razón:** ${check.reason}`,
+			CustomLogLevels.Warning
 		)
 	}
 	console.log("[DEBUG] Tournament checks passed!");
