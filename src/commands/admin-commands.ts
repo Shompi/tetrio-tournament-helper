@@ -102,7 +102,6 @@ export class AdminCommands extends Subcommand {
 								.setRequired(false)
 						)
 				)
-
 		}, { idHints: ["1183537285761859665"] })
 	}
 
