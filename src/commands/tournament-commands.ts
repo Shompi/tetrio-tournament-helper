@@ -17,11 +17,11 @@ import {
 } from "discord.js";
 import {
 	AddPlayerToTournament,
-	BuildASCIITableAttachment,
-	BuildCSVTableAttachment,
-	BuildEmbedPlayerList,
-	BuildJSONAttachment,
-	BuildTableForChallonge,
+	BuildPlayerListAscii,
+	BuildPlayerListCSV,
+	BuildPlayerListEmbed,
+	BuildPlayerListJSON,
+	BuildPlayerListChallonge,
 	ClearTournamentPlayerList,
 	PrettyMsg,
 	FinishTournament,
@@ -1115,8 +1115,8 @@ export class TournamentCommands extends Subcommand {
 		if (['embed', 'challonge'].includes(format)) {
 
 			const players = format === 'embed' ?
-				BuildEmbedPlayerList(tournament, playersSorted) :
-				BuildTableForChallonge(tournament, playersSorted)
+				BuildPlayerListEmbed(tournament, playersSorted) :
+				BuildPlayerListChallonge(tournament, playersSorted)
 
 			return void await interaction.reply({
 				embeds: [
@@ -1132,15 +1132,15 @@ export class TournamentCommands extends Subcommand {
 		let attachment: AttachmentBuilder | null = null
 
 		if (format === 'csv') {
-			attachment = BuildCSVTableAttachment(tournament, playersSorted)
+			attachment = BuildPlayerListCSV(tournament, playersSorted)
 		}
 
 		if (format === 'ascii') {
-			attachment = BuildASCIITableAttachment(tournament, playersSorted)
+			attachment = BuildPlayerListAscii(tournament, playersSorted)
 		}
 
 		if (format === 'json') {
-			attachment = BuildJSONAttachment(tournament, playersSorted)
+			attachment = BuildPlayerListJSON(tournament, playersSorted)
 		}
 
 		return void await interaction.reply({

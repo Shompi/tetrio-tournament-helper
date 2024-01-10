@@ -482,7 +482,7 @@ export function IsTournamentEditable(tournament: Tournament) {
 }
 
 /** Builds a player list in an embed for better display on the Discord App */
-export function BuildEmbedPlayerList(tournament: Tournament, players: RegisteredPlayer[]) {
+export function BuildPlayerListEmbed(tournament: Tournament, players: RegisteredPlayer[]) {
 
 	const table = new AsciiTable3()
 		.setHeading("POS", "USERNAME", "RANK", "RATING")
@@ -507,7 +507,7 @@ export function BuildEmbedPlayerList(tournament: Tournament, players: Registered
 }
 
 /** Exports an embed with players information in a challonge friendly display */
-export function BuildTableForChallonge(tournament: Tournament, players: RegisteredPlayer[]) {
+export function BuildPlayerListChallonge(tournament: Tournament, players: RegisteredPlayer[]) {
 
 	// Challonge bulk add accepts a string like [displayName, email or challonge username]
 	return new EmbedBuilder()
@@ -520,7 +520,60 @@ export function BuildTableForChallonge(tournament: Tournament, players: Register
 		.setTimestamp()
 }
 
-export async function BuildTableForGeneralInfo(tournament: Tournament, playerList: RegisteredPlayer[]) {
+export function BuildPlayerListCSV(tournament: Tournament, players: RegisteredPlayer[]): AttachmentBuilder {
+	const Headers = ["DISCORDID", "USERNAME", "CHALLONGE"];
+	const PlayersData: any[] = [];
+
+	if (players[0].data) {
+		Headers.push("TETR");
+		Headers.push("RANK");
+		Headers.push("RATING");
+		Headers.push("COUNTRY");
+		Headers.push("APM");
+		Headers.push("PPS");
+		Headers.push("VS");
+	}
+
+	for (const player of players) {
+		const row = [];
+
+		row.push(player.discordId);
+		row.push(player.dUsername);
+		row.push(player.challongeId);
+
+		if (player.data) {
+			row.push(player.data.username);
+			row.push(player.data.league.rank);
+			row.push(player.data.league.rating);
+			row.push(player.data.country);
+			row.push(player.data.league.apm);
+			row.push(player.data.league.pps);
+			row.push(player.data.league.vs);
+		}
+
+		PlayersData.push(row);
+	}
+
+
+	const csvdata = csv.stringify([
+		Headers,
+		...PlayersData
+	]);
+
+	return new AttachmentBuilder(
+		Buffer.from(csvdata),
+		{ name: `PLAYERS-${tournament.name}.csv`, description: `Lista de jugadores del torneo ${tournament.name} en formato CSV` }
+	);
+}
+
+export function BuildPlayerListJSON(tournament: Tournament, players: RegisteredPlayer[]): AttachmentBuilder {
+	return new AttachmentBuilder(
+		Buffer.from(JSON.stringify(players, null, 2)),
+		{ name: `PLAYERS-${tournament.name}.json` }
+	);
+}
+
+export async function BuildPlayerListGeneral(tournament: Tournament, playerList: RegisteredPlayer[]) {
 	// Now we need to build the table
 	// We need to check whether or not this is a TETRIO tournament so we can build different tables for other games.
 	const table = new AsciiTable3(tournament.name)
@@ -546,7 +599,7 @@ export async function BuildTableForGeneralInfo(tournament: Tournament, playerLis
 	return table.toString();
 }
 
-function BuildAsciiTableForTetrio(tournament: Tournament, playerList: RegisteredPlayer[]) {
+export function BuildPlayerListAscii(tournament: Tournament, orderedPlayerList: RegisteredPlayer[]) {
 	// Now we need to build the table
 	// We need to check whether or not this is a TETRIO tournament so we can build different tables for other games.
 	const table = new AsciiTable3(tournament.name)
@@ -566,7 +619,7 @@ function BuildAsciiTableForTetrio(tournament: Tournament, playerList: Registered
 
 
 	let i = 1
-	for (const player of playerList) {
+	for (const player of orderedPlayerList) {
 		table.addRow(
 			i,
 			player.discordId,
@@ -582,7 +635,9 @@ function BuildAsciiTableForTetrio(tournament: Tournament, playerList: Registered
 		i++
 	}
 
-	return table.toString();
+	return new AttachmentBuilder(Buffer.from(table.toString()))
+		.setName(`PLAYERS-${tournament.name}.txt`)
+		.setDescription(`Tabla de jugadores del torneo ${tournament.name}`);
 }
 
 export async function OrderPlayerListBy(tournament: Tournament, orderBy: OrderBy, filter_checked_in: boolean | null): Promise<RegisteredPlayer[]> {
@@ -628,17 +683,6 @@ export async function OrderPlayerListBy(tournament: Tournament, orderBy: OrderBy
 	return PlayersArray
 }
 
-export function BuildASCIITableAttachment(tournament: Tournament, orderedPlayerList: RegisteredPlayer[]) {
-
-	const table = BuildAsciiTableForTetrio(tournament, orderedPlayerList);
-
-	const TableFile = new AttachmentBuilder(Buffer.from(table))
-		.setName(`PLAYERS-${tournament.name}.txt`)
-		.setDescription(`Tabla de jugadores del torneo ${tournament.name}`);
-
-	return TableFile;
-}
-
 export function TetrioUserProfileEmbed(userData: TetrioPlayerRelevantData) {
 	const avatarUrl = GenerateTetrioAvatarURL(userData._id, userData.avatar_revision)
 
@@ -659,7 +703,6 @@ export function TetrioUserProfileEmbed(userData: TetrioPlayerRelevantData) {
 
 	return embed
 }
-
 
 /** This function will add a base player (discordId, challongeId, data? to the players array) */
 export async function AddPlayerToTournament(tournament: Tournament, player: RegisteredPlayer) {
@@ -717,7 +760,6 @@ export async function GetGuildConfigs(guild_id: Snowflake) {
 	return guild
 }
 
-
 type GuildConfig = Pick<GuildConfigs, "logging_channel" | "allowed_roles">
 export async function SaveGuildConfigs(guild_id: Snowflake, configs: GuildConfig) {
 
@@ -754,8 +796,6 @@ export async function GetGuildLogsChannel(guild: Guild) {
 
 	return null
 }
-
-
 
 export async function SendMessageToChannel(interaction: CommandInteraction<'cached'> | ButtonInteraction<'cached'>, content: string, level?: CustomLogLevels) {
 
@@ -812,54 +852,3 @@ export async function UnblockUser(userId: Snowflake) {
 	await user.update('isBlacklisted', false)
 	return true
 }
-export function BuildCSVTableAttachment(tournament: Tournament, players: RegisteredPlayer[]): AttachmentBuilder {
-	const Headers = ["DISCORDID", "USERNAME", "CHALLONGE"];
-	const PlayersData: any[] = [];
-
-	if (players[0].data) {
-		Headers.push("TETR");
-		Headers.push("RANK");
-		Headers.push("RATING");
-		Headers.push("COUNTRY");
-		Headers.push("APM");
-		Headers.push("PPS");
-		Headers.push("VS");
-	}
-
-	for (const player of players) {
-		const row = [];
-
-		row.push(player.discordId);
-		row.push(player.dUsername);
-		row.push(player.challongeId);
-
-		if (player.data) {
-			row.push(player.data.username);
-			row.push(player.data.league.rank);
-			row.push(player.data.league.rating);
-			row.push(player.data.country);
-			row.push(player.data.league.apm);
-			row.push(player.data.league.pps);
-			row.push(player.data.league.vs);
-		}
-
-		PlayersData.push(row);
-	}
-
-
-	const csvdata = csv.stringify([
-		Headers,
-		...PlayersData
-	]);
-
-	return new AttachmentBuilder(
-		Buffer.from(csvdata),
-		{ name: `PLAYERS-${tournament.name}.csv`, description: `Lista de jugadores del torneo ${tournament.name} en formato CSV` }
-	);
-} export function BuildJSONAttachment(tournament: Tournament, players: RegisteredPlayer[]): AttachmentBuilder {
-	return new AttachmentBuilder(
-		Buffer.from(JSON.stringify(players, null, 2)),
-		{ name: `PLAYERS-${tournament.name}.json` }
-	);
-}
-
