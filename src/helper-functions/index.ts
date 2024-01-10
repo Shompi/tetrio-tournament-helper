@@ -744,7 +744,6 @@ export async function GetGuildLogsChannel(guild: Guild) {
 
 	console.log(`[GUILDS] El canal ha sido eliminado de la base de datos.`);
 
-
 	return null
 }
 
