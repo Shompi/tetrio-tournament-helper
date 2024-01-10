@@ -14,7 +14,6 @@ import {
 	User
 } from "discord.js";
 
-import { Command } from "@sapphire/framework";
 import { Subcommand } from "@sapphire/plugin-subcommands";
 import { codeBlock } from "@sapphire/utilities";
 import { AsciiTable3 } from "ascii-table3";
@@ -425,7 +424,6 @@ export async function GetTournamentsFromGuild(guild_id: string) {
 		}
 	})
 }
-
 
 export async function FinishTournament(tournament: Tournament, /** Discord ID of the winner */ winner?: string | null) {
 	console.log(`[TOURNAMENT] Marcando torneo ${tournament.id} - ${tournament.name} como FINALIZADO`);
