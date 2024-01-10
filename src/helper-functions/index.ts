@@ -747,7 +747,16 @@ export async function GetGuildLogsChannel(guild: Guild) {
 	return null
 }
 
-export async function CreateTournamentLogMessage(interaction: CommandInteraction<'cached'> | ButtonInteraction<'cached'>, content: string) {
+const enum LogLevel {
+	Success = "Green",
+	Danger = "Red",
+	Warning = "Yellow",
+	Info = "Blue",
+	Default = "White"
+}
+export async function SendMessageToChannel(interaction: CommandInteraction<'cached'> | ButtonInteraction<'cached'>, content: string, level?: LogLevel) {
+
+	const color = level ?? LogLevel.Default
 
 	const channel = await GetGuildLogsChannel(interaction.guild)
 	if (!channel) return
@@ -756,7 +765,7 @@ export async function CreateTournamentLogMessage(interaction: CommandInteraction
 		embeds: [
 			PrettyMsg({
 				description: content,
-				color: Colors.Yellow,
+				color: Colors[color],
 				author: {
 					name: interaction.client.user.displayName,
 					iconURL: interaction.client.user.displayAvatarURL({ size: 256 })
