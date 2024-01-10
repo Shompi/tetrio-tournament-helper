@@ -116,7 +116,7 @@ async function HandleTetrioRegistration(interaction: ButtonInteraction<'cached'>
 	void await AddPlayerToTournament(tournament, {
 		discordId: interaction.user.id,
 		dUsername: interaction.user.username,
-		challongeId: challongeUsername,
+		challongeId: challongeUsername || null,
 		data: playerdata
 	})
 
