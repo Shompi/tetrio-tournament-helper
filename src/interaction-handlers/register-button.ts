@@ -79,7 +79,7 @@ async function HandleTetrioRegistration(interaction: ButtonInteraction<'cached'>
 	if (!modalSubmition) return null;
 
 	const tetrioUsername = modalSubmition.fields.getTextInputValue('tetrio-username')
-	let challongeUsername = modalSubmition.fields.getTextInputValue('challonge-username')
+	let challongeUsername: string | null = modalSubmition.fields.getTextInputValue('challonge-username')
 
 	const playerdata = await GetUserDataFromTetrio(tetrioUsername)
 
@@ -113,10 +113,13 @@ async function HandleTetrioRegistration(interaction: ButtonInteraction<'cached'>
 
 	console.log("[DEBUG] Adding player to tournament players list");
 
+	if (challongeUsername.length < 2)
+		challongeUsername = null
+
 	void await AddPlayerToTournament(tournament, {
 		discordId: interaction.user.id,
 		dUsername: interaction.user.username,
-		challongeId: challongeUsername || null,
+		challongeId: challongeUsername,
 		data: playerdata
 	})
 
@@ -203,7 +206,6 @@ function BuildTetrioModal(interaction: ButtonInteraction<"cached">) {
 						.setStyle(TextInputStyle.Short)
 						.setCustomId('challonge-username')
 						.setLabel('Tu username de challonge (Opcional)')
-						.setPlaceholder("TetrisMaster_123")
 						.setMaxLength(50)
 						.setRequired(false)
 				)
