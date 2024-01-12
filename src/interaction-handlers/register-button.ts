@@ -105,7 +105,7 @@ async function HandleTetrioRegistration(interaction: ButtonInteraction<'cached'>
 
 		return void await SendMessageToChannel(
 			interaction,
-			`⚠️ Error registrando al jugador **${playerdata.username}** (${interaction.user.username}) en el torneo **${tournament.name} (ID: ${tournament.id}**.\n**Razón:** ${check.reason}`,
+			`⚠️ Error registrando al jugador **${playerdata.username.toUpperCase()}** (${interaction.user.username}) en el torneo **${tournament.name} (ID: ${String(tournament.id).padStart(2, "0")})**.\n**Razón:** ${check.reason}`,
 			CustomLogLevels.Warning
 		)
 	}
