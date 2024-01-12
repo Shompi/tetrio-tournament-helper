@@ -306,9 +306,14 @@ export async function RunTetrioTournamentRegistrationChecks(userData: TetrioPlay
 		return ({ allowed: false, reason: "Ya hay un jugador de tetrio con esta id inscrito en este torneo." })
 	}
 
-	if (tournament.is_country_locked && tournament.country_lock?.toUpperCase() !== userData.country?.toUpperCase()) {
+	if (tournament.is_country_locked) {
+
+		if (!userData.country)
+			return ({allowed: false, reason: "El jugador no muestra un pais en su perfil de TETRIO."})
+
+		if (tournament.country_lock!.toUpperCase() !== userData.country?.toUpperCase())
+			return ({ allowed: false, reason: "El pais del jugador es distinto al pais del torneo." });
 		// The country of the player doesn't match the tournament country lock
-		return ({ allowed: false, reason: "El pais del jugador es distinto al pais del torneo." });
 	}
 
 	if (tournament.is_tr_capped) {
