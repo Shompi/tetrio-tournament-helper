@@ -652,7 +652,7 @@ export async function OrderPlayerListBy(tournament: Tournament, orderBy: OrderBy
 
 		if (filter_checked_in) {
 			// If the discordId of the player that is on the player list, is not on the checked in list we skip it
-			if (!tournament.checked_in.includes(player.discordId))
+			if (!tournament.players.some(player => tournament.checked_in.includes(player.discordId)))
 				continue
 		}
 
