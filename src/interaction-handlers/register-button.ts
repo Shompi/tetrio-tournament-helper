@@ -14,6 +14,7 @@ export class RegisterButtonHandler extends InteractionHandler {
 
 	public async run(interaction: ButtonInteraction<'cached'>, tournamentId: string) {
 
+		let success: boolean = false
 
 		const tournament = await GetTournamentFromGuild(interaction.guildId, +tournamentId)
 
@@ -37,16 +38,20 @@ export class RegisterButtonHandler extends InteractionHandler {
 		}
 
 		if (tournament.game === "TETRIO") {
-			return void await HandleTetrioRegistration(interaction, tournament);
+			success = await HandleTetrioRegistration(interaction, tournament);
+		} else {
+			success = await HandleGeneralRegistration(interaction, tournament)
 		}
 
-		// If the tournament is from a game that does not track player stats then we can just add this player to the db
-		// Although I wanna add something like an SR question / modal to help seeding Tetris Effect Tournaments and add it into the data prop.
+		if (!success) return
 
-		return void await AddPlayerToTournament(tournament, {
-			discordId: interaction.user.id,
-			dUsername: interaction.user.username,
-			challongeId: null,
+		/** We have to add the roles to the player, if any */
+		if (tournament.add_roles.length > 0)
+			await interaction.member.roles.add(tournament.add_roles)
+
+		// Update the message with the new details
+		return void await interaction.message.edit({
+			embeds: [TournamentDetailsEmbed(tournament)]
 		})
 	}
 
@@ -61,12 +66,12 @@ export class RegisterButtonHandler extends InteractionHandler {
 }
 
 
-async function HandleTetrioRegistration(interaction: ButtonInteraction<'cached'>, tournament: Tournament) {
+async function HandleTetrioRegistration(interaction: ButtonInteraction<'cached'>, tournament: Tournament): Promise<boolean> {
 
 	// show the modal
 	const TetrioModal = BuildTetrioModal(interaction)
 
-	await interaction.showModal(TetrioModal)
+	void await interaction.showModal(TetrioModal)
 
 	const modalSubmition = await interaction.awaitModalSubmit(
 		{
@@ -76,17 +81,21 @@ async function HandleTetrioRegistration(interaction: ButtonInteraction<'cached'>
 	).catch(() => null);
 
 	// Interaction expired.
-	if (!modalSubmition) return null;
+	if (!modalSubmition) return false;
 
 	const tetrioUsername = modalSubmition.fields.getTextInputValue('tetrio-username')
 	let challongeUsername: string | null = modalSubmition.fields.getTextInputValue('challonge-username')
 
 	const playerdata = await GetUserDataFromTetrio(tetrioUsername)
 
-	if (!playerdata) return void await modalSubmition.reply({
-		content: `El jugador ${tetrioUsername} no existe. Verifica que hayas escrito el nombre de manera correcta.`,
-		ephemeral: true
-	})
+	if (!playerdata) {
+		void await modalSubmition.reply({
+			content: `El jugador ${tetrioUsername} no existe. Verifica que hayas escrito el nombre de manera correcta.`,
+			ephemeral: true
+		})
+
+		return false
+	}
 
 	console.log("[DEBUG] Running tournament inscription checks...");
 	const check = await RunTetrioTournamentRegistrationChecks(playerdata, tournament, interaction.user.id)
@@ -103,19 +112,21 @@ async function HandleTetrioRegistration(interaction: ButtonInteraction<'cached'>
 			ephemeral: true
 		})
 
-		return void await SendMessageToChannel(
+		void await SendMessageToChannel(
 			interaction,
 			`⚠️ Error registrando al jugador **${playerdata.username.toUpperCase()}** (${interaction.user.username}) en el torneo **${tournament.name} (ID: ${String(tournament.id).padStart(2, "0")})**.\n**Razón:** ${check.reason}`,
 			CustomLogLevels.Warning
 		)
-	}
-	console.log("[DEBUG] Tournament checks passed!");
 
-	console.log("[DEBUG] Adding player to tournament players list");
+		return false
+	}
+
+	console.log("[DEBUG] Tournament checks passed!");
 
 	if (challongeUsername.length < 2)
 		challongeUsername = null
 
+	console.log("[DEBUG] Adding player to tournament players list");
 	void await AddPlayerToTournament(tournament, {
 		discordId: interaction.user.id,
 		dUsername: interaction.user.username,
@@ -129,12 +140,40 @@ async function HandleTetrioRegistration(interaction: ButtonInteraction<'cached'>
 		ephemeral: true
 	})
 
-	// Update the message with the new details
-	return void await interaction.message.edit({
-		embeds: [TournamentDetailsEmbed(tournament)]
-	})
+	return true
 }
 
+async function HandleGeneralRegistration(interaction: ButtonInteraction<'cached'>, tournament: Tournament): Promise<boolean> {
+
+
+	/** Build the modal */
+	const modal = BuildGeneralRegistrationModal(interaction)
+
+	/** Show the modal */
+	void await interaction.showModal(modal)
+
+	const modalResponse = await interaction.awaitModalSubmit({
+		time: 60_000 * 2,
+		filter: (modalInteraction) => modalInteraction.customId.startsWith(interaction.id),
+	}).catch(() => null)
+
+	if (!modalResponse) return false
+
+	const challongeUsername = modalResponse.fields.getTextInputValue('challonge-username')
+
+	void await AddPlayerToTournament(tournament, {
+		challongeId: challongeUsername.length < 2 ? null : challongeUsername,
+		discordId: interaction.user.id,
+		dUsername: interaction.user.username
+	})
+
+	void await modalResponse.reply({
+		ephemeral: true,
+		content: CommonMessages.Player.RegisteredSuccessfully
+	})
+
+	return true
+}
 
 
 /** TODO: Implement this for general tournaments */
@@ -149,7 +188,7 @@ function BuildGeneralRegistrationModal(interaction: ButtonInteraction<'cached'>)
 						.setStyle(TextInputStyle.Short)
 						.setCustomId('challonge-username')
 						.setLabel('Tu username de challonge (Opcional)')
-						.setPlaceholder("TetrisMaster_123")
+						.setPlaceholder("")
 						.setMaxLength(50)
 						.setRequired(false)
 				)
