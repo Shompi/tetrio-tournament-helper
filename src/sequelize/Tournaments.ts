@@ -5,7 +5,7 @@ import { Snowflake } from 'discord.js';
 const sequelize = new Sequelize({
 	dialect: "sqlite",
 	storage: "./databases/Tournaments.sqlite",
-	logging: (...msgs) => console.log(`[TOURNAMENTS DATABASE] => ${msgs}`)
+	//logging: (...msgs) => console.log(`[TOURNAMENTS DATABASE] => ${msgs.forEach(msg => console.log(msg))}`)
 });
 
 export const TournamentStatusStrings = [

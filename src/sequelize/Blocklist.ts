@@ -3,7 +3,7 @@ import { CreationOptional, DataTypes, InferAttributes, InferCreationAttributes, 
 const sequelize = new Sequelize({
 	dialect: 'sqlite',
 	storage: "./databases/Blocklist.sqlite",
-	logging: (...msgs) => console.log(`[BLOCKLIST DATABASE] => ${msgs}`)
+	//logging: (...msgs) => console.log(`[BLOCKLIST DATABASE] => ${msgs.forEach(msg => console.log(msg))}`)
 })
 
 export interface BlocklistedUser extends Model<InferAttributes<BlocklistedUser>, InferCreationAttributes<BlocklistedUser>> {
