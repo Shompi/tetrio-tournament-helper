@@ -17,7 +17,7 @@ export class UnregisterButtonHandler extends InteractionHandler {
 			ephemeral: true,
 			embeds: [
 				PrettyMsg({
-					description: CommonMessages.Tournament.NotFound,
+					description: CommonMessages.Player.UnableToLeaveTournament,
 					color: Colors.Red
 				})
 			]
