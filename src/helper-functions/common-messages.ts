@@ -23,6 +23,7 @@ export const CommonMessages = {
 		CheckInNotAllowed: '⚠️ No puedes hacer Check-in en este torneo por que ya ha finalizado.',
 		UnableToJoinTournament: '❌ No te puedes inscribir en este torneo por que está marcado como **Cerrado** o **Finalizado**.',
 		UnableToLeaveTournament: '❌ No te puedes desinscribir de este torneo por que ya está cerrado.',
+		RegisteredSuccessfully: "✅ ¡Has sido añadido al torneo exitosamente!",
 	},
 
 	Blocklist: {
