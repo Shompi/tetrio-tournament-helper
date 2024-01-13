@@ -294,6 +294,7 @@ export function TournamentDetailsEmbed(torneo: Tournament) {
 export async function RunTetrioTournamentRegistrationChecks(userData: TetrioPlayerRelevantData, tournament: Tournament, discordId: string): Promise<{ allowed: boolean; reason?: string; }> {
 	// In here we have to check for Tetrio caps like rank, rating and country lock and if the player is already on the tournament.
 
+	/** Maybe add like a reasons: string[] in the future if the player has multiple reasons to not be accepted on the tournament.*/
 	if (tournament.status === TournamentStatus.CLOSED || tournament.status === TournamentStatus.FINISHED) {
 		return ({ allowed: false, reason: "Las inscripciones para este torneo no se encuentran abiertas." })
 	}
@@ -800,6 +801,7 @@ export async function GetGuildLogsChannel(guild: Guild) {
 	return null
 }
 
+/** This function is used to send messages directly to the LOGS Channel configured by the server administrators. */
 export async function SendMessageToChannel(interaction: CommandInteraction<'cached'> | ButtonInteraction<'cached'>, content: string, level?: CustomLogLevels) {
 
 	const color = level ?? CustomLogLevels.Default
