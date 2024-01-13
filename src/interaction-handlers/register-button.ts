@@ -22,7 +22,7 @@ export class RegisterButtonHandler extends InteractionHandler {
 			ephemeral: true,
 			embeds: [
 				PrettyMsg({
-					description: CommonMessages.Tournament.NotFound,
+					description: CommonMessages.Player.UnableToJoinTournament,
 					color: Colors.Red
 				})
 			]
