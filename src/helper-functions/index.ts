@@ -310,7 +310,7 @@ export async function RunTetrioTournamentRegistrationChecks(userData: TetrioPlay
 	if (tournament.is_country_locked) {
 
 		if (!userData.country)
-			return ({allowed: false, reason: "El jugador no muestra un pais en su perfil de TETRIO."})
+			return ({ allowed: false, reason: "El jugador no muestra un pais en su perfil de TETRIO." })
 
 		if (tournament.country_lock!.toUpperCase() !== userData.country?.toUpperCase())
 			return ({ allowed: false, reason: "El pais del jugador es distinto al pais del torneo." });
@@ -652,11 +652,10 @@ export async function OrderPlayerListBy(tournament: Tournament, orderBy: OrderBy
 
 		if (filter_checked_in) {
 			// If the discordId of the player that is on the player list, is not on the checked in list we skip it
-			if (!tournament.players.some(player => tournament.checked_in.includes(player.discordId)))
-				continue
+			if (tournament.checked_in.includes(player.discordId))
+				PlayersArray.push(player);
 		}
 
-		PlayersArray.push(player);
 	}
 
 	if (tournament.game === AllowedGames.TETRIO) {
