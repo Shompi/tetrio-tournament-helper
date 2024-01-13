@@ -517,7 +517,7 @@ export function BuildPlayerListChallonge(tournament: Tournament, players: Regist
 	return new EmbedBuilder()
 		.setTitle(`Jugadores ${tournament.name}`)
 		.setDescription(codeBlock(
-			players.map((player) => `${player.data!.username}${player.challongeId ? ", " + player.challongeId : ""}`)
+			players.map((player) => `${player.data?.username ?? player.dUsername}${player.challongeId ? ", " + player.challongeId : ""}`)
 				.join("\n")
 		))
 		.setColor(Colors.White)
@@ -646,16 +646,18 @@ export function BuildPlayerListAscii(tournament: Tournament, orderedPlayerList: 
 
 export async function OrderPlayerListBy(tournament: Tournament, orderBy: OrderBy, filter_checked_in: boolean | null): Promise<RegisteredPlayer[]> {
 	// We start by getting all the players we need from the database
-	const PlayersArray: RegisteredPlayer[] = [];
+	let PlayersArray: RegisteredPlayer[] = [];
 
-	for (const player of tournament.players) {
+	if (filter_checked_in) {
+		for (const player of tournament.players) {
 
-		if (filter_checked_in) {
 			// If the discordId of the player that is on the player list, is not on the checked in list we skip it
-			if (tournament.checked_in.includes(player.discordId))
+			if (tournament.checked_in.some(id => id === player.discordId)) {
 				PlayersArray.push(player);
+			}
 		}
-
+	} else {
+		PlayersArray = Array.from(tournament.players)
 	}
 
 	if (tournament.game === AllowedGames.TETRIO) {
