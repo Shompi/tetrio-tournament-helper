@@ -645,20 +645,13 @@ export function BuildPlayerListAscii(tournament: Tournament, orderedPlayerList: 
 }
 
 export async function OrderPlayerListBy(tournament: Tournament, orderBy: OrderBy, filter_checked_in: boolean | null): Promise<RegisteredPlayer[]> {
-	// We start by getting all the players we need from the database
-	let PlayersArray: RegisteredPlayer[] = [];
+	
+	const checkedIn = Array.from(tournament.checked_in)
 
-	if (filter_checked_in) {
-		for (const player of tournament.players) {
-
-			// If the discordId of the player that is on the player list, is not on the checked in list we skip it
-			if (tournament.checked_in.some(id => id === player.discordId)) {
-				PlayersArray.push(player);
-			}
-		}
-	} else {
-		PlayersArray = Array.from(tournament.players)
-	}
+	const PlayersArray: RegisteredPlayer[] = filter_checked_in ?
+		Array.from(tournament.players)
+			.filter(player => checkedIn.includes(player.discordId))
+		: Array.from(tournament.players)
 
 	if (tournament.game === AllowedGames.TETRIO) {
 		// At this point we should have a list of players

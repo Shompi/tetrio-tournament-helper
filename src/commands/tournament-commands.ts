@@ -1099,7 +1099,7 @@ export class TournamentCommands extends Subcommand {
 
 		const format = interaction.options.getString('formato', false) ?? "embed" // default embed
 		const orderBy = (interaction.options.getString('ordenar-por', false) ?? "default") as OrderBy
-		const filterCheckedIn = interaction.options.getBoolean('checked_in', false)
+		const filterCheckedIn = interaction.options.getBoolean('checked-in', false)
 
 		if (tournament.game !== "TETRIO") return void await interaction.reply({
 			ephemeral: true,
@@ -1109,7 +1109,7 @@ export class TournamentCommands extends Subcommand {
 			})]
 		})
 		// We basically need to skip all the code below if the tournament is not a TETRIO tournament
-
+	
 		const playersSorted = await OrderPlayerListBy(tournament, orderBy, filterCheckedIn)
 
 		if (['embed', 'challonge'].includes(format)) {

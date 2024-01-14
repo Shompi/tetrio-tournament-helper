@@ -56,7 +56,7 @@ export interface Tournament extends Model<InferAttributes<Tournament>, InferCrea
 	/** Should be open by default */
 	status: CreationOptional<TournamentStatus>;
 
-	/** Stringified array with discord IDs */
+	/** Array of RegisteredPlayer Objects */
 	players: RegisteredPlayer[];
 
 	/**
@@ -147,11 +147,11 @@ const TournamentModel = sequelize.define<Tournament>('Tournament', {
 		defaultValue: TournamentStatus.OPEN,
 	},
 
-	/** Array of Discord IDs, it needs to be parsed as json before operating on it */
+	/** Array of Player objects */
 	players: {
 		type: DataTypes.TEXT,
 		get() {
-			return JSON.parse((this.getDataValue('players') as unknown as string)) as Snowflake[];
+			return JSON.parse((this.getDataValue('players') as unknown as string)) as RegisteredPlayer[];
 		},
 		set(value) {
 			return this.setDataValue('players', JSON.stringify(value) as unknown as RegisteredPlayer[])
