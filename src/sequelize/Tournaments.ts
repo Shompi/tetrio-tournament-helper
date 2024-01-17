@@ -11,7 +11,7 @@ const sequelize = new Sequelize({
 export const TournamentStatusStrings = [
 	"Inscripciones Cerradas",
 	"Inscripciones Abiertas",
-	"Terminado"
+	"Finalizado"
 ] as const
 
 export enum TournamentStatus {
@@ -260,7 +260,7 @@ const TournamentModel = sequelize.define<Tournament>('Tournament', {
 });
 
 console.log("[DEBUG] Sincronizando tablas en sequelize...");
-await sequelize.sync();
+await TournamentModel.sync();
 console.log("[DEBUG] La sincronización ha terminado!");
 
 export { TournamentModel }

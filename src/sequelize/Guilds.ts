@@ -43,7 +43,7 @@ const GuildModel = sequelize.define<GuildConfigs>('Guild', {
 
 
 console.log("[GUILDS] Sincronizando tablas en sequelize...");
-await sequelize.sync();
+await GuildModel.sync();
 console.log("[GUILDS] La sincronización ha terminado!");
 
 export { GuildModel }
