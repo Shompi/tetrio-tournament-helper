@@ -192,12 +192,25 @@ async function HandleTetrisEffectRegistration(interaction: ButtonInteraction<'ca
 	if (!modalsubmit) return false
 
 	const answers = {
-		skillrate: modalsubmit.fields.getTextInputValue('tec-skillrate') || null,
+		skillrate: parseInt(modalsubmit.fields.getTextInputValue('tec-skillrate')),
 		challongeId: modalsubmit.fields.getTextInputValue('challonge-username')
 	}
 
 	if (tournament.general_rate_cap) {
-		if (!answers.skillrate) {
+		if (isNaN(answers.skillrate)) {
+			void await interaction.reply({
+				ephemeral: true,
+				embeds: [
+					PrettyMsg({
+						description: CommonMessages.Player.SkillNotANumber
+					})
+				]
+			})
+
+			return false
+		}
+
+		if (answers.skillrate < 0) {
 			void await interaction.reply({
 				ephemeral: true,
 				embeds: [
@@ -210,20 +223,7 @@ async function HandleTetrisEffectRegistration(interaction: ButtonInteraction<'ca
 			return false
 		}
 
-		const skillrateNumber = parseInt(answers.skillrate)
-
-		if (isNaN(skillrateNumber)) {
-			void await interaction.reply({
-				ephemeral: true,
-				embeds: [
-					PrettyMsg({
-						description: CommonMessages.Player.SkillNotANumber
-					})
-				]
-			})
-		}
-
-		const check = RunGeneralTournamentRegistrationChecks(skillrateNumber, tournament)
+		const check = RunGeneralTournamentRegistrationChecks(answers.skillrate, tournament)
 
 		if (!check.allowed) {
 			void await interaction.reply({
@@ -237,6 +237,14 @@ async function HandleTetrisEffectRegistration(interaction: ButtonInteraction<'ca
 		}
 	}
 
+	await AddPlayerToTournament(tournament, {
+		challongeId: answers.challongeId,
+		discordId: interaction.user.id,
+		dUsername: interaction.user.username,
+		generalRate: answers.skillrate,
+	})
+
+	return true
 }
 
 
