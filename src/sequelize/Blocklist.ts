@@ -3,6 +3,7 @@ import { CreationOptional, DataTypes, InferAttributes, InferCreationAttributes, 
 const sequelize = new Sequelize({
 	dialect: 'sqlite',
 	storage: "./databases/Blocklist.sqlite",
+	logging: false,
 	//logging: (...msgs) => console.log(`[BLOCKLIST DATABASE] => ${msgs.forEach(msg => console.log(msg))}`)
 })
 

@@ -24,6 +24,9 @@ export const CommonMessages = {
 		UnableToJoinTournament: '❌ **No te puedes inscribir en este torneo**.',
 		UnableToLeaveTournament: '❌ **No te puedes desinscribir de este torneo**.',
 		RegisteredSuccessfully: "✅ ¡Has sido **añadido** al torneo exitosamente!",
+		SkillRateExceeded: "❌ No puedes inscribirte en este torneo por que tu **RATING** excede el límite del torneo.",
+		SkillRateNotSet: "❌ Debes ingresar un **skill rating (SR / RH / RATING) válido** para ingresar a este torneo.",
+		SkillNotANumber: "❌ Debes ingresar un **RATING numérico**."
 	},
 
 	Blocklist: {

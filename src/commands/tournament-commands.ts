@@ -35,7 +35,8 @@ import {
 	SearchTournamentByNameAutocomplete,
 	TetrioRanksArray,
 	TetrioUserProfileEmbed,
-	TournamentDetailsEmbed
+	TournamentDetailsEmbed,
+	AllowedGames
 } from "../helper-functions/index.js";
 
 import { CommonMessages } from "../helper-functions/common-messages.js";
@@ -81,12 +82,12 @@ export class TournamentCommands extends Subcommand {
 					chatInputRun: "chatInputFinishTournament"
 				},
 				{
-					name:'quitar-jugador',
-					chatInputRun:'chatInputRemovePlayer'
+					name: 'quitar-jugador',
+					chatInputRun: 'chatInputRemovePlayer'
 				},
 				{
-					name:'inscribir-jugador',
-					chatInputRun:'chatInputRegisterPlayer'
+					name: 'inscribir-jugador',
+					chatInputRun: 'chatInputRegisterPlayer'
 				},
 				{
 					name: 'listar-jugadores',
@@ -203,20 +204,28 @@ export class TournamentCommands extends Subcommand {
 								})
 								.setChoices(
 									{
-										name: "TETRIO",
-										value: "TETRIO",
+										name: AllowedGames.TETRIO,
+										value: AllowedGames.TETRIO,
 									},
 									{
-										name: "Tetris Effect: Connected",
-										value: "Tetris Effect: Connected",
+										name: AllowedGames.TETRISEFFECT,
+										value: AllowedGames.TETRISEFFECT,
 									},
 									{
-										name: "Puyo Puyo Tetris",
-										value: "Puyo Puyo Tetris"
+										name: AllowedGames.PuyoTetris,
+										value: AllowedGames.PuyoTetris
 									},
 									{
-										name: "Puyo Puyo Tetris 2",
-										value: "Puyo Puyo Tetris 2"
+										name: AllowedGames.PuyoTetrisTwo,
+										value: AllowedGames.PuyoTetrisTwo
+									},
+									{
+										name: AllowedGames.Cultris,
+										value: AllowedGames.Cultris
+									},
+									{
+										name: AllowedGames.Jstris,
+										value: AllowedGames.Jstris
 									}
 								)
 								.setRequired(true)
@@ -226,8 +235,14 @@ export class TournamentCommands extends Subcommand {
 								.setDescription('La descripción de este torneo (Máximo 2000 caracteres)')
 								.setMaxLength(1000)
 						)
+						.addIntegerOption(srCap =>
+							srCap.setName('generic-cap')
+								.setDescription('El cap de SR/RH/RATE para torneos de Tetris Effect o Puyo Puyo Tetris. (ZERO = No Cap)')
+								.setMinValue(1)
+								.setMaxValue(50000)
+						)
 						.addStringOption(rankCap =>
-							rankCap.setName('rank_cap')
+							rankCap.setName('rank-cap')
 								.setDescription('El rank máximo que pueden tener los jugadores (SOLO TETRIO)')
 								.setDescriptionLocalizations({
 									"en-US": "The highest rank allowed to join this tournament (TETRIO ONLY)"
@@ -235,14 +250,14 @@ export class TournamentCommands extends Subcommand {
 								.addChoices(...TetrioRanksArray.map(rank => ({ name: rank.toUpperCase(), value: rank })))
 						)
 						.addIntegerOption(trCap =>
-							trCap.setName('tr_cap')
+							trCap.setName('tr-cap')
 								.setDescription('El cap de TR para este torneo (1 - 25000) (SOLO TETRIO)')
 								.setMinValue(1)
 								.setMaxValue(25000)
 						)
 						.addStringOption(countryLock =>
 							countryLock.setName('pais')
-								.setDescription('El pais al cual está cerrado este torneo (ej: CL, AR, US) (TETRIO ONLY)')
+								.setDescription('El pais al cual está cerrado este torneo (ej: CL, AR, US) (SOLO TETRIO)')
 								.setMaxLength(2)
 						)
 						/** TODO: Add maximum and minimum values */
@@ -300,8 +315,14 @@ export class TournamentCommands extends Subcommand {
 								.setDescription('La nueva descripción del torneo')
 								.setMaxLength(1000)
 						)
+						.addIntegerOption(srCap =>
+							srCap.setName('generic-cap')
+								.setDescription('El cap de SR/RH/RATE para torneos genéricos de Tetris que usen un ranking numérico')
+								.setMinValue(1)
+								.setMaxValue(50000)
+						)
 						.addStringOption(rankCap =>
-							rankCap.setName('rank_cap')
+							rankCap.setName('rank-cap')
 								.setDescription('El rank máximo que pueden tener los jugadores (SOLO TETRIO)')
 								.setDescriptionLocalizations({
 									"en-US": "The highest rank allowed to join this tournament (TETRIO ONLY)"
@@ -309,7 +330,7 @@ export class TournamentCommands extends Subcommand {
 								.addChoices(...TetrioRanksArray.map(rank => ({ name: rank.toUpperCase(), value: rank })))
 						)
 						.addIntegerOption(trCap =>
-							trCap.setName('tr_cap')
+							trCap.setName('tr-cap')
 								.setDescription('El cap de TR para este torneo (1 - 25000) (SOLO TETRIO)')
 								.setMinValue(1)
 								.setMaxValue(25000)
@@ -731,8 +752,9 @@ export class TournamentCommands extends Subcommand {
 			name: interaction.options.getString("nombre", true),
 			game: interaction.options.getString("juego", true) as GameName,
 			description: interaction.options.getString('descripcion', false),
-			rank_cap: interaction.options.getString('rank_cap', false),
-			tr_cap: interaction.options.getInteger('tr_cap', false),
+			rank_cap: interaction.options.getString('rank-cap', false),
+			tr_cap: interaction.options.getInteger('tr-cap', false),
+			sr_cap: interaction.options.getInteger('generic-cap', false),
 			country_lock: interaction.options.getString('pais', false),
 			max_players: interaction.options.getInteger('maximo-jugadores', false),
 		}
@@ -861,8 +883,9 @@ export class TournamentCommands extends Subcommand {
 		const options = {
 			name: interaction.options.getString('nombre', false),
 			description: interaction.options.getString('descripcion', false),
-			rankCap: interaction.options.getString('rank_cap', false),
-			trCap: interaction.options.getInteger('tr_cap', false),
+			srCap: interaction.options.getInteger('generic-cap', false),
+			rankCap: interaction.options.getString('rank-cap', false),
+			trCap: interaction.options.getInteger('tr-cap', false),
 			maxPlayers: interaction.options.getInteger('maximo-jugadores', false)
 		}
 
@@ -877,6 +900,10 @@ export class TournamentCommands extends Subcommand {
 		if (options.trCap) {
 			tournament.tr_cap = options.trCap
 			tournament.is_tr_capped = true
+		}
+
+		if (options.srCap) {
+			tournament.general_rate_cap = options.srCap
 		}
 
 		if (options.maxPlayers) tournament.max_players = options.maxPlayers
@@ -1109,7 +1136,7 @@ export class TournamentCommands extends Subcommand {
 			})]
 		})
 		// We basically need to skip all the code below if the tournament is not a TETRIO tournament
-	
+
 		const playersSorted = await OrderPlayerListBy(tournament, orderBy, filterCheckedIn)
 
 		if (['embed', 'challonge'].includes(format)) {

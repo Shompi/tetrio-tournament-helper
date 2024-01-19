@@ -5,13 +5,14 @@ import { Snowflake } from 'discord.js';
 const sequelize = new Sequelize({
 	dialect: "sqlite",
 	storage: "./databases/Guilds.sqlite",
+	//logging: false,
 	//logging: (...msgs) => console.log(`[GUILDS DATABASE] => ${msgs.forEach(msg => console.log(msg))}`)
 });
 
 export interface GuildConfigs extends Model<InferAttributes<GuildConfigs>, InferCreationAttributes<GuildConfigs>> {
 	// Some fields are optional when calling UserModel.create() or UserModel.build()
 	guild_id: Snowflake
-	
+
 	/** The channel where log messages like "User x failed to join tournament because of y" messages are going to. Must be a text based channel */
 	logging_channel: CreationOptional<Snowflake | null>
 

@@ -5,6 +5,7 @@ import { Snowflake } from 'discord.js';
 const sequelize = new Sequelize({
 	dialect: "sqlite",
 	storage: "./databases/Tournaments.sqlite",
+	//logging:false,
 	//logging: (...msgs) => console.log(`[TOURNAMENTS DATABASE] => ${msgs.forEach(msg => console.log(msg))}`)
 });
 
@@ -30,6 +31,7 @@ export type RegisteredPlayer = {
 	challongeId: string | null
 	/** This should only be present if the tournament game is TETRIO */
 	data?: TetrioPlayerRelevantData
+	generalRate?: number | null
 }
 
 export interface Tournament extends Model<InferAttributes<Tournament>, InferCreationAttributes<Tournament>> {
@@ -64,6 +66,8 @@ export interface Tournament extends Model<InferAttributes<Tournament>, InferCrea
 	*	NOTE: Participants can still check in if the tournament is marked as CLOSED for registration.
 	*/
 	checked_in: Snowflake[]
+
+	general_rate_cap: CreationOptional<number | null>
 
 	is_rank_capped: CreationOptional<boolean>;
 
@@ -169,6 +173,12 @@ const TournamentModel = sequelize.define<Tournament>('Tournament', {
 			return this.setDataValue('checked_in', JSON.stringify(val) as unknown as Snowflake[])
 		},
 		defaultValue: "[]",
+	},
+
+	general_rate_cap: {
+		type: DataTypes.NUMBER,
+		defaultValue: null,
+		allowNull: true,
 	},
 
 	is_rank_capped: {

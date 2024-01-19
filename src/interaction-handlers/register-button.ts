@@ -1,7 +1,7 @@
 import { InteractionHandler, InteractionHandlerTypes } from '@sapphire/framework';
 import { ActionRowBuilder, ButtonBuilder, ButtonInteraction, ButtonStyle, Colors, ComponentType, ModalBuilder, TextInputBuilder, TextInputStyle } from "discord.js"
 import { Tournament, TournamentStatus } from '../sequelize/Tournaments.js';
-import { PrettyMsg, GetTournamentFromGuild, GetUserDataFromTetrio, SendMessageToChannel, TetrioUserProfileEmbed, CustomLogLevels } from '../helper-functions/index.js';
+import { PrettyMsg, GetTournamentFromGuild, GetUserDataFromTetrio, SendMessageToChannel, TetrioUserProfileEmbed, CustomLogLevels, AllowedGames, RunGeneralTournamentRegistrationChecks } from '../helper-functions/index.js';
 import { TournamentDetailsEmbed } from "../helper-functions/index.js";
 import { RunTetrioTournamentRegistrationChecks } from '../helper-functions/index.js';
 import { AddPlayerToTournament } from '../helper-functions/index.js';
@@ -37,10 +37,15 @@ export class RegisterButtonHandler extends InteractionHandler {
 			})
 		}
 
-		if (tournament.game === "TETRIO") {
-			success = await HandleTetrioRegistration(interaction, tournament);
-		} else {
-			success = await HandleGeneralRegistration(interaction, tournament)
+		switch (tournament.game) {
+			case AllowedGames.TETRIO:
+				success = await HandleTetrioRegistration(interaction, tournament)
+				break;
+
+			case AllowedGames.TETRISEFFECT:
+				success = await HandleTetrisEffectRegistration(interaction, tournament)
+			default:
+				success = await HandleGeneralRegistration(interaction, tournament)
 		}
 
 		if (!success) return
@@ -98,7 +103,7 @@ async function HandleTetrioRegistration(interaction: ButtonInteraction<'cached'>
 	}
 
 	console.log("[DEBUG] Running tournament inscription checks...");
-	const check = await RunTetrioTournamentRegistrationChecks(playerdata, tournament, interaction.user.id)
+	const check = RunTetrioTournamentRegistrationChecks(playerdata, tournament, interaction.user.id)
 
 
 	if (!check.allowed) {
@@ -175,6 +180,65 @@ async function HandleGeneralRegistration(interaction: ButtonInteraction<'cached'
 	return true
 }
 
+async function HandleTetrisEffectRegistration(interaction: ButtonInteraction<'cached'>, tournament: Tournament): Promise<boolean> {
+
+	await interaction.showModal(BuildTetrisEffectModal(interaction))
+
+	const modalsubmit = await interaction.awaitModalSubmit({
+		time: 60_000 * 2,
+		filter: (modal => modal.customId.startsWith(interaction.id))
+	}).catch(() => null)
+
+	if (!modalsubmit) return false
+
+	const answers = {
+		skillrate: modalsubmit.fields.getTextInputValue('tec-skillrate') || null,
+		challongeId: modalsubmit.fields.getTextInputValue('challonge-username')
+	}
+
+	if (tournament.general_rate_cap) {
+		if (!answers.skillrate) {
+			void await interaction.reply({
+				ephemeral: true,
+				embeds: [
+					PrettyMsg({
+						description: CommonMessages.Player.SkillRateNotSet
+					})
+				]
+			})
+
+			return false
+		}
+
+		const skillrateNumber = parseInt(answers.skillrate)
+
+		if (isNaN(skillrateNumber)) {
+			void await interaction.reply({
+				ephemeral: true,
+				embeds: [
+					PrettyMsg({
+						description: CommonMessages.Player.SkillNotANumber
+					})
+				]
+			})
+		}
+
+		const check = RunGeneralTournamentRegistrationChecks(skillrateNumber, tournament)
+
+		if (!check.allowed) {
+			void await interaction.reply({
+				ephemeral: true,
+				embeds: [
+					PrettyMsg({
+						description: `No puedes inscribirte en este torneo.\nRazón: **${check.reason}**`
+					})
+				]
+			})
+		}
+	}
+
+}
+
 
 /** TODO: Implement this for general tournaments */
 function BuildGeneralRegistrationModal(interaction: ButtonInteraction<'cached'>) {
@@ -217,7 +281,7 @@ function BuildTetrisEffectModal(interaction: ButtonInteraction<'cached'>) {
 						.setCustomId('tec-skillrate')
 						.setLabel('Tu SR / RH / RATE')
 						.setPlaceholder("1234")
-						.setMaxLength(10)
+						.setMaxLength(5)
 						.setRequired(false)
 				)
 		);

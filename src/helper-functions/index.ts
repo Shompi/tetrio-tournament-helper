@@ -23,6 +23,7 @@ import { request } from "undici";
 import { BlocklistModel } from "../sequelize/Blocklist.js";
 import { GuildConfigs, GuildModel } from "../sequelize/Guilds.js";
 import { RegisteredPlayer, Tournament, TournamentModel, TournamentStatus, TournamentStatusStrings } from "../sequelize/Tournaments.js";
+import { CommonMessages } from "./common-messages.js";
 
 //#region Declaration stuff
 export type TetrioApiCacheStatus = "hit" | "miss" | "awaited"
@@ -42,7 +43,9 @@ export enum AllowedGames {
 	TETRIO = "TETRIO",
 	TETRISEFFECT = "Tetris Effect: Connected",
 	PuyoTetris = "Puyo Puyo Tetris",
-	PuyoTetrisTwo = "Puyo Puyo Tetris 2"
+	PuyoTetrisTwo = "Puyo Puyo Tetris 2",
+	Cultris = "Cultris",
+	Jstris = "JSTRIS"
 }
 
 export type GameName = typeof AllowedGames[keyof typeof AllowedGames]
@@ -277,6 +280,7 @@ export function TournamentDetailsEmbed(torneo: Tournament) {
 				`\n**Organizado por**: <@${torneo.organized_by}>` +
 				`\n**Juego**: ${torneo.game}` +
 				`\n**Descripción**: ${torneo.description ?? "N/A"}` +
+				`${torneo.general_rate_cap ? torneo.general_rate_cap : ""}` +
 				`${torneo.is_tr_capped ? `\n**TR CAP**: ${torneo.tr_cap}` : ""}` +
 				`${torneo.is_rank_capped ? `\n**RANK CAP**: ${TetrioRanksMap.get(torneo.rank_cap!)?.emoji}` : ""}` +
 				`${torneo.is_country_locked ? `\n**COUNTRY LOCK**: :flag_${torneo.country_lock?.toLowerCase()}: (${torneo.country_lock?.toUpperCase()})` : ""}` +
@@ -291,7 +295,19 @@ export function TournamentDetailsEmbed(torneo: Tournament) {
 	)
 }
 
-export async function RunTetrioTournamentRegistrationChecks(userData: TetrioPlayerRelevantData, tournament: Tournament, discordId: string): Promise<{ allowed: boolean; reason?: string; }> {
+export function RunGeneralTournamentRegistrationChecks(skillrate: number, tournament: Tournament) {
+
+	if (tournament.general_rate_cap) {
+		/** This shouldn't be null in a general rate capped tournament */
+		if (skillrate > tournament.general_rate_cap) {
+			return ({ allowed: false, reason: CommonMessages.Player.SkillRateExceeded })
+		}
+	}
+
+	return ({ allowed: true })
+}
+
+export function RunTetrioTournamentRegistrationChecks(userData: TetrioPlayerRelevantData, tournament: Tournament, discordId: string): { allowed: boolean; reason?: string; } {
 	// In here we have to check for Tetrio caps like rank, rating and country lock and if the player is already on the tournament.
 
 	/** Maybe add like a reasons: string[] in the future if the player has multiple reasons to not be accepted on the tournament.*/
@@ -349,13 +365,18 @@ export async function RunTetrioTournamentRegistrationChecks(userData: TetrioPlay
 /** 
 * This function handles the autocomplete entirely.
 *	Also, this function should only return the tournaments belonging to this guild.
+* This function DOES NOT return tournaments that are on a finished state.
 */
 export async function SearchTournamentByNameAutocomplete(interaction: Subcommand.AutocompleteInteraction<'cached'>) {
 	const focusedOption = interaction.options.getFocused()
 	const torneos = await TournamentModel.findAll({
 		where: {
 			guild_id: interaction.guildId,
-
+			[Op.and]: {
+				[Op.not]: {
+					status: TournamentStatus.FINISHED
+				}
+			}
 		}
 	})
 
@@ -364,6 +385,13 @@ export async function SearchTournamentByNameAutocomplete(interaction: Subcommand
 			focusedOption.toLowerCase()
 		)).map(torneo => ({ name: torneo.name.slice(0, 50), value: torneo.id.toString() }))
 	)
+}
+
+export async function GetTournament(id: number) {
+
+	if (isNaN(id)) return null
+
+	return await TournamentModel.findByPk(id)
 }
 
 export async function SearchTournamentById(id: number) {
@@ -422,6 +450,7 @@ export async function DeletePlayerFromTournaments(discord_id: string) {
 	return removedFrom;
 }
 
+/** This function returns every tournament from a guild, regardless of status */
 export async function GetTournamentsFromGuild(guild_id: string) {
 
 	return await TournamentModel.findAll({
@@ -645,7 +674,7 @@ export function BuildPlayerListAscii(tournament: Tournament, orderedPlayerList: 
 }
 
 export async function OrderPlayerListBy(tournament: Tournament, orderBy: OrderBy, filter_checked_in: boolean | null): Promise<RegisteredPlayer[]> {
-	
+
 	const checkedIn = Array.from(tournament.checked_in)
 
 	const PlayersArray: RegisteredPlayer[] = filter_checked_in ?
