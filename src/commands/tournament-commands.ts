@@ -40,7 +40,7 @@ import {
 } from "../helper-functions/index.js";
 
 import { CommonMessages } from "../helper-functions/common-messages.js";
-import { TournamentModel, TournamentStatus } from "../sequelize/Tournaments.js";
+import { Tournament, TournamentModel, TournamentStatus } from "../sequelize/Tournaments.js";
 import { setTimeout } from "node:timers/promises"
 
 export class TournamentCommands extends Subcommand {
@@ -758,28 +758,43 @@ export class TournamentCommands extends Subcommand {
 			country_lock: interaction.options.getString('pais', false),
 			max_players: interaction.options.getInteger('maximo-jugadores', false),
 		}
+		let createdTournament: Tournament | null = null
 
 		try {
-
-			const createdTournament = await TournamentModel.create({
-				organized_by: interaction.user.id,
-				guild_id: interaction.guildId,
-				name: options.name,
-				game: options.game,
-				description: options.description,
-				is_rank_capped: !!options.rank_cap,
-				rank_cap: options.rank_cap,
-				is_country_locked: !!options.country_lock,
-				country_lock: options.country_lock,
-				is_tr_capped: !!options.tr_cap,
-				tr_cap: options.tr_cap,
-				max_players: options.max_players,
-				players: [],
-				checked_in: [],
-				// We create this tournament open by default
-				status: TournamentStatus.OPEN,
-				add_roles: GetRolesToAddArray(interaction)
-			})
+			if (options.game === AllowedGames.TETRIO) {
+				createdTournament = await TournamentModel.create({
+					organized_by: interaction.user.id,
+					guild_id: interaction.guildId,
+					name: options.name,
+					game: options.game,
+					description: options.description,
+					is_rank_capped: !!options.rank_cap,
+					rank_cap: options.rank_cap,
+					is_country_locked: !!options.country_lock,
+					country_lock: options.country_lock,
+					is_tr_capped: !!options.tr_cap,
+					tr_cap: options.tr_cap,
+					max_players: options.max_players,
+					players: [],
+					checked_in: [],
+					// We create this tournament open by default
+					status: TournamentStatus.OPEN,
+					add_roles: GetRolesToAddArray(interaction)
+				})
+			}
+			else {
+				createdTournament = await TournamentModel.create({
+					organized_by: interaction.user.id,
+					guild_id: interaction.guildId,
+					name: options.name,
+					game: options.game,
+					description: options.description,
+					players: [],
+					checked_in: [],
+					add_roles: [],
+					general_rate_cap: options.sr_cap
+				})
+			}
 
 			return void await interaction.reply({ content: "El torneo ha sido creado exitosamente.", embeds: [TournamentDetailsEmbed(createdTournament)] })
 		} catch (e) {
