@@ -524,7 +524,7 @@ export function BuildPlayerListTetrioEmbed(tournament: Tournament, players?: Reg
 	if (!players) players = Array.from(tournament.players)
 
 	const table = new AsciiTable3()
-		.setHeading("POS", "USERNAME", "RANK", "RATING")
+		.setHeading("SEED", "USERNAME", "RANK", "RATING")
 		.setAlignCenter(1)
 		.setAlignCenter(2)
 		.setAlignCenter(3);
@@ -551,7 +551,7 @@ export function BuildPlayerListGeneralEmbed(tournament: Tournament, players?: Re
 	if (!players) players = OrderPlayerListBy(tournament, "general_rate", false)
 
 	const table = new AsciiTable3()
-		.setHeading("IDX", "USERNAME", "RATING")
+		.setHeading("SEED", "USERNAME", "RATING")
 		.setAlignCenter(1)
 		.setAlignCenter(2)
 		.setAlignCenter(3);
@@ -646,7 +646,7 @@ export async function BuildPlayerListGeneral(tournament: Tournament, playerList:
 	const table = new AsciiTable3(tournament.name)
 		.setTitleAlignCenter()
 		.setHeadingAlignCenter()
-		.setHeading("POS", "DISCORD ID", "USERNAME", "CHALLONGE")
+		.setHeading("SEED", "DISCORD ID", "USERNAME", "CHALLONGE")
 		.setAlignCenter(1)
 		.setAlignCenter(2)
 		.setAlignCenter(3)
@@ -672,7 +672,7 @@ export function BuildPlayerListAscii(tournament: Tournament, orderedPlayerList: 
 	const table = new AsciiTable3(tournament.name)
 		.setTitleAlignCenter()
 		.setHeadingAlignCenter()
-		.setHeading("POS", "DISCORD ID", "USERNAME", "CHALLONGE", "TETRIO USERNAME", "PAIS", "RANK", "TR", "APM", "PPS")
+		.setHeading("SEED", "DISCORD ID", "USERNAME", "CHALLONGE", "TETRIO USERNAME", "PAIS", "RANK", "TR", "APM", "PPS")
 		.setAlignCenter(1)
 		.setAlignCenter(2)
 		.setAlignCenter(3)
