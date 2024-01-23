@@ -41,11 +41,18 @@ export class RegisterButtonHandler extends InteractionHandler {
 			case AllowedGames.TETRIO:
 				success = await HandleTetrioRegistration(interaction, tournament)
 				break;
-
 			case AllowedGames.TETRISEFFECT:
 				success = await HandleTetrisEffectRegistration(interaction, tournament)
-			default:
+				break;
+
+			case AllowedGames.PuyoTetris:
+			case AllowedGames.PuyoTetrisTwo:
+			case AllowedGames.Cultris:
+			case AllowedGames.Jstris:
 				success = await HandleGeneralRegistration(interaction, tournament)
+				break;
+			default:
+				return void await interaction.reply({ ephemeral: true, content: 'Error: Game not supported yet.' })
 		}
 
 		if (!success) return
@@ -223,17 +230,20 @@ async function HandleTetrisEffectRegistration(interaction: ButtonInteraction<'ca
 			return false
 		}
 
-		const check = RunGeneralTournamentRegistrationChecks(answers.skillrate, tournament)
+		const check = RunGeneralTournamentRegistrationChecks(answers.skillrate, interaction.user.id, tournament)
 
 		if (!check.allowed) {
-			void await interaction.reply({
+			void await modalsubmit.reply({
 				ephemeral: true,
 				embeds: [
 					PrettyMsg({
-						description: `No puedes inscribirte en este torneo.\nRazón: **${check.reason}**`
+						description: `❌ No puedes inscribirte en este torneo.\n**Razón**: ${check.reason}`,
+						color: Colors.Red
 					})
 				]
 			})
+
+			return false
 		}
 	}
 
@@ -242,6 +252,16 @@ async function HandleTetrisEffectRegistration(interaction: ButtonInteraction<'ca
 		discordId: interaction.user.id,
 		dUsername: interaction.user.username,
 		generalRate: answers.skillrate,
+	})
+
+	await modalsubmit.reply({
+		ephemeral: true,
+		embeds: [
+			PrettyMsg({
+				description: CommonMessages.Player.RegisteredSuccessfully,
+				color: Colors.Green
+			})
+		]
 	})
 
 	return true

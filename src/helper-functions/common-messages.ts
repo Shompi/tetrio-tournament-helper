@@ -20,6 +20,7 @@ export const CommonMessages = {
 	Player: {
 		NotRegistered: '⚠️ No estás inscrito/a en este torneo.',
 		AlreadyCheckedIn: '⚠️ Ya estás en la lista de Checked-in.',
+		AlreadyRegistered: `⚠️ Ya estás inscrito en este torneo`,
 		CheckInNotAllowed: '⚠️ **No puedes hacer Check-in** en este torneo.',
 		UnableToJoinTournament: '❌ **No te puedes inscribir en este torneo**.',
 		UnableToLeaveTournament: '❌ **No te puedes desinscribir de este torneo**.',

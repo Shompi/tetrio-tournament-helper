@@ -280,7 +280,7 @@ export function TournamentDetailsEmbed(torneo: Tournament) {
 				`\n**Organizado por**: <@${torneo.organized_by}>` +
 				`\n**Juego**: ${torneo.game}` +
 				`\n**Descripción**: ${torneo.description ?? "N/A"}` +
-				`${torneo.general_rate_cap ? torneo.general_rate_cap : ""}` +
+				`${torneo.general_rate_cap ? `**SR/RH/RATING Cap**: ${torneo.general_rate_cap}` : ""}` +
 				`${torneo.is_tr_capped ? `\n**TR CAP**: ${torneo.tr_cap}` : ""}` +
 				`${torneo.is_rank_capped ? `\n**RANK CAP**: ${TetrioRanksMap.get(torneo.rank_cap!)?.emoji}` : ""}` +
 				`${torneo.is_country_locked ? `\n**COUNTRY LOCK**: :flag_${torneo.country_lock?.toLowerCase()}: (${torneo.country_lock?.toUpperCase()})` : ""}` +
@@ -295,7 +295,11 @@ export function TournamentDetailsEmbed(torneo: Tournament) {
 	)
 }
 
-export function RunGeneralTournamentRegistrationChecks(skillrate: number, tournament: Tournament) {
+export function RunGeneralTournamentRegistrationChecks(skillrate: number, userid: string, tournament: Tournament) {
+
+	if (tournament.players.some(player => player.discordId === userid)) {
+		return ({allowed: false, reason: CommonMessages.Player.AlreadyRegistered})
+	}
 
 	if (tournament.general_rate_cap) {
 		/** This shouldn't be null in a general rate capped tournament */

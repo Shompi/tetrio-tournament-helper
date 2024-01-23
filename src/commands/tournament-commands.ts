@@ -117,19 +117,19 @@ export class TournamentCommands extends Subcommand {
 						.setDescription("Abre las inscripciones para un torneo")
 						.addStringOption(id =>
 							id.setName('nombre-id')
-								.setDescription('La id numérica o el nombre del torneo que quieres abrir las inscripciones')
+								.setDescription('La id numérica o el nombre del torneo')
 								.setRequired(true)
 								.setAutocomplete(true)
 						)
 						.addChannelOption(channel =>
 							channel.setName('canal')
-								.setDescription("Canal en el cual los usuarios podran iniciar el proceso de registro")
+								.setDescription("Canal dondé ira el mensaje de inscripción")
 								.setRequired(true)
 								.addChannelTypes(ChannelType.GuildText)
 						)
 						.addStringOption(message =>
 							message.setName('mensaje')
-								.setDescription('Mensaje customizado para enviar junto con este mensaje')
+								.setDescription('Mensaje personalizado')
 								.setMaxLength(1000)
 						)
 						.addAttachmentOption(banner =>
@@ -175,33 +175,15 @@ export class TournamentCommands extends Subcommand {
 				)
 				.addSubcommand(create =>
 					create.setName("crear")
-						.setNameLocalizations({
-							"en-US": "create"
-						})
 						.setDescription("Abre las inscripciones para un torneo")
-						.setDescriptionLocalizations({
-							"en-US": "Create a new tournament"
-						})
 						.addStringOption(name =>
 							name.setName('nombre')
-								.setNameLocalizations({
-									"en-US": "name",
-								})
 								.setDescription('Nombre del torneo')
-								.setDescriptionLocalizations({
-									"en-US": "The name of the tournament"
-								})
 								.setRequired(true)
 						)
 						.addStringOption(game =>
 							game.setName('juego')
-								.setNameLocalizations({
-									"en-US": "game"
-								})
 								.setDescription("El juego que se usará en este torneo")
-								.setDescriptionLocalizations({
-									"en-US": "The game that will be played in this tournament"
-								})
 								.setChoices(
 									{
 										name: AllowedGames.TETRIO,
@@ -232,58 +214,49 @@ export class TournamentCommands extends Subcommand {
 						)
 						.addStringOption(description =>
 							description.setName('descripcion')
-								.setDescription('La descripción de este torneo (Máximo 2000 caracteres)')
+								.setDescription('La descripción de este torneo')
 								.setMaxLength(1000)
 						)
 						.addIntegerOption(srCap =>
 							srCap.setName('generic-cap')
-								.setDescription('El cap de SR/RH/RATE para torneos de Tetris Effect o Puyo Puyo Tetris. (ZERO = No Cap)')
+								.setDescription('El cap de SR/RH/RATE para torneos genéricos')
 								.setMinValue(1)
 								.setMaxValue(50000)
 						)
 						.addStringOption(rankCap =>
 							rankCap.setName('rank-cap')
-								.setDescription('El rank máximo que pueden tener los jugadores (SOLO TETRIO)')
-								.setDescriptionLocalizations({
-									"en-US": "The highest rank allowed to join this tournament (TETRIO ONLY)"
-								})
+								.setDescription('El rank máximo que pueden tener los jugadores')
 								.addChoices(...TetrioRanksArray.map(rank => ({ name: rank.toUpperCase(), value: rank })))
 						)
 						.addIntegerOption(trCap =>
 							trCap.setName('tr-cap')
-								.setDescription('El cap de TR para este torneo (1 - 25000) (SOLO TETRIO)')
+								.setDescription('El cap de TR para este torneo (1 - 25000)')
 								.setMinValue(1)
 								.setMaxValue(25000)
 						)
 						.addStringOption(countryLock =>
 							countryLock.setName('pais')
-								.setDescription('El pais al cual está cerrado este torneo (ej: CL, AR, US) (SOLO TETRIO)')
+								.setDescription('El pais al cual está cerrado este torneo (ej: CL, AR, US)')
 								.setMaxLength(2)
 						)
 						/** TODO: Add maximum and minimum values */
 						.addIntegerOption(maxPlayers =>
 							maxPlayers.setName('maximo-jugadores')
-								.setNameLocalizations({
-									"en-US": 'max-players'
-								})
 								.setDescription('Máximo de jugadores que pueden inscribirse en este torneo')
-								.setDescriptionLocalizations({
-									"en-US": "Maximum number of players that can join this tournament"
-								})
 								.setMinValue(8)
 								.setMaxValue(256)
 						)
 						.addRoleOption(role =>
 							role.setName('role-1')
-								.setDescription('Rol que quieres añadir a los miembros que se unan a este torneo')
+								.setDescription('Rol a asignar con la inscripción')
 						)
 						.addRoleOption(role =>
 							role.setName('role-2')
-								.setDescription('Rol que quieres añadir a los miembros que se unan a este torneo')
+								.setDescription('Rol a asignar con la inscripción')
 						)
 						.addRoleOption(role =>
 							role.setName('role-3')
-								.setDescription('Rol que quieres añadir a los miembros que se unan a este torneo')
+								.setDescription('Rol a asignar con la inscripción')
 						)
 				)
 				.addSubcommand(clearPlayers =>
@@ -298,64 +271,56 @@ export class TournamentCommands extends Subcommand {
 				)
 				.addSubcommand(editTournament =>
 					editTournament.setName('editar')
-						.setDescription('Edita la información de un torneo que ya está creado.')
+						.setDescription('Edita la información de un torneo')
 						.addStringOption(name =>
 							name.setName('nombre-id')
-								.setDescription('El nombre o la Id numérica del torneo')
+								.setDescription('Nombre o la Id numérica del torneo')
 								.setAutocomplete(true)
 								.setMaxLength(255)
+								.setRequired(true)
 						)
 						.addStringOption(name =>
 							name.setName('nombre')
-								.setDescription('El nuevo nombre del torneo')
+								.setDescription('Nombre del torneo')
 								.setMaxLength(255)
 						)
 						.addStringOption(description =>
 							description.setName('descripcion')
-								.setDescription('La nueva descripción del torneo')
+								.setDescription('Descripción del torneo')
 								.setMaxLength(1000)
 						)
 						.addIntegerOption(srCap =>
 							srCap.setName('generic-cap')
-								.setDescription('El cap de SR/RH/RATE para torneos genéricos de Tetris que usen un ranking numérico')
+								.setDescription('El cap de SR/RH/RATE para torneos genéricos')
 								.setMinValue(1)
 								.setMaxValue(50000)
 						)
 						.addStringOption(rankCap =>
 							rankCap.setName('rank-cap')
-								.setDescription('El rank máximo que pueden tener los jugadores (SOLO TETRIO)')
-								.setDescriptionLocalizations({
-									"en-US": "The highest rank allowed to join this tournament (TETRIO ONLY)"
-								})
+								.setDescription('El rank máximo que pueden tener los jugadores')
 								.addChoices(...TetrioRanksArray.map(rank => ({ name: rank.toUpperCase(), value: rank })))
 						)
 						.addIntegerOption(trCap =>
 							trCap.setName('tr-cap')
-								.setDescription('El cap de TR para este torneo (1 - 25000) (SOLO TETRIO)')
+								.setDescription('El cap de TR para este torneo (1 - 25000)')
 								.setMinValue(1)
 								.setMaxValue(25000)
 						)
 						.addIntegerOption(maxPlayers =>
 							maxPlayers.setName('maximo-jugadores')
-								.setNameLocalizations({
-									"en-US": 'max-players'
-								})
 								.setDescription('Máximo de jugadores que pueden inscribirse en este torneo')
-								.setDescriptionLocalizations({
-									"en-US": "Maximum number of players that can join this tournament"
-								})
 						)
 						.addRoleOption(role =>
 							role.setName('role-1')
-								.setDescription('Rol que quieres añadir a los miembros que se unan a este torneo')
+								.setDescription('Rol para añadir')
 						)
 						.addRoleOption(role =>
 							role.setName('role-2')
-								.setDescription('Rol que quieres añadir a los miembros que se unan a este torneo')
+								.setDescription('Rol para añadir')
 						)
 						.addRoleOption(role =>
 							role.setName('role-3')
-								.setDescription('Rol que quieres añadir a los miembros que se unan a este torneo')
+								.setDescription('Rol para añadir')
 						)
 				)
 				.addSubcommand(finishTournament =>
@@ -374,7 +339,7 @@ export class TournamentCommands extends Subcommand {
 				)
 				.addSubcommand(register =>
 					register.setName('inscribir-jugador')
-						.setDescription('Forza la inscripción de un jugador en un torneo (TETRIO)')
+						.setDescription('Inscribe a un jugador de forma manual')
 						.addStringOption(nameOrId =>
 							nameOrId.setName('nombre-id')
 								.setDescription('ID del torneo (Puedes usar las opciones del autocompletado)')
@@ -391,7 +356,6 @@ export class TournamentCommands extends Subcommand {
 							tetrioId.setName('tetrio-id')
 								.setDescription('La id o username de un jugador de TETRIO')
 								.setMaxLength(100)
-								.setRequired(true)
 						)
 						.addStringOption(challongeId =>
 							challongeId.setName('challonge-id')
@@ -798,6 +762,7 @@ export class TournamentCommands extends Subcommand {
 
 			return void await interaction.reply({ content: "El torneo ha sido creado exitosamente.", embeds: [TournamentDetailsEmbed(createdTournament)] })
 		} catch (e) {
+			console.error("[ERROR ON TOURNAMENT CREATION] =>", e)
 			return void await interaction.reply({ content: 'Ocurrió un error intentando crear este torneo.', ephemeral: true })
 		}
 
@@ -907,6 +872,12 @@ export class TournamentCommands extends Subcommand {
 		if (options.name) tournament.name = options.name
 		if (options.description) tournament.description = options.description
 
+		// If this is not a tetrio tournament these values shouldn't be editable
+		if (tournament.game !== AllowedGames.TETRIO) {
+			options.rankCap = null
+			options.trCap = null
+		}
+
 		if (options.rankCap) {
 			tournament.rank_cap = options.rankCap
 			tournament.is_rank_capped = true
@@ -1015,7 +986,7 @@ export class TournamentCommands extends Subcommand {
 		// Your code goes here
 		const options = {
 			user: interaction.options.getUser('discord-id', true),
-			tetrioId: interaction.options.getString('tetrio-id', true),
+			tetrioId: interaction.options.getString('tetrio-id', false),
 			idTorneo: +interaction.options.getString('nombre-id', true),
 			challongeId: interaction.options.getString('challonge-id', false),
 		}
@@ -1030,74 +1001,82 @@ export class TournamentCommands extends Subcommand {
 
 		await interaction.deferReply({ ephemeral: true })
 
-		// Check if the user exists on tetrio
-		const TetrioUserData = await GetUserDataFromTetrio(options.tetrioId)
-
-		if (!TetrioUserData)
-			return void await interaction.editReply({
-				content: `El usuario ${options.tetrioId} no es un usuario válido en TETRIO.`,
+		if (tournament.game === AllowedGames.TETRIO) {
+			if (options.tetrioId === null) return void await interaction.editReply({
+				content: `❌ Debes ingresar el nombre de usuario de tetrio de este jugador para poder inscribirlo en este torneo.`
 			})
 
-		const userdetails = TetrioUserProfileEmbed(TetrioUserData)
+			// Check if the user exists on tetrio
+			const TetrioUserData = await GetUserDataFromTetrio(options.tetrioId)
 
-		const userSecondaryDetails = new EmbedBuilder()
-			.setTitle('Otros Datos')
-			.setDescription(
-				`**Discord id**: ${options.user} (${options.user.id})` +
-				`\n**Discord Username**: ${options.user.username}` +
-				`\n**Torneo**: ${tournament.name}`)
-			.setThumbnail(options.user.avatarURL({ size: 512 }))
-			.setColor(Colors.Blue)
+			if (!TetrioUserData)
+				return void await interaction.editReply({
+					content: `El usuario ${options.tetrioId} no es un usuario válido en TETRIO.`,
+				})
 
-		const acceptButton = new ButtonBuilder()
-			.setCustomId('accept')
-			.setLabel('Confirmar')
-			.setStyle(ButtonStyle.Success)
+			const userdetails = TetrioUserProfileEmbed(TetrioUserData)
 
-		const cancelButton = new ButtonBuilder()
-			.setCustomId('cancel')
-			.setLabel('Cancelar')
-			.setStyle(ButtonStyle.Secondary)
+			const userSecondaryDetails = new EmbedBuilder()
+				.setTitle('Otros Datos')
+				.setDescription(
+					`**Discord id**: ${options.user} (${options.user.id})` +
+					`\n**Discord Username**: ${options.user.username}` +
+					`\n**Torneo**: ${tournament.name}`)
+				.setThumbnail(options.user.avatarURL({ size: 512 }))
+				.setColor(Colors.Blue)
 
-		const buttonRow = new ActionRowBuilder<ButtonBuilder>()
-			.setComponents(acceptButton, cancelButton)
+			const acceptButton = new ButtonBuilder()
+				.setCustomId('accept')
+				.setLabel('Confirmar')
+				.setStyle(ButtonStyle.Success)
 
-		const initialReply = await interaction.editReply({
-			content: '¿Es esta información correcta?',
-			embeds: [userdetails, userSecondaryDetails],
-			components: [buttonRow]
-		})
+			const cancelButton = new ButtonBuilder()
+				.setCustomId('cancel')
+				.setLabel('Cancelar')
+				.setStyle(ButtonStyle.Secondary)
 
-		const selectedOption = await initialReply.awaitMessageComponent({
-			componentType: ComponentType.Button,
-			time: 60_000,
-			filter: (btn => ["accept", "cancel"].includes(btn.customId))
-		}).catch(() => null)
+			const buttonRow = new ActionRowBuilder<ButtonBuilder>()
+				.setComponents(acceptButton, cancelButton)
 
-		if (!selectedOption) return void await interaction.editReply({ content: 'La interacción ha expirado.', components: [], embeds: [] })
-
-		if (selectedOption.customId === 'cancel')
-			return void await interaction.editReply({
-				content: 'La interacción ha sido cancelada.',
-				components: [],
-				embeds: []
+			const initialReply = await interaction.editReply({
+				content: '¿Es esta información correcta?',
+				embeds: [userdetails, userSecondaryDetails],
+				components: [buttonRow]
 			})
 
-		// await AddTetrioPlayerToDatabase({
-		// 	challongeId: options.challongeId,
-		// 	discordId: options.user.id,
-		// 	tetrioId: options.tetrioId
-		// }, TetrioUserData)
+			const selectedOption = await initialReply.awaitMessageComponent({
+				componentType: ComponentType.Button,
+				time: 60_000,
+				filter: (btn => ["accept", "cancel"].includes(btn.customId))
+			}).catch(() => null)
 
-		await AddPlayerToTournament(tournament, {
-			challongeId: options.challongeId,
-			discordId: options.user.id,
-			dUsername: options.user.username,
-			data: TetrioUserData
-		})
+			if (!selectedOption) return void await interaction.editReply({ content: 'La interacción ha expirado.', components: [], embeds: [] })
 
-		return void await selectedOption.update({
-			content: `✅ El jugador ${options.tetrioId.toUpperCase()} (${options.user.username} - ${options.user.id}) ha sido agregado a la lista de jugadores del torneo **${tournament.name}** exitosamente!`,
+			if (selectedOption.customId === 'cancel')
+				return void await interaction.editReply({
+					content: 'La interacción ha sido cancelada.',
+					components: [],
+					embeds: []
+				})
+
+			await AddPlayerToTournament(tournament, {
+				challongeId: options.challongeId,
+				discordId: options.user.id,
+				dUsername: options.user.username,
+				data: TetrioUserData
+			})
+
+		} else {
+
+			await AddPlayerToTournament(tournament, {
+				challongeId: options.challongeId,
+				discordId: options.user.id,
+				dUsername: options.user.username
+			})
+		}
+
+		return void await interaction.editReply({
+			content: `✅ El jugador **${options.user.username}**  (${options.user.id}) ha sido agregado a la lista de jugadores del torneo **${tournament.name}** exitosamente!`,
 			components: [],
 			embeds: [],
 		})

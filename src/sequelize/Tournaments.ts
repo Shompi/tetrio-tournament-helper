@@ -6,7 +6,7 @@ const sequelize = new Sequelize({
 	dialect: "sqlite",
 	storage: "./databases/Tournaments.sqlite",
 	//logging:false,
-	//logging: (...msgs) => console.log(`[TOURNAMENTS DATABASE] => ${msgs.forEach(msg => console.log(msg))}`)
+	logging: (...msgs) => console.log(`[TOURNAMENTS DATABASE] => ${msgs.forEach(msg => console.log(msg))}`)
 });
 
 export const TournamentStatusStrings = [
