@@ -5,8 +5,8 @@ import { Snowflake } from 'discord.js';
 const sequelize = new Sequelize({
 	dialect: "sqlite",
 	storage: "./databases/Tournaments.sqlite",
-	//logging:false,
-	logging: (...msgs) => console.log(`[TOURNAMENTS DATABASE] => ${msgs.forEach(msg => console.log(msg))}`)
+	// logging:false,
+	// logging: (...msgs) => console.log(`[TOURNAMENTS DATABASE] => ${msgs.forEach(msg => console.log(msg))}`)
 });
 
 export const TournamentStatusStrings = [
@@ -270,7 +270,7 @@ const TournamentModel = sequelize.define<Tournament>('Tournament', {
 });
 
 console.log("[DEBUG] Sincronizando tablas en sequelize...");
-await TournamentModel.sync();
+await TournamentModel.sync({alter: true});
 console.log("[DEBUG] La sincronización ha terminado!");
 
 export { TournamentModel }
