@@ -521,9 +521,18 @@ export class TournamentCommands extends Subcommand {
 			.setStyle(ButtonStyle.Secondary)
 			.setEmoji('⬅️')
 
+		const PlayerListButton = new ButtonBuilder()
+			.setCustomId(`t-playerlist-${options.idTorneo}`)
+			.setLabel('Lista de Jugadores')
+			.setEmoji('👤')
+			.setStyle(ButtonStyle.Secondary)
+
 		// We have to add the button to an action row
-		const ActionRow = new ActionRowBuilder<ButtonBuilder>()
+		const ActionRowPrimary = new ActionRowBuilder<ButtonBuilder>()
 			.setComponents(RegisterButton, UnregisterButton)
+
+		const ActionRowSecondary = new ActionRowBuilder<ButtonBuilder>()
+			.setComponents(PlayerListButton)
 
 
 		// Send the message to the selected channel
@@ -534,7 +543,7 @@ export class TournamentCommands extends Subcommand {
 			const registrationMessage = await channel.send({
 				files: [],
 				content: interaction.options.getString('mensaje', false) ?? CommonMessages.Tournament.CheckinStartedDefault.replace('{userid}', interaction.user.toString()).replace('{nombre_torneo}', tournament.name),
-				components: [ActionRow],
+				components: [ActionRowPrimary, ActionRowSecondary],
 				embeds: [TournamentDetailsEmbed(tournament)]
 			})
 

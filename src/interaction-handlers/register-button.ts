@@ -296,22 +296,22 @@ function BuildTetrisEffectModal(interaction: ButtonInteraction<'cached'>) {
 				.setComponents(
 					new TextInputBuilder()
 						.setStyle(TextInputStyle.Short)
+						.setCustomId('tec-skillrate')
+						.setLabel('Tu SR / RH / RATE')
+						.setPlaceholder("1234")
+						.setMaxLength(5)
+						.setRequired(true)
+				),
+			new ActionRowBuilder<TextInputBuilder>()
+				.setComponents(
+					new TextInputBuilder()
+						.setStyle(TextInputStyle.Short)
 						.setCustomId('challonge-username')
 						.setLabel("Tu username de Challonge o Email")
 						.setPlaceholder("...")
 						.setMaxLength(50)
 						.setRequired(false)
 				),
-			new ActionRowBuilder<TextInputBuilder>()
-				.setComponents(
-					new TextInputBuilder()
-						.setStyle(TextInputStyle.Short)
-						.setCustomId('tec-skillrate')
-						.setLabel('Tu SR / RH / RATE')
-						.setPlaceholder("1234")
-						.setMaxLength(5)
-						.setRequired(false)
-				)
 		);
 }
 

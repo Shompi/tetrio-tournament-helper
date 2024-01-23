@@ -298,7 +298,7 @@ export function TournamentDetailsEmbed(torneo: Tournament) {
 export function RunGeneralTournamentRegistrationChecks(skillrate: number, userid: string, tournament: Tournament) {
 
 	if (tournament.players.some(player => player.discordId === userid)) {
-		return ({allowed: false, reason: CommonMessages.Player.AlreadyRegistered})
+		return ({ allowed: false, reason: CommonMessages.Player.AlreadyRegistered })
 	}
 
 	if (tournament.general_rate_cap) {
@@ -518,8 +518,10 @@ export function IsTournamentEditable(tournament: Tournament) {
 	return tournament.status !== TournamentStatus.FINISHED
 }
 
-/** Builds a player list in an embed for better display on the Discord App */
-export function BuildPlayerListEmbed(tournament: Tournament, players: RegisteredPlayer[]) {
+/** Builds a player list in an embed for better display on the Discord App (FOR TETRIO) */
+export function BuildPlayerListEmbed(tournament: Tournament, players?: RegisteredPlayer[]) {
+
+	if (!players) players = Array.from(tournament.players)
 
 	const table = new AsciiTable3()
 		.setHeading("POS", "USERNAME", "RANK", "RATING")
