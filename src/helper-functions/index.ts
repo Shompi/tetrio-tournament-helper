@@ -28,7 +28,7 @@ import { CommonMessages } from "./common-messages.js";
 //#region Declaration stuff
 export type TetrioApiCacheStatus = "hit" | "miss" | "awaited"
 export type TetrioUserRole = "anon" | "user" | "bot" | "halfmod" | "mod" | "admin" | "sysop" | "banned"
-export type OrderBy = "default" | "apm" | "pps" | "rating" | "rank" | "vs"
+export type OrderBy = "default" | "apm" | "pps" | "rating" | "rank" | "vs" | "general_rate"
 export type TetrioPlayerRelevantData = Pick<TetrioApiUser, "bio" | "league" | "country" | "username" | "avatar_revision" | "banner_revision" | "badstanding" | "_id">
 
 export enum CustomLogLevels {
@@ -519,7 +519,7 @@ export function IsTournamentEditable(tournament: Tournament) {
 }
 
 /** Builds a player list in an embed for better display on the Discord App (FOR TETRIO) */
-export function BuildPlayerListEmbed(tournament: Tournament, players?: RegisteredPlayer[]) {
+export function BuildPlayerListTetrioEmbed(tournament: Tournament, players?: RegisteredPlayer[]) {
 
 	if (!players) players = Array.from(tournament.players)
 
@@ -544,6 +544,34 @@ export function BuildPlayerListEmbed(tournament: Tournament, players?: Registere
 			)
 		);
 }
+
+/** Builds a general player list table with generic SR / RATING */
+export function BuildPlayerListGeneralEmbed(tournament: Tournament, players?: RegisteredPlayer[]): EmbedBuilder {
+
+	if (!players) players = OrderPlayerListBy(tournament, "general_rate", false)
+
+	const table = new AsciiTable3()
+		.setHeading("IDX", "USERNAME", "RATING")
+		.setAlignCenter(1)
+		.setAlignCenter(2)
+		.setAlignCenter(3);
+
+	let pos = 1;
+
+	for (const player of players) {
+		table.addRow(pos, player.dUsername, player.generalRate);
+		pos++;
+	}
+
+	return new EmbedBuilder()
+		.setTitle(tournament.name)
+		.setDescription(
+			codeBlock(
+				table.toString()
+			)
+		);
+}
+
 
 /** Exports an embed with players information in a challonge friendly display */
 export function BuildPlayerListChallonge(tournament: Tournament, players: RegisteredPlayer[]) {
@@ -679,7 +707,7 @@ export function BuildPlayerListAscii(tournament: Tournament, orderedPlayerList: 
 		.setDescription(`Tabla de jugadores del torneo ${tournament.name}`);
 }
 
-export async function OrderPlayerListBy(tournament: Tournament, orderBy: OrderBy, filter_checked_in: boolean | null): Promise<RegisteredPlayer[]> {
+export function OrderPlayerListBy(tournament: Tournament, orderBy: OrderBy, filter_checked_in: boolean | null): RegisteredPlayer[] {
 
 	const checkedIn = Array.from(tournament.checked_in)
 
@@ -710,6 +738,10 @@ export async function OrderPlayerListBy(tournament: Tournament, orderBy: OrderBy
 
 				return valB - valA;
 			});
+		}
+
+		if (orderBy === "general_rate") {
+			PlayersArray.sort((playerA, playerB) => playerB.generalRate! - playerA.generalRate!)
 		}
 	}
 

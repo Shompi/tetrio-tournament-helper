@@ -19,7 +19,7 @@ import {
 	AddPlayerToTournament,
 	BuildPlayerListAscii,
 	BuildPlayerListCSV,
-	BuildPlayerListEmbed,
+	BuildPlayerListTetrioEmbed,
 	BuildPlayerListJSON,
 	BuildPlayerListChallonge,
 	ClearTournamentPlayerList,
@@ -1142,12 +1142,12 @@ export class TournamentCommands extends Subcommand {
 		})
 		// We basically need to skip all the code below if the tournament is not a TETRIO tournament
 
-		const playersSorted = await OrderPlayerListBy(tournament, orderBy, filterCheckedIn)
+		const playersSorted = OrderPlayerListBy(tournament, orderBy, filterCheckedIn)
 
 		if (['embed', 'challonge'].includes(format)) {
 
 			const players = format === 'embed' ?
-				BuildPlayerListEmbed(tournament, playersSorted) :
+				BuildPlayerListTetrioEmbed(tournament, playersSorted) :
 				BuildPlayerListChallonge(tournament, playersSorted)
 
 			return void await interaction.reply({
