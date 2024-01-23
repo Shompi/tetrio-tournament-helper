@@ -876,6 +876,8 @@ export class TournamentCommands extends Subcommand {
 		if (tournament.game !== AllowedGames.TETRIO) {
 			options.rankCap = null
 			options.trCap = null
+		} else {
+			options.srCap = null
 		}
 
 		if (options.rankCap) {
