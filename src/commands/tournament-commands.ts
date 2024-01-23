@@ -114,76 +114,76 @@ export class TournamentCommands extends Subcommand {
 				.setDescription('Comandos especificos de torneos')
 				.addSubcommand(beginRegistration =>
 					beginRegistration.setName("abrir-inscripciones")
-						.setDescription("Abre las inscripciones para un torneo")
+						.setDescription("Abre las inscripciones para un torneo.")
 						.addStringOption(id =>
 							id.setName('nombre-id')
-								.setDescription('La id numérica o el nombre del torneo')
+								.setDescription('La ID numérica o el nombre del torneo.')
 								.setRequired(true)
 								.setAutocomplete(true)
 						)
 						.addChannelOption(channel =>
 							channel.setName('canal')
-								.setDescription("Canal dondé ira el mensaje de inscripción")
+								.setDescription("Canal donde irá el mensaje de inscripción.")
 								.setRequired(true)
 								.addChannelTypes(ChannelType.GuildText)
 						)
 						.addStringOption(message =>
 							message.setName('mensaje')
-								.setDescription('Mensaje personalizado')
+								.setDescription('Mensaje personalizado.')
 								.setMaxLength(1000)
 						)
 						.addAttachmentOption(banner =>
 							banner.setName('tournament-banner')
-								.setDescription('Imagen o banner del torneo')
+								.setDescription('Imagen o banner del torneo.')
 						)
 				)
 				.addSubcommand(closeRegistration =>
 					closeRegistration.setName("cerrar-inscripciones")
-						.setDescription('Cierra las inscripciones de un torneo')
+						.setDescription('Cierra las inscripciones de un torneo.')
 						.addStringOption(idTorneo =>
 							idTorneo.setName('nombre-id')
-								.setDescription('Nombre o id del torneo')
+								.setDescription('Nombre o ID del torneo.')
 								.setAutocomplete(true)
 								.setMaxLength(255)
 						)
 				)
 				.addSubcommand(beginCheckin =>
 					beginCheckin.setName("comenzar-checkin")
-						.setDescription("Abre el proceso de Check-in para un torneo")
+						.setDescription("Abre el proceso de check-in para un torneo.")
 						.addStringOption(tournamentId =>
 							tournamentId.setName('nombre-id')
-								.setDescription('La id del torneo o una de las opciones del autocompletado')
+								.setDescription('La ID del torneo o una de las opciones del autocompletado.')
 								.setRequired(true)
 								.setAutocomplete(true)
 						)
 						.addChannelOption(channel =>
 							channel.setName('canal')
-								.setDescription('Canal en el cual se abrirá el Thread para iniciar el proceso de check-in')
+								.setDescription('Canal en el cual se abrirá el Thread para iniciar el proceso de check-in.')
 								.setRequired(true)
 								.addChannelTypes(ChannelType.GuildText)
 						)
 				)
 				.addSubcommand(closeCheckin =>
 					closeCheckin.setName("cerrar-checkin")
-						.setDescription('Cierra el proceso de check in para un torneo')
+						.setDescription('Cierra el proceso de Check-in para un torneo.')
 						.addStringOption(tournamentId =>
 							tournamentId.setName('nombre-id')
-								.setDescription('La id numérica de un torneo o una de las opciones del autocompletado')
+								.setDescription('La ID numérica de un torneo o una de las opciones del autocompletado.')
 								.setRequired(true)
 								.setAutocomplete(true)
 						)
 				)
 				.addSubcommand(create =>
 					create.setName("crear")
-						.setDescription("Abre las inscripciones para un torneo")
+						.setDescription("Abre las inscripciones para un torneo.")
 						.addStringOption(name =>
 							name.setName('nombre')
-								.setDescription('Nombre del torneo')
+								.setDescription('Nombre del torneo.')
 								.setRequired(true)
 						)
 						.addStringOption(game =>
 							game.setName('juego')
-								.setDescription("El juego que se usará en este torneo")
+								.setDescription("El juego que se usará en este torneo.")
 								.setChoices(
 									{
 										name: AllowedGames.TETRIO,
@@ -214,49 +214,49 @@ export class TournamentCommands extends Subcommand {
 						)
 						.addStringOption(description =>
 							description.setName('descripcion')
-								.setDescription('La descripción de este torneo')
+								.setDescription('La descripción de este torneo.')
 								.setMaxLength(1000)
 						)
 						.addIntegerOption(srCap =>
 							srCap.setName('generic-cap')
-								.setDescription('El cap de SR/RH/RATE para torneos genéricos')
+								.setDescription('El cap de SR/RH/RATE para torneos genéricos.')
 								.setMinValue(1)
 								.setMaxValue(50000)
 						)
 						.addStringOption(rankCap =>
 							rankCap.setName('rank-cap')
-								.setDescription('El rank máximo que pueden tener los jugadores')
+								.setDescription('El rank máximo que pueden tener los jugadores.')
 								.addChoices(...TetrioRanksArray.map(rank => ({ name: rank.toUpperCase(), value: rank })))
 						)
 						.addIntegerOption(trCap =>
 							trCap.setName('tr-cap')
-								.setDescription('El cap de TR para este torneo (1 - 25000)')
+								.setDescription('El cap de TR para este torneo (1 - 25000).')
 								.setMinValue(1)
 								.setMaxValue(25000)
 						)
 						.addStringOption(countryLock =>
 							countryLock.setName('pais')
-								.setDescription('El pais al cual está cerrado este torneo (ej: CL, AR, US)')
+								.setDescription('El país al cual está cerrado este torneo (ej: CL, AR, US).')
 								.setMaxLength(2)
 						)
 						/** TODO: Add maximum and minimum values */
 						.addIntegerOption(maxPlayers =>
 							maxPlayers.setName('maximo-jugadores')
-								.setDescription('Máximo de jugadores que pueden inscribirse en este torneo')
+								.setDescription('Máximo de jugadores que pueden inscribirse en este torneo.')
 								.setMinValue(8)
 								.setMaxValue(256)
 						)
 						.addRoleOption(role =>
 							role.setName('role-1')
-								.setDescription('Rol a asignar con la inscripción')
+								.setDescription('Rol a asignar con la inscripción.')
 						)
 						.addRoleOption(role =>
 							role.setName('role-2')
-								.setDescription('Rol a asignar con la inscripción')
+								.setDescription('Rol a asignar con la inscripción.')
 						)
 						.addRoleOption(role =>
 							role.setName('role-3')
-								.setDescription('Rol a asignar con la inscripción')
+								.setDescription('Rol a asignar con la inscripción.')
 						)
 				)
 				.addSubcommand(clearPlayers =>
@@ -264,17 +264,17 @@ export class TournamentCommands extends Subcommand {
 						.setDescription('Elimina a todos los jugadores inscritos en un torneo.')
 						.addStringOption(name =>
 							name.setName('nombre-id')
-								.setDescription('El nombre o la Id numérica del torneo')
+								.setDescription('El nombre o la ID numérica del torneo.')
 								.setAutocomplete(true)
 								.setMaxLength(255)
 						)
 				)
 				.addSubcommand(editTournament =>
 					editTournament.setName('editar')
-						.setDescription('Edita la información de un torneo')
+						.setDescription('Edita la información de un torneo.')
 						.addStringOption(name =>
 							name.setName('nombre-id')
-								.setDescription('Nombre o la Id numérica del torneo')
+								.setDescription('Nombre o la ID numérica del torneo.')
 								.setAutocomplete(true)
 								.setMaxLength(255)
 								.setRequired(true)
@@ -286,105 +286,105 @@ export class TournamentCommands extends Subcommand {
 						)
 						.addStringOption(description =>
 							description.setName('descripcion')
-								.setDescription('Descripción del torneo')
+								.setDescription('Descripción del torneo.')
 								.setMaxLength(1000)
 						)
 						.addIntegerOption(srCap =>
 							srCap.setName('generic-cap')
-								.setDescription('El cap de SR/RH/RATE para torneos genéricos')
+								.setDescription('El cap de SR/RH/RATE para torneos genéricos.')
 								.setMinValue(1)
 								.setMaxValue(50000)
 						)
 						.addStringOption(rankCap =>
 							rankCap.setName('rank-cap')
-								.setDescription('El rank máximo que pueden tener los jugadores')
+								.setDescription('El rank máximo que pueden tener los jugadores.')
 								.addChoices(...TetrioRanksArray.map(rank => ({ name: rank.toUpperCase(), value: rank })))
 						)
 						.addIntegerOption(trCap =>
 							trCap.setName('tr-cap')
-								.setDescription('El cap de TR para este torneo (1 - 25000)')
+								.setDescription('El cap de TR para este torneo (1 - 25000).')
 								.setMinValue(1)
 								.setMaxValue(25000)
 						)
 						.addIntegerOption(maxPlayers =>
 							maxPlayers.setName('maximo-jugadores')
-								.setDescription('Máximo de jugadores que pueden inscribirse en este torneo')
+								.setDescription('Máximo de jugadores que pueden inscribirse en este torneo.')
 						)
 						.addRoleOption(role =>
 							role.setName('role-1')
-								.setDescription('Rol para añadir')
+								.setDescription('Rol para añadir.')
 						)
 						.addRoleOption(role =>
 							role.setName('role-2')
-								.setDescription('Rol para añadir')
+								.setDescription('Rol para añadir.')
 						)
 						.addRoleOption(role =>
 							role.setName('role-3')
-								.setDescription('Rol para añadir')
+								.setDescription('Rol para añadir.')
 						)
 				)
 				.addSubcommand(finishTournament =>
 					finishTournament.setName('finalizar')
-						.setDescription('Marca un torneo como FINALIZADO')
+						.setDescription('Marca un torneo como FINALIZADO.')
 						.addStringOption(name =>
 							name.setName('nombre-id')
-								.setDescription("El nombre o la Id numérica del torneo")
+								.setDescription("El nombre o la ID numérica del torneo.")
 								.setRequired(true)
 								.setAutocomplete(true)
 						)
 						.addUserOption(winner =>
 							winner.setName('ganador')
-								.setDescription('El usuario que ganó el torneo')
+								.setDescription('El usuario que ganó el torneo.')
 						)
 				)
 				.addSubcommand(register =>
 					register.setName('inscribir-jugador')
-						.setDescription('Inscribe a un jugador de forma manual')
+						.setDescription('Inscribe a un jugador de forma manual.')
 						.addStringOption(nameOrId =>
 							nameOrId.setName('nombre-id')
-								.setDescription('ID del torneo (Puedes usar las opciones del autocompletado)')
+								.setDescription('ID del torneo (Puedes usar las opciones del autocompletado).')
 								.setRequired(true)
 								.setMaxLength(255)
 								.setAutocomplete(true)
 						)
 						.addUserOption(discordid =>
 							discordid.setName('discord-id')
-								.setDescription('La id de Discord del jugador que estás inscribiendo')
+								.setDescription('La ID de Discord del jugador que estás inscribiendo.')
 								.setRequired(true)
 						)
 						.addStringOption(tetrioId =>
 							tetrioId.setName('tetrio-id')
-								.setDescription('La id o username de un jugador de TETRIO')
+								.setDescription('La ID o username de un jugador de TETRIO.')
 								.setMaxLength(100)
 						)
 						.addStringOption(challongeId =>
 							challongeId.setName('challonge-id')
-								.setDescription('La id de challonge de este usuario (OPCIONAL)')
+								.setDescription('La ID de challonge de este usuario (OPCIONAL).')
 								.setMaxLength(100)
 						)
 				)
 				.addSubcommand(unregister =>
 					unregister.setName('quitar-jugador')
-						.setDescription('Elimina la inscripción de un jugador de un torneo')
+						.setDescription('Elimina la inscripción de un jugador de un torneo.')
 						.addStringOption(nameOrId =>
 							nameOrId.setName('nombre-id')
-								.setDescription('El nombre o la Id numérica de un torneo')
+								.setDescription('El nombre o la ID numérica de un torneo.')
 								.setRequired(true)
 								.setMaxLength(255)
 								.setAutocomplete(true)
 						)
 						.addUserOption(dId =>
 							dId.setName('discord-id')
-								.setDescription('ID de Discord del jugador que quieres quitar del torneo')
+								.setDescription('ID de Discord del jugador que quieres quitar del torneo.')
 								.setRequired(true)
 						)
 				)
 				.addSubcommand(list =>
 					list.setName('listar-jugadores')
-						.setDescription('Obtén una lista con los jugadores inscritos en un torneo')
+						.setDescription('Obtén una lista con los jugadores inscritos en un torneo.')
 						.addStringOption(name =>
 							name.setName('nombre-id')
-								.setDescription("El nombre o la Id numérica del torneo")
+								.setDescription("El nombre o la ID numérica del torneo.")
 								.setRequired(true)
 								.setAutocomplete(true)
 						)
@@ -412,11 +412,11 @@ export class TournamentCommands extends Subcommand {
 										value: 'json',
 									},
 								)
-								.setDescription('El formato en el que quieres exportar la lista de jugadores')
+								.setDescription('El formato en el que quieres exportar la lista de jugadores.')
 						)
 						.addStringOption(order =>
 							order.setName('ordenar-por')
-								.setDescription('El tipo de ordenamiento de los jugadores en la tabla (SOLO TETRIO)')
+								.setDescription('El tipo de orden de los jugadores en la tabla (SOLO TETRIO).')
 								.setChoices(
 									{
 										name: 'Tetra Rating',
@@ -443,12 +443,12 @@ export class TournamentCommands extends Subcommand {
 						)
 						.addBooleanOption(checkedin =>
 							checkedin.setName('checked-in')
-								.setDescription('Filtrar jugadores que hayan hecho Check-in en el torneo')
+								.setDescription('Filtrar jugadores que hayan hecho check-in en el torneo.')
 						)
 				)
 				.addSubcommand(mentionPlayers =>
 					mentionPlayers.setName('mencionar-jugadores')
-						.setDescription('Menciona a todos los jugadores inscritos en este torneo')
+						.setDescription('Menciona a todos los jugadores inscritos en este torneo.')
 						.addStringOption(torneo =>
 							torneo.setName('nombre-id')
 								.setDescription('ID o nombre del torneo')
@@ -462,10 +462,10 @@ export class TournamentCommands extends Subcommand {
 				)
 				.addSubcommand(readdroles =>
 					readdroles.setName('re-add-roles')
-						.setDescription('Añade el / los roles a los jugadores inscritos en este torneo')
+						.setDescription('Añade el / los roles a los jugadores inscritos en este torneo.')
 						.addStringOption(id =>
 							id.setName('nombre-id')
-								.setDescription('El nombre o la id numérica del torneo')
+								.setDescription('El nombre o la ID numérica del torneo.')
 								.setRequired(true)
 								.setMaxLength(255)
 								.setAutocomplete(true)
@@ -559,7 +559,7 @@ export class TournamentCommands extends Subcommand {
 		}
 
 		// Confirm to the user that the message was succesfully sent or otherwise
-		return void await interaction.editReply({ content: `El mensaje ha sido enviado exitosamente en el canal ${interaction.options.getChannel('canal', true)}` })
+		return void await interaction.editReply({ content: `El mensaje ha sido enviado exitosamente en el canal ${interaction.options.getChannel('canal', true)}.` })
 	}
 
 	public async chatInputCloseRegistration(interaction: Subcommand.ChatInputCommandInteraction<'cached'>) {
@@ -616,7 +616,7 @@ export class TournamentCommands extends Subcommand {
 				.setComponents(CheckinButton)
 
 			const checkinMessage = await thread.send({
-				content: `${tournament.add_roles.length > 0 ? `${tournament.add_roles.map(id => `<@&${id}>`).join(", ")}\n` : ""}¡Presiona el botón de abajo para completar el Check-In en el torneo **${tournament.name}**!`,
+				content: `${tournament.add_roles.length > 0 ? `${tournament.add_roles.map(id => `<@&${id}>`).join(", ")}\n` : ""}¡Presiona el botón de abajo para completar el check-in en el torneo **${tournament.name}**!`,
 				components: [CheckinRow]
 			})
 
@@ -653,7 +653,7 @@ export class TournamentCommands extends Subcommand {
 
 		const tournament = await GetTournamentFromGuild(interaction.guildId, idTorneo)
 
-		if (!tournament) return void await interaction.editReply({ content: "No se puede cerrar el check in de este torneo por que no se ha encontrado." })
+		if (!tournament) return void await interaction.editReply({ content: "No se puede cerrar el check-in de este torneo por que no se ha encontrado." })
 
 		if (tournament.status === TournamentStatus.FINISHED)
 			return void await interaction.reply({
@@ -690,7 +690,7 @@ export class TournamentCommands extends Subcommand {
 			return void await interaction.reply({
 				embeds: [
 					PrettyMsg({
-						description: `✅ El checkin ha sido cerrado.`,
+						description: `✅ El check-in ha sido cerrado.`,
 						color: Colors.Green
 					})
 				]
@@ -712,7 +712,7 @@ export class TournamentCommands extends Subcommand {
 		})
 
 		return void await interaction.editReply({
-			content: `✅ ¡El Check-in para el torneo **${tournament.name}** ha sido cerrado!`
+			content: `✅ ¡El check-in para el torneo **${tournament.name}** ha sido cerrado!`
 		})
 	}
 
@@ -1087,7 +1087,7 @@ export class TournamentCommands extends Subcommand {
 		}
 
 		return void await interaction.editReply({
-			content: `✅ El jugador **${options.user.username}**  (${options.user.id}) ha sido agregado a la lista de jugadores del torneo **${tournament.name}** exitosamente!`,
+			content: `✅ ¡El jugador **${options.user.username}**  (${options.user.id}) ha sido agregado a la lista de jugadores del torneo **${tournament.name}** exitosamente!`,
 			components: [],
 			embeds: [],
 		})
@@ -1101,7 +1101,7 @@ export class TournamentCommands extends Subcommand {
 
 		if (!tournament) return void await interaction.reply({ content: 'No encontré ningun torneo.', ephemeral: true })
 		if (tournament.status === TournamentStatus.FINISHED)
-			return void await interaction.reply({ content: 'No puedes desinscribir a un jugador de un torneo que está marcado como **FINALIZADO**', ephemeral: true })
+			return void await interaction.reply({ content: 'No puedes desinscribir a un jugador de un torneo que está marcado como **FINALIZADO**.', ephemeral: true })
 
 		try {
 

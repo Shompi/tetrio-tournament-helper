@@ -16,10 +16,10 @@ export class FeedbackCommand extends Command {
 		registry.registerChatInputCommand((builder) => {
 			builder.setName("feedback")
 				.setDMPermission(false)
-				.setDescription('Envia una sugerencia respecto al bot!')
+				.setDescription('¡Envía una sugerencia respecto al bot!')
 				.addStringOption(message =>
 					message.setName('mensaje')
-						.setDescription('El mensaje que quieres enviar a los desarrolladores (2000 caracteres max)')
+						.setDescription('El mensaje que quieres enviar a los desarrolladores (2000 caracteres max).')
 						.setRequired(true)
 						.setMinLength(10)
 						.setMaxLength(2000)

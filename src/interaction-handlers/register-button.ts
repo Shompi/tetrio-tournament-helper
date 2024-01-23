@@ -147,7 +147,7 @@ async function HandleTetrioRegistration(interaction: ButtonInteraction<'cached'>
 	})
 
 	void await modalSubmition.reply({
-		content: '✅ !Has sido añadido exitosamente al torneo!\nEl perfil con el que te inscribiste es el que te muestro abajo en este mensaje ⬇️\nEn caso de que te hayas equivocado de perfil, por favor desinscribete e inscribete nuevamente.',
+		content: '✅ ¡Has sido añadido exitosamente al torneo!\nEl perfil con el que te inscribiste es el que te muestro abajo en este mensaje ⬇️\nEn caso de que te hayas equivocado de perfil, por favor desinscribete e inscribete nuevamente.',
 		embeds: [TetrioUserProfileEmbed(playerdata)],
 		ephemeral: true
 	})

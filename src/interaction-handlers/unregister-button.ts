@@ -63,7 +63,7 @@ export class UnregisterButtonHandler extends InteractionHandler {
 				ephemeral: true,
 				embeds: [
 					PrettyMsg({
-						description: '✅ Te has desinscrito de este torneo exitosamente!',
+						description: '✅ ¡Te has desinscrito de este torneo exitosamente!',
 						color: Colors.Blue
 					})
 				]

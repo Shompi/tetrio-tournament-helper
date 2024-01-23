@@ -31,26 +31,26 @@ export class BlocklistCommands extends Subcommand {
 				.setDescription('Comandos de blocklist')
 				.addSubcommand(add =>
 					add.setName('añadir')
-						.setDescription('Añade a un usuario a la blocklist')
+						.setDescription('Añade a un usuario a la blocklist.')
 						.addUserOption(id =>
 							id.setName('user-id')
-								.setDescription('El usuario al cual quieres bloquear de los comandos del bot')
+								.setDescription('El usuario al cual quieres bloquear de los comandos del bot.')
 								.setRequired(true)
 
 						)
 						.addStringOption(reason =>
 							reason.setName('razón')
-								.setDescription('La razón para añadir a este usuario a la blocklist')
+								.setDescription('La razón para añadir a este usuario a la blocklist.')
 								.setMaxLength(300)
 								.setRequired(true)
 						)
 				)
 				.addSubcommand(remove =>
 					remove.setName('quitar')
-						.setDescription('La id del usuario que quieres bloquear para que el bot ignore')
+						.setDescription('La id del usuario que quieres bloquear para que el bot ignore.')
 						.addUserOption(id =>
 							id.setName('user-id')
-								.setDescription('El usuario al cual quieres quitar de la blocklist')
+								.setDescription('El usuario al cual quieres quitar de la blocklist.')
 								.setRequired(true)
 						)
 				)

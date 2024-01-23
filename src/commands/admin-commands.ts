@@ -40,7 +40,7 @@ export class AdminCommands extends Subcommand {
 						.setDescription('Crea y envia un mensaje dentro de un embed a un canal de texto.')
 						.addChannelOption(channel =>
 							channel.setName('canal')
-								.setDescription('Canal al que quieres enviar este anuncio')
+								.setDescription('Canal al que quieres enviar este anuncio.')
 								.setRequired(true)
 								.addChannelTypes(ChannelType.GuildText, ChannelType.GuildAnnouncement)
 						)
@@ -51,12 +51,12 @@ export class AdminCommands extends Subcommand {
 						)
 						.addStringOption(titulo =>
 							titulo.setName('titulo')
-								.setDescription('El titulo de este anuncio')
+								.setDescription('El título de este anuncio.')
 								.setRequired(false)
 						)
 						.addStringOption(color =>
 							color.setName('color')
-								.setDescription('El color que quieres que tenga el embed (barra lateral izquierda)')
+								.setDescription('El color que quieres que tenga el embed (barra lateral izquierda).')
 								.addChoices(
 									{ name: "Amarillo", value: "Yellow" },
 									{ name: "Azul", value: "Blue" },
@@ -73,32 +73,32 @@ export class AdminCommands extends Subcommand {
 						)
 						.addStringOption(imagen =>
 							imagen.setName('imagen')
-								.setDescription('Si quieres adjuntar una imagen en el embedido, escribe la URL aqui')
+								.setDescription('Si quieres adjuntar una imagen en el embedido, escribe la URL aqui.')
 								.setRequired(false)
 						)
 						.addStringOption(thumbnail =>
 							thumbnail.setName('miniatura')
-								.setDescription('URL de la imagen miniatura del embed')
+								.setDescription('URL de la imagen miniatura del embed.')
 								.setRequired(false)
 						)
 						.addStringOption(footer =>
 							footer.setName('pie')
-								.setDescription('El pié de página de este anuncio')
+								.setDescription('El pié de página de este anuncio.')
 								.setRequired(false)
 						)
 						.addMentionableOption(mencion =>
 							mencion.setName('mencion1')
-								.setDescription('Rol o Usuario que quieres mencionar')
+								.setDescription('Rol o Usuario que quieres mencionar.')
 								.setRequired(false)
 						)
 						.addMentionableOption(mencion =>
 							mencion.setName('mencion2')
-								.setDescription('Rol o Usuario que quieres mencionar')
+								.setDescription('Rol o Usuario que quieres mencionar.')
 								.setRequired(false)
 						)
 						.addMentionableOption(mencion =>
 							mencion.setName('mencion3')
-								.setDescription('Rol o Usuario que quieres mencionar')
+								.setDescription('Rol o Usuario que quieres mencionar.')
 								.setRequired(false)
 						)
 				)
@@ -150,9 +150,9 @@ export class AdminCommands extends Subcommand {
 			const success = await options.channel.send({ embeds: [embed], content: `${options.mention1} ${options.mention2} ${options.mention3}` }).catch(console.error);
 
 			if (!success)
-				return await interaction.reply({ content: 'Ocurrió un error al intentar enviar el anuncio, revisa mis permisos dentro del canal y asegurate de que pueda enviar mensajes.', ephemeral: true });
+				return await interaction.reply({ content: 'Ocurrió un error al intentar enviar el anuncio, revisa mis permisos dentro del canal y asegúrate de que pueda enviar mensajes.', ephemeral: true });
 
-			return await interaction.reply({ content: 'El anunció fue enviado con éxito.', ephemeral: true });
+			return await interaction.reply({ content: 'El anuncio fue enviado con éxito.', ephemeral: true });
 
 		}
 	}
