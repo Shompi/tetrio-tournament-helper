@@ -270,7 +270,7 @@ const TournamentModel = sequelize.define<Tournament>('Tournament', {
 });
 
 console.log("[DEBUG] Sincronizando tablas en sequelize...");
-await TournamentModel.sync({alter: true});
+await TournamentModel.sync();
 console.log("[DEBUG] La sincronización ha terminado!");
 
 export { TournamentModel }
