@@ -165,7 +165,7 @@ export class TournamentCommands extends Subcommand {
 				)
 				.addSubcommand(closeCheckin =>
 					closeCheckin.setName("cerrar-checkin")
-						.setDescription('Cierra el proceso de Check-in para un torneo.')
+						.setDescription('Cierra el proceso de check-in para un torneo.')
 						.addStringOption(tournamentId =>
 							tournamentId.setName('nombre-id')
 								.setDescription('La ID numérica de un torneo o una de las opciones del autocompletado.')
@@ -175,7 +175,7 @@ export class TournamentCommands extends Subcommand {
 				)
 				.addSubcommand(create =>
 					create.setName("crear")
-						.setDescription("Abre las inscripciones para un torneo.")
+						.setDescription("Crea un nuevo torneo.")
 						.addStringOption(name =>
 							name.setName('nombre')
 								.setDescription('Nombre del torneo.')
@@ -365,7 +365,7 @@ export class TournamentCommands extends Subcommand {
 				)
 				.addSubcommand(unregister =>
 					unregister.setName('quitar-jugador')
-						.setDescription('Elimina la inscripción de un jugador de un torneo.')
+						.setDescription('Elimina la inscripción de un jugador.')
 						.addStringOption(nameOrId =>
 							nameOrId.setName('nombre-id')
 								.setDescription('El nombre o la ID numérica de un torneo.')
