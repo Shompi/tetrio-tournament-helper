@@ -24,18 +24,18 @@ export class OwnerCommands extends Subcommand {
 		registry.registerChatInputCommand((builder) => {
 			builder //
 				.setName('dev')
-				.setDescription('Comandos de desarrollador')
+				.setDescription('Comandos de desarrollador.')
 				.setDMPermission(false)
 				.setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
 				.addSubcommandGroup(tournaments =>
 					tournaments.setName('tournament')
-						.setDescription('Comandos de torneos')
+						.setDescription('Comandos de torneos.')
 						.addSubcommand(info =>
 							info.setName('info')
-								.setDescription('Información general de un torneo')
+								.setDescription('Información general de un torneo.')
 								.addStringOption(id =>
 									id.setName('nombre-id')
-										.setDescription('ID numérica del torneo')
+										.setDescription('ID numérica del torneo.')
 										.setAutocomplete(true)
 										.setRequired(true)
 								)

@@ -330,10 +330,10 @@ export function RunTetrioTournamentRegistrationChecks(userData: TetrioPlayerRele
 	if (tournament.is_country_locked) {
 
 		if (!userData.country)
-			return ({ allowed: false, reason: "El jugador no muestra un pais en su perfil de TETRIO." })
+			return ({ allowed: false, reason: "El jugador no muestra un país en su perfil de TETRIO." })
 
 		if (tournament.country_lock!.toUpperCase() !== userData.country?.toUpperCase())
-			return ({ allowed: false, reason: "El pais del jugador es distinto al pais del torneo." });
+			return ({ allowed: false, reason: "El país del jugador es distinto al país del torneo." });
 		// The country of the player doesn't match the tournament country lock
 	}
 

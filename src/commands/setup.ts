@@ -14,16 +14,16 @@ export class SetupCommmand extends Command {
 	public override registerApplicationCommands(registry: Command.Registry) {
 		registry.registerChatInputCommand((builder) => {
 			builder.setName("setup")
-				.setDescription('Comando de setup para configurar el funcionamiento del bot en este servidor')
+				.setDescription('Comando de setup para configurar el funcionamiento del bot en este servidor.')
 				.setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
 				.setDMPermission(false)
 				.addRoleOption(role1 =>
 					role1.setName('organizer')
-						.setDescription('El rol que tiene permitido usar los comandos de admin y de torneos')
+						.setDescription('El rol que tiene permitido usar los comandos de admin y de torneos.')
 				)
 				.addChannelOption(log =>
 					log.setName('log-channel')
-						.setDescription('El canal al cual se enviarán mensajes de logs, errores, entre otros')
+						.setDescription('El canal al cual se enviarán mensajes de logs, errores, entre otros.')
 						.addChannelTypes(ChannelType.GuildText)
 				)
 		}, { idHints: ["1188308099245805630"] })

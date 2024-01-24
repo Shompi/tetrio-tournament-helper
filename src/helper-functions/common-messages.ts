@@ -2,7 +2,7 @@ export const CommonMessages = {
 	AdminCommands: {
 		SendPlayerList: {
 			/** Replace {tournament} with tournament name */
-			Success: `✅ ¡Aquí tienes la lista de los jugadores inscritos en el torneo **{tournament}**`,
+			Success: `✅ ¡Aquí tienes la lista de los jugadores inscritos en el torneo **{tournament}**!`,
 			Fail: ``
 		}
 	},
@@ -13,15 +13,15 @@ export const CommonMessages = {
 		NotFound: "❌ No encontré ningún torneo con la id que ingresaste en este servidor\nSi usas el nombre del torneo, asegurate de usar una de las opciones del autocompletado.",
 		NotEditable: '❌ No puedes editar la información de este torneo por que está marcado como **Finalizado**.',
 		IsFinished: '❌ No puedes ejecutar esta acción en este torneo por que está marcado como **Finalizado**.',
-		CheckinNotStarted: '❌ El torneo no tiene un proceso de check in activo.',
+		CheckinNotStarted: '❌ El torneo no tiene un proceso de check-in activo.',
 		CheckinStartedDefault: `{userid} ha abierto las inscripciones para el torneo \"**{nombre_torneo}**\". \n¡Presiona el botón de abajo para comenzar la inscripción!`,
 	},
 
 	Player: {
 		NotRegistered: '⚠️ No estás inscrito/a en este torneo.',
-		AlreadyCheckedIn: '⚠️ Ya estás en la lista de Checked-in.',
+		AlreadyCheckedIn: '⚠️ Ya estás en la lista de checked-in.',
 		AlreadyRegistered: `⚠️ Ya estás inscrito en este torneo`,
-		CheckInNotAllowed: '⚠️ **No puedes hacer Check-in** en este torneo.',
+		CheckInNotAllowed: '⚠️ **No puedes hacer check-in** en este torneo.',
 		UnableToJoinTournament: '❌ **No te puedes inscribir en este torneo**.',
 		UnableToLeaveTournament: '❌ **No te puedes desinscribir de este torneo**.',
 		RegisteredSuccessfully: "✅ ¡Has sido **añadido** al torneo exitosamente!",
