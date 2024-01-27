@@ -1,4 +1,4 @@
-import { Subcommand } from "@sapphire/plugin-subcommands"
+import { Subcommand } from "@sapphire/plugin-subcommands";
 import {
 	ActionRowBuilder,
 	AttachmentBuilder,
@@ -17,13 +17,13 @@ import {
 } from "discord.js";
 import {
 	AddPlayerToTournament,
+	AllowedGames,
 	BuildPlayerListAscii,
 	BuildPlayerListCSV,
-	BuildPlayerListTetrioEmbed,
-	BuildPlayerListJSON,
 	BuildPlayerListChallonge,
+	BuildPlayerListJSON,
+	BuildPlayerListTetrioEmbed,
 	ClearTournamentPlayerList,
-	PrettyMsg,
 	FinishTournament,
 	GameName,
 	GetTournamentFromGuild,
@@ -31,17 +31,17 @@ import {
 	IsTournamentEditable,
 	OrderBy,
 	OrderPlayerListBy,
+	PrettyMsg,
 	RemovePlayerFromTournament,
 	SearchTournamentByNameAutocomplete,
 	TetrioRanksArray,
 	TetrioUserProfileEmbed,
 	TournamentDetailsEmbed,
-	AllowedGames
 } from "../helper-functions/index.js";
 
+import { setTimeout } from "node:timers/promises";
 import { CommonMessages } from "../helper-functions/common-messages.js";
-import { Tournament, TournamentModel, TournamentStatus } from "../sequelize/Tournaments.js";
-import { setTimeout } from "node:timers/promises"
+import { Tournament, TournamentModel, TournamentStatus } from "../sequelize/index.js";
 
 export class TournamentCommands extends Subcommand {
 
