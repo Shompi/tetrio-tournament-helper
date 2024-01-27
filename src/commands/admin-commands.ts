@@ -11,8 +11,6 @@ import {
 	SearchTournamentByNameAutocomplete,
 } from "../helper-functions/index.js";
 
-import { CommonMessages } from "../helper-functions/common-messages.js";
-
 export class AdminCommands extends Subcommand {
 
 	public constructor(context: Subcommand.LoaderContext, options: Subcommand.Options) {
