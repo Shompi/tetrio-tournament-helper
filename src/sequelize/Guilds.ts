@@ -1,5 +1,4 @@
 import { Sequelize, DataTypes, InferAttributes, InferCreationAttributes, CreationOptional, Model } from 'sequelize'
-import { TetrioPlayerRelevantData } from '../helper-functions/index.js';
 import { Snowflake } from 'discord.js';
 
 const sequelize = new Sequelize({
@@ -41,10 +40,5 @@ const GuildModel = sequelize.define<GuildConfigs>('Guild', {
 		},
 	}
 })
-
-
-console.log("[GUILDS] Sincronizando tablas en sequelize...");
-await GuildModel.sync();
-console.log("[GUILDS] La sincronización ha terminado!");
 
 export { GuildModel }

@@ -45,9 +45,12 @@ export interface Tournament extends Model<InferAttributes<Tournament>, InferCrea
 
 	/** Discord ID of the organizer */
 	organized_by: string;
-
+	
+	/** Name of the tournament */
 	name: string;
 
+	/** Category of this tournament, if any */
+	category: number | null;
 	game: GameName;
 
 	/** The description of this tournament, if any */
@@ -112,7 +115,7 @@ const TournamentModel = sequelize.define<Tournament>('Tournament', {
 	},
 	organized_by: {
 		type: DataTypes.STRING,
-		defaultValue: "NULL",
+		defaultValue: "N/A",
 		allowNull: false,
 	},
 
@@ -132,6 +135,12 @@ const TournamentModel = sequelize.define<Tournament>('Tournament', {
 	game: {
 		type: DataTypes.STRING,
 		allowNull: false,
+	},
+
+	category: {
+		type: DataTypes.INTEGER,
+		allowNull: true,
+		defaultValue: null,
 	},
 
 	description: {
@@ -268,9 +277,5 @@ const TournamentModel = sequelize.define<Tournament>('Tournament', {
 		allowNull: true
 	}
 });
-
-console.log("[DEBUG] Sincronizando tablas en sequelize...");
-await TournamentModel.sync();
-console.log("[DEBUG] La sincronización ha terminado!");
 
 export { TournamentModel }
