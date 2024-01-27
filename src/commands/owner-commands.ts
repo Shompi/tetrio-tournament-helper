@@ -1,6 +1,6 @@
 import { Subcommand } from "@sapphire/plugin-subcommands";
 import { Colors, PermissionFlagsBits } from "discord.js";
-import { GetTournament, PrettyMsg, SearchTournamentById, SearchTournamentByNameAutocomplete, TournamentDetailsEmbed } from "../helper-functions/index.js";
+import { GetTournament, PrettyMsg, TournamentDetailsEmbed } from "../helper-functions/index.js";
 import { CommonMessages } from "../helper-functions/common-messages.js";
 
 export class OwnerCommands extends Subcommand {
