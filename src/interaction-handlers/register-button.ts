@@ -1,6 +1,6 @@
 import { InteractionHandler, InteractionHandlerTypes } from '@sapphire/framework';
-import { ActionRowBuilder, ButtonBuilder, ButtonInteraction, ButtonStyle, Colors, ComponentType, ModalBuilder, TextInputBuilder, TextInputStyle } from "discord.js"
-import { Tournament, TournamentStatus } from '../sequelize/Tournaments.js';
+import { ActionRow, ActionRowBuilder, ButtonInteraction, Colors, ModalBuilder, TextInputBuilder, TextInputStyle } from "discord.js"
+import { Tournament, TournamentStatus } from '../sequelize/index.js';
 import { PrettyMsg, GetTournamentFromGuild, GetUserDataFromTetrio, SendMessageToChannel, TetrioUserProfileEmbed, CustomLogLevels, AllowedGames, RunGeneralTournamentRegistrationChecks } from '../helper-functions/index.js';
 import { TournamentDetailsEmbed } from "../helper-functions/index.js";
 import { RunTetrioTournamentRegistrationChecks } from '../helper-functions/index.js';

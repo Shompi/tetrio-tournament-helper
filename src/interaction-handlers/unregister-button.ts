@@ -1,6 +1,6 @@
 import { InteractionHandler, InteractionHandlerTypes } from "@sapphire/framework"
 import { ButtonInteraction, Colors } from "discord.js"
-import { TournamentStatus } from "../sequelize/Tournaments.js";
+import { TournamentStatus } from "../sequelize/index.js";
 import { PrettyMsg, GetTournamentFromGuild, RemovePlayerFromTournament, TournamentDetailsEmbed } from "../helper-functions/index.js";
 import { CommonMessages } from "../helper-functions/common-messages.js";
 
