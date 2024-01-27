@@ -20,9 +20,16 @@ import { AsciiTable3 } from "ascii-table3";
 import * as csv from "csv-stringify/sync";
 import { Op } from "sequelize";
 import { request } from "undici";
-import { BlocklistModel } from "../sequelize/Blocklist.js";
-import { GuildConfigs, GuildModel } from "../sequelize/Guilds.js";
-import { RegisteredPlayer, Tournament, TournamentModel, TournamentStatus, TournamentStatusStrings } from "../sequelize/Tournaments.js";
+import {
+	BlocklistModel,
+	GuildConfigs,
+	GuildModel,
+	RegisteredPlayer,
+	Tournament,
+	TournamentModel,
+	TournamentStatus,
+	TournamentStatusStrings
+} from "../sequelize/index.js";
 import { CommonMessages } from "./common-messages.js";
 
 //#region Declaration stuff
