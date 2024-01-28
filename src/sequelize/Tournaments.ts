@@ -5,7 +5,7 @@ import { Snowflake } from 'discord.js';
 const sequelize = new Sequelize({
 	dialect: "sqlite",
 	storage: "./databases/Tournaments.sqlite",
-	// logging:false,
+	logging: false,
 	// logging: (...msgs) => console.log(`[TOURNAMENTS DATABASE] => ${msgs.forEach(msg => console.log(msg))}`)
 });
 
@@ -45,7 +45,7 @@ export interface Tournament extends Model<InferAttributes<Tournament>, InferCrea
 
 	/** Discord ID of the organizer */
 	organized_by: string;
-	
+
 	/** Name of the tournament */
 	name: string;
 

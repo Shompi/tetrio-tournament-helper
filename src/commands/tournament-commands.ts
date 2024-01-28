@@ -26,7 +26,7 @@ import {
 	ClearTournamentPlayerList,
 	FinishTournament,
 	GameName,
-	GetTournamentFromGuild,
+	GetSingleTournament,
 	GetUserDataFromTetrio,
 	IsTournamentEditable,
 	OrderBy,
@@ -211,6 +211,12 @@ export class TournamentCommands extends Subcommand {
 									}
 								)
 								.setRequired(true)
+						)
+						.addStringOption(category =>
+							category.setName('categoria')
+								.setAutocomplete(true)
+								.setDescription('La categoría a la que pertenece este torneo.')
+								.setMaxLength(150)
 						)
 						.addStringOption(description =>
 							description.setName('descripcion')
@@ -486,7 +492,7 @@ export class TournamentCommands extends Subcommand {
 			banner: interaction.options.getAttachment('tournament-banner', false)
 		}
 
-		const tournament = await GetTournamentFromGuild(interaction.guildId, options.idTorneo)
+		const tournament = await GetSingleTournament(interaction.guildId, options.idTorneo)
 
 		if (!tournament) return void await interaction.editReply({
 			embeds: [PrettyMsg({
@@ -566,7 +572,7 @@ export class TournamentCommands extends Subcommand {
 		// Your code goes here
 		const tournamentId = +interaction.options.getString('nombre-id', true)
 
-		const torneo = await GetTournamentFromGuild(interaction.guildId, tournamentId)
+		const torneo = await GetSingleTournament(interaction.guildId, tournamentId)
 		if (!torneo) return void await interaction.reply({ content: "El torneo no existe.", ephemeral: true })
 
 		await torneo.update({
@@ -585,7 +591,7 @@ export class TournamentCommands extends Subcommand {
 			channel: interaction.options.getChannel('canal', true) as TextChannel,
 			idTorneo: +interaction.options.getString('nombre-id', true)
 		}
-		const tournament = await GetTournamentFromGuild(interaction.guildId, options.idTorneo)
+		const tournament = await GetSingleTournament(interaction.guildId, options.idTorneo)
 
 		if (!tournament) return void await interaction.reply({ content: "El mensaje no ha sido enviado por que el torneo no existe." })
 
@@ -651,7 +657,7 @@ export class TournamentCommands extends Subcommand {
 
 		const idTorneo = +interaction.options.getString('nombre-id', true)
 
-		const tournament = await GetTournamentFromGuild(interaction.guildId, idTorneo)
+		const tournament = await GetSingleTournament(interaction.guildId, idTorneo)
 
 		if (!tournament) return void await interaction.editReply({ content: "No se puede cerrar el check-in de este torneo por que no se ha encontrado." })
 
@@ -724,6 +730,7 @@ export class TournamentCommands extends Subcommand {
 		const options = {
 			name: interaction.options.getString("nombre", true),
 			game: interaction.options.getString("juego", true) as GameName,
+			category: parseInt(interaction.options.getString('categoria', false) ?? "notnumber"),
 			description: interaction.options.getString('descripcion', false),
 			rank_cap: interaction.options.getString('rank-cap', false),
 			tr_cap: interaction.options.getInteger('tr-cap', false),
@@ -732,6 +739,10 @@ export class TournamentCommands extends Subcommand {
 			max_players: interaction.options.getInteger('maximo-jugadores', false),
 		}
 		let createdTournament: Tournament | null = null
+		let category: number | null = null
+
+		if (isNaN(options.category)) category = null
+		else category = options.category
 
 		try {
 			if (options.game === AllowedGames.TETRIO) {
@@ -740,19 +751,20 @@ export class TournamentCommands extends Subcommand {
 					guild_id: interaction.guildId,
 					name: options.name,
 					game: options.game,
+					category,
 					description: options.description,
+					status: TournamentStatus.OPEN,
+					players: [],
+					max_players: options.max_players,
+					checked_in: [],
+					add_roles: GetRolesToAddArray(interaction),
 					is_rank_capped: !!options.rank_cap,
 					rank_cap: options.rank_cap,
 					is_country_locked: !!options.country_lock,
 					country_lock: options.country_lock,
 					is_tr_capped: !!options.tr_cap,
 					tr_cap: options.tr_cap,
-					max_players: options.max_players,
-					players: [],
-					checked_in: [],
 					// We create this tournament open by default
-					status: TournamentStatus.OPEN,
-					add_roles: GetRolesToAddArray(interaction)
 				})
 			}
 			else {
@@ -761,11 +773,14 @@ export class TournamentCommands extends Subcommand {
 					guild_id: interaction.guildId,
 					name: options.name,
 					game: options.game,
+					category,
 					description: options.description,
+					status: TournamentStatus.OPEN,
 					players: [],
+					max_players: options.max_players,
 					checked_in: [],
-					add_roles: [],
-					general_rate_cap: options.sr_cap
+					add_roles: GetRolesToAddArray(interaction),
+					general_rate_cap: options.sr_cap,
 				})
 			}
 
@@ -781,7 +796,7 @@ export class TournamentCommands extends Subcommand {
 		// Your code goes here
 
 		const idTorneo = +interaction.options.getString('nombre-id', true)
-		const tournament = await GetTournamentFromGuild(interaction.guildId, idTorneo)
+		const tournament = await GetSingleTournament(interaction.guildId, idTorneo)
 
 		if (!tournament)
 			return void await interaction.reply({
@@ -844,7 +859,7 @@ export class TournamentCommands extends Subcommand {
 		const tournamentId = +interaction.options.getString('nombre-id', true)
 
 		// Try to get the tournament from this guild
-		const tournament = await GetTournamentFromGuild(interaction.guildId, tournamentId)
+		const tournament = await GetSingleTournament(interaction.guildId, tournamentId)
 
 		if (!tournament) {
 			return void await interaction.reply({
@@ -933,7 +948,7 @@ export class TournamentCommands extends Subcommand {
 			idTorneo: +interaction.options.getString('nombre-id', true)
 		}
 
-		const tournament = await GetTournamentFromGuild(interaction.guildId, options.idTorneo)
+		const tournament = await GetSingleTournament(interaction.guildId, options.idTorneo)
 
 		if (!tournament)
 			return void await interaction.reply({
@@ -1002,7 +1017,7 @@ export class TournamentCommands extends Subcommand {
 			challongeId: interaction.options.getString('challonge-id', false),
 		}
 
-		const tournament = await GetTournamentFromGuild(interaction.guildId, options.idTorneo)
+		const tournament = await GetSingleTournament(interaction.guildId, options.idTorneo)
 
 		if (!tournament)
 			return void await interaction.reply({ content: 'El torneo que ingresaste no existe en este servidor', ephemeral: true })
@@ -1097,7 +1112,7 @@ export class TournamentCommands extends Subcommand {
 		// Your code goes here
 		const idTorneo = +interaction.options.getString('nombre-id', true)
 
-		const tournament = await GetTournamentFromGuild(interaction.guildId, idTorneo)
+		const tournament = await GetSingleTournament(interaction.guildId, idTorneo)
 
 		if (!tournament) return void await interaction.reply({ content: 'No encontré ningun torneo.', ephemeral: true })
 		if (tournament.status === TournamentStatus.FINISHED)
@@ -1119,7 +1134,7 @@ export class TournamentCommands extends Subcommand {
 	public async chatInputListPlayers(interaction: Subcommand.ChatInputCommandInteraction<'cached'>) {
 		const idTorneo = +interaction.options.getString('nombre-id', true)
 
-		const tournament = await GetTournamentFromGuild(interaction.guildId, idTorneo)
+		const tournament = await GetSingleTournament(interaction.guildId, idTorneo)
 
 		if (!tournament) return void await interaction.reply({
 			ephemeral: true,
@@ -1192,7 +1207,7 @@ export class TournamentCommands extends Subcommand {
 			filterCheckedIn: interaction.options.getBoolean('filtrar-checkin', false)
 		}
 
-		const tournament = await GetTournamentFromGuild(interaction.guildId, options.idTorneo)
+		const tournament = await GetSingleTournament(interaction.guildId, options.idTorneo)
 
 		if (!tournament)
 			return void await interaction.reply({
@@ -1216,7 +1231,7 @@ export class TournamentCommands extends Subcommand {
 	public async chatInputReAddRoles(interaction: Subcommand.ChatInputCommandInteraction<'cached'>) {
 		const idTorneo = +interaction.options.getString('nombre-id', true)
 
-		const tournament = await GetTournamentFromGuild(interaction.guildId, idTorneo)
+		const tournament = await GetSingleTournament(interaction.guildId, idTorneo)
 
 		if (!tournament) return void await interaction.reply({
 			embeds: [PrettyMsg({
@@ -1266,11 +1281,6 @@ export class TournamentCommands extends Subcommand {
 			]
 		}).catch(() => console.log("[DEBUG - ADDROLESTOMEMBERS] El mensaje de la interacción ha sido eliminado o no se pudo editar."))
 
-	}
-
-	public async autocompleteRun(interaction: Subcommand.AutocompleteInteraction<'cached'>) {
-		if (interaction.options.getFocused(true).name === 'nombre-id')
-			return void await SearchTournamentByNameAutocomplete(interaction)
 	}
 }
 

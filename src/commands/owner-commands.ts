@@ -16,7 +16,7 @@ export class OwnerCommands extends Subcommand {
 						{ name: 'info', chatInputRun: 'TournamentInfo' }
 					]
 				}
-			]
+			],
 		});
 	}
 
@@ -50,7 +50,7 @@ export class OwnerCommands extends Subcommand {
 	public async TournamentInfo(interaction: Subcommand.ChatInputCommandInteraction) {
 		// Your code goes here
 		const idTorneo = +interaction.options.getString('nombre-id', true)
-
+		
 		const tournament = await GetTournament(idTorneo)
 		if (!tournament) return void await interaction.reply({
 			embeds: [

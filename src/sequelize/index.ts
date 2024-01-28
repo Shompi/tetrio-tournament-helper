@@ -3,15 +3,18 @@ import { CategoryModel, TournamentCategory } from "./Category.js";
 import { GuildConfigs, GuildModel } from "./Guilds.js";
 import { RegisteredPlayer, Tournament, TournamentModel, TournamentStatus, TournamentStatusStrings } from "./Tournaments.js";
 
-/** Models have not been initialized at this point nor synced. */
-
-CategoryModel.hasOne(TournamentModel)
 
 /** Sync the models */
+
+console.log("[SEQUELIZE] Sincronizando modelo Category");
 await CategoryModel.sync()
+console.log("[SEQUELIZE] Sincronizando modelo TournamentModel");
 await TournamentModel.sync()
+console.log("[SEQUELIZE] Sincronizando modelo GuildModel");
 await GuildModel.sync()
+console.log("[SEQUELIZE] Sincronizando modelo BlocklistModel");
 await BlocklistModel.sync()
+console.log("[SEQUELIZE] La sincronización de los modelos ha terminado.")
 
 export {
 	BlocklistModel,
@@ -22,8 +25,8 @@ export {
 
 export {
 	BlocklistedUser,
-	TournamentCategory,
 	GuildConfigs,
-	RegisteredPlayer, Tournament, TournamentStatus, TournamentStatusStrings
+	RegisteredPlayer,
+	Tournament, TournamentStatus, TournamentStatusStrings, TournamentCategory,
 }
 

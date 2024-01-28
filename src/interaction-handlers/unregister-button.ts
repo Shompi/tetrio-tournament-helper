@@ -1,7 +1,7 @@
 import { InteractionHandler, InteractionHandlerTypes } from "@sapphire/framework"
 import { ButtonInteraction, Colors } from "discord.js"
 import { TournamentStatus } from "../sequelize/index.js";
-import { PrettyMsg, GetTournamentFromGuild, RemovePlayerFromTournament, TournamentDetailsEmbed } from "../helper-functions/index.js";
+import { PrettyMsg, GetSingleTournament, RemovePlayerFromTournament, TournamentDetailsEmbed } from "../helper-functions/index.js";
 import { CommonMessages } from "../helper-functions/common-messages.js";
 
 
@@ -11,7 +11,7 @@ export class UnregisterButtonHandler extends InteractionHandler {
 	}
 
 	public async run(interaction: ButtonInteraction<'cached'>, tournamentId: string) {
-		const tournament = await GetTournamentFromGuild(interaction.guildId, +tournamentId)
+		const tournament = await GetSingleTournament(interaction.guildId, +tournamentId)
 
 		if (!tournament) return void await interaction.reply({
 			ephemeral: true,

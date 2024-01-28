@@ -22,10 +22,12 @@ import { Op } from "sequelize";
 import { request } from "undici";
 import {
 	BlocklistModel,
+	CategoryModel,
 	GuildConfigs,
 	GuildModel,
 	RegisteredPlayer,
 	Tournament,
+	TournamentCategory,
 	TournamentModel,
 	TournamentStatus,
 	TournamentStatusStrings
@@ -270,10 +272,6 @@ export function GetUserProfileURL(username: string) {
 	return `https://ch.tetr.io/u/${username}`
 }
 
-/** @deprecated This is not used - Prefer the use of RunTetrioTournamentRegistrationChecks */
-export function TournamentIsJoinableByTetrioPlayer(playerData: TetrioApiUser, caps: { rank_cap?: string; tr_cap?: number; country_lock?: string }) {
-}
-
 export function TournamentDetailsEmbed(torneo: Tournament) {
 
 	const players = torneo.players
@@ -373,157 +371,11 @@ export function RunTetrioTournamentRegistrationChecks(userData: TetrioPlayerRele
 	return { allowed: true };
 }
 
-/** 
-* This function handles the autocomplete entirely.
-*	Also, this function should only return the tournaments belonging to this guild.
-* This function DOES NOT return tournaments that are on a finished state.
-*/
-export async function SearchTournamentByNameAutocomplete(interaction: Subcommand.AutocompleteInteraction<'cached'>) {
-	const focusedOption = interaction.options.getFocused()
-	const torneos = await TournamentModel.findAll({
-		where: {
-			guild_id: interaction.guildId,
-			[Op.and]: {
-				[Op.not]: {
-					status: TournamentStatus.FINISHED
-				}
-			}
-		}
-	})
 
-	return void await interaction.respond(
-		torneos.filter(tournament => tournament.name.toLowerCase().includes(
-			focusedOption.toLowerCase()
-		)).map(torneo => ({ name: torneo.name.slice(0, 50), value: torneo.id.toString() }))
-	)
-}
 
-export async function GetTournament(id: number) {
 
-	if (isNaN(id)) return null
 
-	return await TournamentModel.findByPk(id)
-}
 
-export async function SearchTournamentById(id: number) {
-	return await TournamentModel.findByPk(id)
-}
-
-/** Function used to remove a player from a tournament */
-export async function RemovePlayerFromTournament(torneo: Tournament, discord_id: string) {
-
-	const playerId = discord_id
-
-	const players = Array.from(torneo.players)
-	const checkedIn = Array.from(torneo.checked_in) ?? []
-
-	// Remove the player from the registered players list
-	const filteredPlayers = players.filter(player => player.discordId !== discord_id)
-	// Remove the player from the checked in list
-	const checkedInFiltered = checkedIn.filter(id => id !== playerId)
-
-	console.log(`[TOURNAMENT] Quitando al jugador ${discord_id} del torneo ${torneo.name}`)
-
-	torneo.checked_in = checkedInFiltered
-	torneo.players = filteredPlayers
-
-	await torneo.save()
-
-	console.log(`[TOURNAMENT] El jugador ${discord_id} ha sido desinscrito.`)
-}
-
-/** 
-	* @deprecated	
-	*This function will unregister this player from every OPEN tournament they are registered for.
-*/
-export async function DeletePlayerFromTournaments(discord_id: string) {
-
-	const tournaments = await TournamentModel.findAll({
-		where: {
-			status: TournamentStatus.OPEN
-		}
-	});
-
-	if (tournaments.length === 0) return 0;
-
-	let removedFrom = 0;
-
-	for (const tournament of tournaments) {
-
-		if (tournament.players.some(player => player.discordId === discord_id)) {
-			tournament.players = tournament.players.filter(player => player.discordId !== discord_id)
-			tournament.checked_in = tournament.checked_in.filter(id => id !== discord_id)
-			await tournament.save()
-			removedFrom++;
-		}
-	}
-
-	return removedFrom;
-}
-
-/** This function returns every tournament from a guild, regardless of status */
-export async function GetTournamentsFromGuild(guild_id: string) {
-
-	return await TournamentModel.findAll({
-		where: {
-			guild_id,
-		}
-	})
-}
-
-export async function FinishTournament(tournament: Tournament, /** Discord ID of the winner */ winner?: string | null) {
-	console.log(`[TOURNAMENT] Marcando torneo ${tournament.id} - ${tournament.name} como FINALIZADO`);
-
-	await tournament.update({
-		registration_channel: null,
-		registration_message: null,
-		registration_open_until: null,
-		checkin_channel: null,
-		checkin_message: null,
-		checkin_threadId: null,
-		winner_id: winner,
-		status: TournamentStatus.FINISHED
-	})
-
-	console.log(`[TOURNAMENT] Torneo guardado!`);
-
-	return true
-}
-
-/** This function returns all ongoing (not marked as FINISHED) tournaments from a guild */
-export async function GetAllOngoingTournamentsFromGuild(guild_id: string) {
-	return await TournamentModel.findAll({
-		where: {
-			guild_id,
-			status: {
-				[Op.ne]: TournamentStatus.FINISHED
-			}
-		}
-	})
-}
-
-/** Gets a single tournament from a guild, this function calls isNaN on the tournament ID internally. */
-export async function GetTournamentFromGuild(guild_id: string, tournament_id: number) {
-
-	if (isNaN(tournament_id)) return null
-
-	return await TournamentModel.findOne({
-		where: {
-			guild_id: guild_id,
-			id: tournament_id,
-			[Op.and]: {
-				status: {
-					[Op.ne]: TournamentStatus.FINISHED
-				}
-			}
-		}
-	})
-}
-
-/** Wether or not this tournament can be edited (Is not FINISHED) */
-export function IsTournamentEditable(tournament: Tournament) {
-	return tournament.status !== TournamentStatus.FINISHED
-}
 
 /** Builds a player list in an embed for better display on the Discord App (FOR TETRIO) */
 export function BuildPlayerListTetrioEmbed(tournament: Tournament, players?: RegisteredPlayer[]) {
@@ -776,37 +628,9 @@ export function TetrioUserProfileEmbed(userData: TetrioPlayerRelevantData) {
 	return embed
 }
 
-/** This function will add a base player (discordId, challongeId, data? to the players array) */
-export async function AddPlayerToTournament(tournament: Tournament, player: RegisteredPlayer) {
-
-	// Add player to the tournament
-	console.log(`[TOURNAMENT] Añadiendo nuevo jugador ${player.discordId} al torneo ${tournament.name}`);
-
-	if (tournament.players.some(pl => pl.discordId === player.discordId))
-		return console.log('[TOURNAMENT] El jugador ya estába en la lista de jugadores inscritos en el torneo')
-
-	const players = Array.from(tournament.players)
-	players.push(player)
-	tournament.players = players
-	console.log("[TOURNAMENT] El jugador ha sido añadido a la lista");
-
-	await tournament.save()
-	console.log("[TOURNAMENT] El torneo ha sido guardado");
-}
-
-/** This function will EMPTY the entire player list of a selected tournament, USE WITH CAUTION */
-export async function ClearTournamentPlayerList(tournament: Tournament) {
 
 
-	console.log(`[TOURNAMENTS] Eliminando jugadores del torneo ${tournament.name}`)
-	await tournament.update({
-		players: [],
-		checked_in: [],
-	})
-	console.log(`[TOURNAMENTS] Los jugadores del torneo han sido eliminados.`);
 
-	return true
-}
 
 /** Utility function to quickly create embeds */
 export function PrettyMsg(options: Pick<EmbedData, "color" | "author" | "description" | "footer" | "thumbnail">) {
@@ -925,3 +749,261 @@ export async function UnblockUser(userId: Snowflake) {
 	await user.update('isBlacklisted', false)
 	return true
 }
+
+//#region Tournament Related Methods
+
+/** Wether or not this tournament can be edited (Is not FINISHED) */
+export function IsTournamentEditable(tournament: Tournament) {
+	return tournament.status !== TournamentStatus.FINISHED
+}
+
+export async function GetAllTournamentsByCategory(params: { guildId: Snowflake, category: number }) {
+	return await TournamentModel.findAll({
+		where: {
+			guild_id: params.guildId,
+			[Op.and]: {
+				category: params.category
+			}
+		}
+	})
+}
+
+/** This function returns every tournament from a guild, regardless of status */
+export async function GetAllTournaments(guild_id: string) {
+
+	return await TournamentModel.findAll({
+		where: {
+			guild_id,
+		}
+	})
+}
+
+/** 
+* This function handles the autocomplete entirely.
+*	Also, this function should only return the tournaments belonging to this guild.
+* This function DOES NOT return tournaments that are on a finished state.
+*/
+export async function SearchTournamentByNameAutocomplete(interaction: Subcommand.AutocompleteInteraction<'cached'>) {
+	const focusedOption = interaction.options.getFocused()
+	const torneos = await TournamentModel.findAll({
+		where: {
+			guild_id: interaction.guildId,
+			[Op.and]: {
+				[Op.not]: {
+					status: TournamentStatus.FINISHED
+				}
+			}
+		}
+	})
+
+	return void await interaction.respond(
+		torneos.filter(tournament => tournament.name.toLowerCase().includes(
+			focusedOption.toLowerCase()
+		)).map(torneo => ({ name: torneo.name.slice(0, 50), value: torneo.id.toString() }))
+	)
+}
+
+/** This function will EMPTY the entire player list of a selected tournament, USE WITH CAUTION */
+export async function ClearTournamentPlayerList(tournament: Tournament) {
+
+
+	console.log(`[TOURNAMENTS] Eliminando jugadores del torneo ${tournament.name}`)
+	await tournament.update({
+		players: [],
+		checked_in: [],
+	})
+	console.log(`[TOURNAMENTS] Los jugadores del torneo han sido eliminados.`);
+
+	return true
+}
+
+/** This function will add a base player (discordId, challongeId, data? to the players array) */
+export async function AddPlayerToTournament(tournament: Tournament, player: RegisteredPlayer) {
+
+	// Add player to the tournament
+	console.log(`[TOURNAMENT] Añadiendo nuevo jugador ${player.discordId} al torneo ${tournament.name}`);
+
+	if (tournament.players.some(pl => pl.discordId === player.discordId))
+		return console.log('[TOURNAMENT] El jugador ya estába en la lista de jugadores inscritos en el torneo')
+
+	const players = Array.from(tournament.players)
+	players.push(player)
+	tournament.players = players
+	console.log("[TOURNAMENT] El jugador ha sido añadido a la lista");
+
+	await tournament.save()
+	console.log("[TOURNAMENT] El torneo ha sido guardado");
+}
+
+/** Gets a single tournament from a guild, this function calls isNaN on the tournament ID internally. */
+export async function GetSingleTournament(guild_id: string, tournament_id: number) {
+
+	if (isNaN(tournament_id)) return null
+
+	return await TournamentModel.findOne({
+		where: {
+			guild_id: guild_id,
+			id: tournament_id,
+			[Op.and]: {
+				status: {
+					[Op.ne]: TournamentStatus.FINISHED
+				}
+			}
+		}
+	})
+}
+
+export async function GetTournament(id: number) {
+
+	if (isNaN(id)) return null
+
+	return await TournamentModel.findByPk(id)
+}
+
+export async function SearchTournamentById(id: number) {
+	return await TournamentModel.findByPk(id)
+}
+
+/** Function used to remove a player from a tournament */
+export async function RemovePlayerFromTournament(torneo: Tournament, discord_id: string) {
+
+	const playerId = discord_id
+
+	const players = Array.from(torneo.players)
+	const checkedIn = Array.from(torneo.checked_in) ?? []
+
+	// Remove the player from the registered players list
+	const filteredPlayers = players.filter(player => player.discordId !== discord_id)
+	// Remove the player from the checked in list
+	const checkedInFiltered = checkedIn.filter(id => id !== playerId)
+
+	console.log(`[TOURNAMENT] Quitando al jugador ${discord_id} del torneo ${torneo.name}`)
+
+	torneo.checked_in = checkedInFiltered
+	torneo.players = filteredPlayers
+
+	await torneo.save()
+
+	console.log(`[TOURNAMENT] El jugador ${discord_id} ha sido desinscrito.`)
+}
+
+export async function FinishTournament(tournament: Tournament, /** Discord ID of the winner */ winner?: string | null) {
+	console.log(`[TOURNAMENT] Marcando torneo ${tournament.id} - ${tournament.name} como FINALIZADO`);
+
+	await tournament.update({
+		registration_channel: null,
+		registration_message: null,
+		registration_open_until: null,
+		checkin_channel: null,
+		checkin_message: null,
+		checkin_threadId: null,
+		winner_id: winner,
+		status: TournamentStatus.FINISHED
+	})
+
+	console.log(`[TOURNAMENT] Torneo guardado!`);
+
+	return true
+}
+
+/** This function returns all ongoing (not marked as FINISHED) tournaments from a guild */
+export async function GetAllOngoingTournamentsFromGuild(guild_id: string) {
+	return await TournamentModel.findAll({
+		where: {
+			guild_id,
+			status: {
+				[Op.ne]: TournamentStatus.FINISHED
+			}
+		}
+	})
+}
+//#endregion
+
+//#region Database Category Methods
+
+function isInvalidName(name: string) {
+	return name.length > 150
+}
+
+function isInvalidDescription(description: string | null) {
+	if (description === null) return false
+	if (description.length > 512) return true
+	return false
+}
+
+export async function CreateCategory(params: { guildId: Snowflake, name: string, description: string | null }): Promise<TournamentCategory> {
+
+	if (!params.name)
+		throw ("Error: Category name is NULL.")
+
+	if (isInvalidName(params.name))
+		throw ("El **nombre de la categoría** no puede exceder los **150 caracteres**.")
+
+	if (isInvalidDescription(params.description))
+		throw ("La **descripción** de esta categoría **excede el límite de caracteres (512)**.")
+
+	/** First check if there is another category with the same name */
+	const GuildCategories = await CategoryModel.findAll({ where: { guild_id: params.guildId } })
+
+	if (GuildCategories.length > 20)
+		throw ("Este servidor ha alcanzado el máximo número de categorías (20)")
+
+	for (const category of GuildCategories) {
+		if (category.name.toLowerCase() === params.name.toLowerCase())
+			throw ("Una categoría con este nombre **ya existe** en este servidor.")
+	}
+
+	/** Create the category */
+	return await CategoryModel.create({
+		guild_id: params.guildId,
+		name: params.name,
+		description: params.description
+	})
+}
+
+export async function EditCategory(params: { guildId: Snowflake, name: string, description: string | null, categoryId: number }): Promise<TournamentCategory> {
+
+	if (isNaN(params.categoryId))
+		throw ("Ocurrió un error al intentar editar esta categoría. Asegúrate de **usar las opciones del autocompletado**.")
+
+	if (isInvalidName(params.name))
+		throw ("El **nombre de la categoría** no puede exceder los **150 caracteres**.")
+
+	const category = await GetCategoryFromGuild(params.categoryId, params.guildId)
+
+	if (!category)
+		throw ("Esta categoría no existe en este servidor.")
+
+	return await category.update({
+		name: params.name,
+		description: params.description ?? category.description
+	})
+}
+
+export async function GetAllGuildCategories(guildId: Snowflake) {
+	return await CategoryModel.findAll({ where: { guild_id: guildId } })
+}
+
+async function GetCategoryFromGuild(categoryId: number, guildId: Snowflake) {
+	return await CategoryModel.findOne({
+		where: {
+			guild_id: guildId,
+			id: categoryId
+		}
+	})
+}
+
+export async function SearchCategoryByNameAutocomplete(interaction: Subcommand.AutocompleteInteraction<'cached'>) {
+
+	const categories = await GetAllGuildCategories(interaction.guildId)
+
+	return void await interaction.respond(
+		categories.filter(category =>
+			category.name.toLowerCase().includes(interaction.options.getFocused(false))
+		).map(category => ({
+			name: category.name,
+			value: String(category.id)
+		}))
+	)
+}
+//#endregion Database Category Methods

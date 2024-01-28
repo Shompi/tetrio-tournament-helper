@@ -2,14 +2,19 @@ import { Subcommand } from "@sapphire/plugin-subcommands"
 import {
 	ChannelType,
 	ColorResolvable,
+	Colors,
 	EmbedBuilder,
 	GuildTextBasedChannel,
 	PermissionFlagsBits,
 } from "discord.js";
 
 import {
+	GetAllTournaments,
+	GetAllTournamentsByCategory,
+	PrettyMsg,
 	SearchTournamentByNameAutocomplete,
 } from "../helper-functions/index.js";
+import { codeBlock } from "@sapphire/utilities";
 
 export class AdminCommands extends Subcommand {
 
@@ -21,6 +26,10 @@ export class AdminCommands extends Subcommand {
 					name: 'anuncio',
 					chatInputRun: 'chatInputAnnounce',
 				},
+				{
+					name: 'listar-torneos',
+					chatInputRun: 'chatInputListTournaments'
+				}
 			]
 		});
 	}
@@ -100,6 +109,15 @@ export class AdminCommands extends Subcommand {
 								.setRequired(false)
 						)
 				)
+				.addSubcommand(tournamentlist =>
+					tournamentlist.setName('listar-torneos')
+						.setDescription('Muestra una lista de los torneos de este servidor.')
+						.addStringOption(category =>
+							category.setName('categoria')
+								.setDescription('Si usas esta opción, solo se mostrarán torneos pertenecientes a esta categoría.')
+								.setAutocomplete(true)
+						)
+				)
 		}, { idHints: ["1183537285761859665"] })
 	}
 
@@ -155,10 +173,39 @@ export class AdminCommands extends Subcommand {
 		}
 	}
 
-	public async autocompleteRun(interaction: Subcommand.AutocompleteInteraction<'cached'>) {
+	public async chatInputListTournaments(interaction: Subcommand.ChatInputCommandInteraction<'cached'>) {
 
-		if (interaction.options.getFocused(true).name === 'nombre-id') {
-			return void await SearchTournamentByNameAutocomplete(interaction)
+		const options = {
+			category: parseInt(interaction.options.getString('categoria', false) ?? "notanumber")
+		}
+
+		const tournaments = isNaN(options.category) ? await GetAllTournaments(interaction.guildId)
+			: await GetAllTournamentsByCategory({ category: options.category, guildId: interaction.guildId })
+
+		if (tournaments.length < 1)
+			return void await interaction.reply({ content: `No se ha creado ningún torneo en este servidor.` })
+
+
+		if (tournaments.length <= 10) {
+			const description = tournaments.map(
+				(tournament) => `${tournament.id} - ${tournament.name}`
+			).join('\n')
+
+
+			return void await interaction.reply({
+				embeds: [
+					PrettyMsg({
+						color: Colors.Blue,
+						description: codeBlock(description),
+						author: {
+							name: interaction.client.user.displayName,
+							iconURL: interaction.client.user.displayAvatarURL({ size: 128 })
+						}
+					})
+				]
+			})
+		} else {
+			// Pagination here
 		}
 	}
 }

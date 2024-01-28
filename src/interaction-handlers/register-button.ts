@@ -1,7 +1,7 @@
 import { InteractionHandler, InteractionHandlerTypes } from '@sapphire/framework';
 import { ActionRow, ActionRowBuilder, ButtonInteraction, Colors, ModalBuilder, TextInputBuilder, TextInputStyle } from "discord.js"
 import { Tournament, TournamentStatus } from '../sequelize/index.js';
-import { PrettyMsg, GetTournamentFromGuild, GetUserDataFromTetrio, SendMessageToChannel, TetrioUserProfileEmbed, CustomLogLevels, AllowedGames, RunGeneralTournamentRegistrationChecks } from '../helper-functions/index.js';
+import { PrettyMsg, GetSingleTournament, GetUserDataFromTetrio, SendMessageToChannel, TetrioUserProfileEmbed, CustomLogLevels, AllowedGames, RunGeneralTournamentRegistrationChecks } from '../helper-functions/index.js';
 import { TournamentDetailsEmbed } from "../helper-functions/index.js";
 import { RunTetrioTournamentRegistrationChecks } from '../helper-functions/index.js';
 import { AddPlayerToTournament } from '../helper-functions/index.js';
@@ -16,7 +16,7 @@ export class RegisterButtonHandler extends InteractionHandler {
 
 		let success: boolean = false
 
-		const tournament = await GetTournamentFromGuild(interaction.guildId, +tournamentId)
+		const tournament = await GetSingleTournament(interaction.guildId, +tournamentId)
 
 		if (!tournament) return void await interaction.reply({
 			ephemeral: true,

@@ -1,6 +1,6 @@
 import { InteractionHandler, InteractionHandlerTypes } from "@sapphire/framework"
 import { ButtonInteraction, Colors } from "discord.js";
-import { PrettyMsg, GetTournamentFromGuild, AllowedGames, BuildPlayerListTetrioEmbed, BuildPlayerListGeneralEmbed } from "../helper-functions/index.js";
+import { PrettyMsg, GetSingleTournament, AllowedGames, BuildPlayerListTetrioEmbed, BuildPlayerListGeneralEmbed } from "../helper-functions/index.js";
 import { CommonMessages } from "../helper-functions/common-messages.js";
 import { codeBlock } from "@sapphire/utilities";
 
@@ -10,7 +10,7 @@ export class PlayerListButtonHandler extends InteractionHandler {
 	}
 
 	public async run(interaction: ButtonInteraction<'cached'>, tournamentId: string) {
-		const tournament = await GetTournamentFromGuild(interaction.guildId, +tournamentId)
+		const tournament = await GetSingleTournament(interaction.guildId, +tournamentId)
 
 		if (!tournament) return void await interaction.reply({
 			ephemeral: true,

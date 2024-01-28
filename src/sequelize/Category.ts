@@ -15,6 +15,8 @@ export interface TournamentCategory extends Model<InferAttributes<TournamentCate
 	guild_id: Snowflake
 	/** Name of this category (length 150) */
 	name: string
+	/** Description of this category, if any */
+	description: CreationOptional<string | null>
 }
 
 const CategoryModel = sequelize.define<TournamentCategory>('Category', {
@@ -24,13 +26,20 @@ const CategoryModel = sequelize.define<TournamentCategory>('Category', {
 		allowNull: false,
 		type: DataTypes.INTEGER
 	},
+
 	guild_id: {
 		type: DataTypes.STRING,
 		allowNull: false,
 	},
+
 	name: {
 		allowNull: false,
-		type: DataTypes.STRING({length: 150})
+		type: DataTypes.STRING({ length: 150 })
+	},
+
+	description: {
+		allowNull: true,
+		type: DataTypes.STRING({ length: 512 })
 	}
 })
 
