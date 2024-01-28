@@ -1009,6 +1009,9 @@ export async function SearchCategoryByNameAutocomplete(interaction: Subcommand.A
 
 
 export async function CheckIfCategoryBelongsToGuild(params: { guildId: Snowflake, category: number }) {
+
+	if (isNaN(params.category)) return null
+
 	return await CategoryModel.findOne({
 		where: {
 			guild_id: params.guildId,

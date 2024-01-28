@@ -742,15 +742,21 @@ export class TournamentCommands extends Subcommand {
 		let createdTournament: Tournament | null = null
 		let category: number | null = null
 
-		if (isNaN(options.category)) category = null
-		else {
-			/** Check if this category is from this guild */
-			const isValidCategory = await CheckIfCategoryBelongsToGuild({ category: options.category, guildId: interaction.guildId })
 
-			isValidCategory ?
-				category = category :
-				category = null
+		/** Check if this category is from this guild */
+		const isValidCategory = await CheckIfCategoryBelongsToGuild({ category: options.category, guildId: interaction.guildId })
+
+		if (!isValidCategory) {
+			return void await interaction.reply({
+				embeds: [
+					PrettyMsg({
+						description: `❌ **La categoría que ingresaste no existe en este servidor.**\nDebes crearla usando el comando \`/categorias crear\` y luego **seleccionarla en las opciones del autocompletado** de este comando.`,
+						color: Colors.Red
+					})
+				]
+			})
 		}
+
 
 		try {
 			if (options.game === AllowedGames.TETRIO) {
@@ -759,7 +765,7 @@ export class TournamentCommands extends Subcommand {
 					guild_id: interaction.guildId,
 					name: options.name,
 					game: options.game,
-					category,
+					category: isValidCategory.id,
 					description: options.description,
 					status: TournamentStatus.OPEN,
 					players: [],
@@ -781,7 +787,7 @@ export class TournamentCommands extends Subcommand {
 					guild_id: interaction.guildId,
 					name: options.name,
 					game: options.game,
-					category,
+					category: isValidCategory.id,
 					description: options.description,
 					status: TournamentStatus.OPEN,
 					players: [],
