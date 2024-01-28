@@ -9,7 +9,7 @@ import { RegisteredPlayer, Tournament, TournamentModel, TournamentStatus, Tourna
 console.log("[SEQUELIZE] Sincronizando modelo Category");
 await CategoryModel.sync()
 console.log("[SEQUELIZE] Sincronizando modelo TournamentModel");
-await TournamentModel.sync()
+await TournamentModel.sync({ alter: true })
 console.log("[SEQUELIZE] Sincronizando modelo GuildModel");
 await GuildModel.sync()
 console.log("[SEQUELIZE] Sincronizando modelo BlocklistModel");
