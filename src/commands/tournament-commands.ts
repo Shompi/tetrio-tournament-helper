@@ -23,6 +23,7 @@ import {
 	BuildPlayerListChallonge,
 	BuildPlayerListJSON,
 	BuildPlayerListTetrioEmbed,
+	CheckIfCategoryBelongsToGuild,
 	ClearTournamentPlayerList,
 	FinishTournament,
 	GameName,
@@ -742,7 +743,14 @@ export class TournamentCommands extends Subcommand {
 		let category: number | null = null
 
 		if (isNaN(options.category)) category = null
-		else category = options.category
+		else {
+			/** Check if this category is from this guild */
+			const isValidCategory = await CheckIfCategoryBelongsToGuild({ category: options.category, guildId: interaction.guildId })
+
+			isValidCategory ?
+				category = category :
+				category = null
+		}
 
 		try {
 			if (options.game === AllowedGames.TETRIO) {

@@ -1006,4 +1006,14 @@ export async function SearchCategoryByNameAutocomplete(interaction: Subcommand.A
 		}))
 	)
 }
+
+
+export async function CheckIfCategoryBelongsToGuild(params: { guildId: Snowflake, category: number }) {
+	return await CategoryModel.findOne({
+		where: {
+			guild_id: params.guildId,
+			id: params.category
+		}
+	})
+}
 //#endregion Database Category Methods
