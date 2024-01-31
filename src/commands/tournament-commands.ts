@@ -731,7 +731,7 @@ export class TournamentCommands extends Subcommand {
 		const options = {
 			name: interaction.options.getString("nombre", true),
 			game: interaction.options.getString("juego", true) as GameName,
-			category: parseInt(interaction.options.getString('categoria', false) ?? "notnumber"),
+			category: parseInt(interaction.options.getString('categoria', false) ?? "-1"),
 			description: interaction.options.getString('descripcion', false),
 			rank_cap: interaction.options.getString('rank-cap', false),
 			tr_cap: interaction.options.getInteger('tr-cap', false),
@@ -740,23 +740,23 @@ export class TournamentCommands extends Subcommand {
 			max_players: interaction.options.getInteger('maximo-jugadores', false),
 		}
 		let createdTournament: Tournament | null = null
-		let category: number | null = null
 
+		if (options.category <= -1) {
 
-		/** Check if this category is from this guild */
-		const isValidCategory = await CheckIfCategoryBelongsToGuild({ category: options.category, guildId: interaction.guildId })
+			/** Check if this category is from this guild */
+			const isValidCategory = await CheckIfCategoryBelongsToGuild({ category: options.category, guildId: interaction.guildId })
 
-		if (!isValidCategory) {
-			return void await interaction.reply({
-				embeds: [
-					PrettyMsg({
-						description: `❌ **La categoría que ingresaste no existe en este servidor.**\nDebes crearla usando el comando \`/categorias crear\` y luego **seleccionarla en las opciones del autocompletado** de este comando.`,
-						color: Colors.Red
-					})
-				]
-			})
+			if (!isValidCategory) {
+				return void await interaction.reply({
+					embeds: [
+						PrettyMsg({
+							description: `❌ **La categoría que ingresaste no existe en este servidor.**\nDebes crearla usando el comando \`/categorias crear\` y luego **seleccionarla en las opciones del autocompletado** de este comando.`,
+							color: Colors.Red
+						})
+					]
+				})
+			}
 		}
-
 
 		try {
 			if (options.game === AllowedGames.TETRIO) {
@@ -765,7 +765,7 @@ export class TournamentCommands extends Subcommand {
 					guild_id: interaction.guildId,
 					name: options.name,
 					game: options.game,
-					category: isValidCategory.id,
+					category: options.category,
 					description: options.description,
 					status: TournamentStatus.OPEN,
 					players: [],
@@ -787,7 +787,7 @@ export class TournamentCommands extends Subcommand {
 					guild_id: interaction.guildId,
 					name: options.name,
 					game: options.game,
-					category: isValidCategory.id,
+					category: options.category,
 					description: options.description,
 					status: TournamentStatus.OPEN,
 					players: [],
