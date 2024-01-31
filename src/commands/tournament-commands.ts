@@ -548,7 +548,7 @@ export class TournamentCommands extends Subcommand {
 
 		try {
 			const registrationMessage = await channel.send({
-				files: [],
+				files: options.banner ? [options.banner] : [],
 				content: interaction.options.getString('mensaje', false) ?? CommonMessages.Tournament.CheckinStartedDefault.replace('{userid}', interaction.user.toString()).replace('{nombre_torneo}', tournament.name),
 				components: [ActionRowPrimary, ActionRowSecondary],
 				embeds: [TournamentDetailsEmbed(tournament)]
