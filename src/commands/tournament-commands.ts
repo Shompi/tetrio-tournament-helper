@@ -741,7 +741,7 @@ export class TournamentCommands extends Subcommand {
 		}
 		let createdTournament: Tournament | null = null
 
-		if (options.category <= -1) {
+		if (options.category !== -1) {
 
 			/** Check if this category is from this guild */
 			const isValidCategory = await CheckIfCategoryBelongsToGuild({ category: options.category, guildId: interaction.guildId })
