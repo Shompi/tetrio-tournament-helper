@@ -1,6 +1,6 @@
 import { Subcommand } from "@sapphire/plugin-subcommands";
 import { CreateCategory, EditCategory, GetAllGuildCategories, PrettyMsg } from "../helper-functions/index.js";
-import { Colors } from "discord.js";
+import { Colors, PermissionFlagsBits } from "discord.js";
 
 export class CategoryCommands extends Subcommand {
 
@@ -25,6 +25,8 @@ export class CategoryCommands extends Subcommand {
 		registry.registerChatInputCommand((builder) =>
 			builder //
 				.setName('categorias')
+				.setDMPermission(false)
+				.setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
 				.setDescription('Comandos relacionados a las categorias de torneos de este servidor.')
 				.addSubcommand(create =>
 					create.setName('crear')
