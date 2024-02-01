@@ -118,7 +118,7 @@ export class AdminCommands extends Subcommand {
 								.setAutocomplete(true)
 						)
 				)
-		}, { idHints: ["1183537285761859665"] })
+		}, { idHints: ["1202465124770914344"] })
 	}
 
 	public async chatInputAnnounce(interaction: Subcommand.ChatInputCommandInteraction<'cached'>) {

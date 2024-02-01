@@ -67,7 +67,7 @@ export class CategoryCommands extends Subcommand {
 								.setDescription('Nueva descripción de esta categoría.')
 								.setMaxLength(512)
 						)
-				), { idHints: ["1200746353429586040"] }
+			), { idHints: ["1202465127618576404"] }
 		)
 	}
 

@@ -25,7 +25,7 @@ export class FeedbackCommand extends Command {
 						.setMaxLength(2000)
 				)
 
-		}, { idHints: ["1183537281387204728"] })
+		}, { idHints: ["1202465128940044368"] })
 	}
 	public async chatInputRun(interaction: Command.ChatInputCommandInteraction<'cached'>) {
 		// Your code goes here

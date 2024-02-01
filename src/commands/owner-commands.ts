@@ -83,10 +83,7 @@ export class OwnerCommands extends Subcommand {
 										.setRequired(true)
 								)
 						))
-		}), {
-			guildIds: ["941843371062861855"],
-			idHints: ["1197049186252759070"],
-		}
+		}, { guildIds: ["941843371062861855"], idHints: ["1202465130521174036"] })
 	}
 
 	public async TournamentInfo(interaction: Subcommand.ChatInputCommandInteraction) {

@@ -26,7 +26,7 @@ export class SetupCommmand extends Command {
 						.setDescription('El canal al cual se enviarán mensajes de logs, errores, entre otros.')
 						.addChannelTypes(ChannelType.GuildText)
 				)
-		}, { idHints: ["1188308099245805630"] })
+		}, { idHints: ["1202465131766743041"] })
 
 
 	}

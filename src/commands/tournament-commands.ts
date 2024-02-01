@@ -479,7 +479,7 @@ export class TournamentCommands extends Subcommand {
 						)
 
 				)
-		}, { idHints: ["1192271675186749560"] })
+		}, { idHints: ["1202465133465436161"] })
 	}
 
 	public async chatInputOpenRegistration(interaction: Subcommand.ChatInputCommandInteraction<'cached'>) {
