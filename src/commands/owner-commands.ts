@@ -84,8 +84,8 @@ export class OwnerCommands extends Subcommand {
 								)
 						))
 		}), {
-			idHints: ["1197049186252759070"],
 			guildIds: ["941843371062861855"],
+			idHints: ["1197049186252759070"],
 		}
 	}
 
