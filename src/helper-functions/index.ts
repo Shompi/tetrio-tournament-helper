@@ -1011,7 +1011,7 @@ export async function GetAllGuildCategories(guildId: Snowflake): Promise<Categor
 	return Array.from(guild.categories)
 }
 
-async function GetCategoryFromGuild(categoryId: string, guildId: Snowflake): Promise<Category | undefined> {
+export async function GetCategoryFromGuild(categoryId: string, guildId: Snowflake): Promise<Category | undefined> {
 
 	const Guild = await GetGuildConfigs(guildId)
 

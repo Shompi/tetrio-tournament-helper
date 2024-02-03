@@ -1,5 +1,5 @@
 import { Subcommand } from "@sapphire/plugin-subcommands";
-import { CreateCategory, EditCategory, PrettyMsg } from "../helper-functions/index.js";
+import { CreateCategory, EditCategory, GetCategoryFromGuild, PrettyMsg } from "../helper-functions/index.js";
 import { Colors, PermissionFlagsBits } from "discord.js";
 
 export class CategoryCommands extends Subcommand {
@@ -10,11 +10,15 @@ export class CategoryCommands extends Subcommand {
 			subcommands: [
 				{
 					name: 'crear',
-					chatInputRun: 'chatInputCreateCategory'
+					chatInputRun: 'chatInputCreateCategory',
 				},
 				{
 					name: 'editar',
-					chatInputRun: 'chatInputEditCategory'
+					chatInputRun: 'chatInputEditCategory',
+				},
+				{
+					name: 'ver',
+					chatInputRun: 'chatInputShowCategory',
 				}
 			]
 		});
@@ -66,6 +70,17 @@ export class CategoryCommands extends Subcommand {
 							desc.setName('descripcion')
 								.setDescription('Nueva descripción de esta categoría.')
 								.setMaxLength(500)
+						)
+				)
+				.addSubcommand(show =>
+					show.setName('ver')
+						.setDescription('Ve los detalles de una categoría')
+						.addStringOption(categoria =>
+							categoria.setName('categoria')
+								.setDescription('Nombre de la categoría.')
+								.setAutocomplete(true)
+								.setMaxLength(64)
+								.setRequired(true)
 						)
 				), { idHints: ["1202465127618576404"] }
 		)
@@ -154,5 +169,31 @@ export class CategoryCommands extends Subcommand {
 				]
 			})
 		}
+	}
+
+	public async chatInputShowCategory(interaction: Subcommand.ChatInputCommandInteraction<'cached'>) {
+
+		const categoryId = interaction.options.getString('categoria', true)
+
+		const category = await GetCategoryFromGuild(categoryId, interaction.guildId)
+
+		if (!category)
+			return void await interaction.reply({
+				embeds: [
+					PrettyMsg({
+						description: `La categoría que ingresaste no existe en este servidor. Asegúrate de utilizar una de las opciones del autocompletado.`,
+						color: Colors.Yellow
+					})
+				]
+			})
+
+		return void await interaction.reply({
+			embeds: [
+				PrettyMsg({
+					description: `**Nombre de la categoría:** ${category.name}\n**Descripción:** ${category.description}`,
+					color: Colors.Blue
+				})
+			]
+		})
 	}
 }
