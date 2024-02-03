@@ -14,6 +14,8 @@ import {
 	User
 } from "discord.js";
 
+import { v4 as uuidv4 } from "uuid"
+
 import { Subcommand } from "@sapphire/plugin-subcommands";
 import { codeBlock } from "@sapphire/utilities";
 import { AsciiTable3 } from "ascii-table3";
@@ -22,17 +24,16 @@ import { Op } from "sequelize";
 import { request } from "undici";
 import {
 	BlocklistModel,
-	CategoryModel,
 	GuildConfigs,
 	GuildModel,
 	RegisteredPlayer,
 	Tournament,
-	TournamentCategory,
 	TournamentModel,
 	TournamentStatus,
 	TournamentStatusStrings
 } from "../sequelize/index.js";
 import { CommonMessages } from "./common-messages.js";
+import { Category } from "../sequelize/Guilds.js";
 
 //#region Declaration stuff
 export type TetrioApiCacheStatus = "hit" | "miss" | "awaited"
@@ -647,13 +648,15 @@ export function PrettyMsg(options: Pick<EmbedData, "color" | "author" | "descrip
 /** Gets a guild's configs for the bot */
 export async function GetGuildConfigs(guild_id: Snowflake) {
 
-	const [guild, _] = await GuildModel.findOrCreate({
+	const [configs, _] = await GuildModel.findOrCreate({
 		where: {
 			guild_id: guild_id
 		}
 	})
 
-	return guild
+	if (_) console.log(`[GUILDS] Se ha creado una nueva entrada para la guild ${guild_id}`)
+
+	return configs
 }
 
 type GuildConfig = Pick<GuildConfigs, "logging_channel" | "allowed_roles">
@@ -931,66 +934,89 @@ function isInvalidDescription(description: string | null) {
 	return false
 }
 
-export async function CreateCategory(params: { guildId: Snowflake, name: string, description: string | null }): Promise<TournamentCategory> {
+export async function CreateCategory(params: { guildId: Snowflake, name: string, description: string | null }): Promise<Category> {
 
 	if (!params.name)
-		throw ("Error: Category name is NULL.")
+		throw ("Error: Necesitas pasar un nombre para crear la categoría.")
 
 	if (isInvalidName(params.name))
 		throw ("El **nombre de la categoría** no puede exceder los **150 caracteres**.")
 
 	if (isInvalidDescription(params.description))
-		throw ("La **descripción** de esta categoría **excede el límite de caracteres (512)**.")
+		throw ("La **descripción** de esta categoría **excede el límite de caracteres (500)**.")
 
 	/** First check if there is another category with the same name */
-	const GuildCategories = await CategoryModel.findAll({ where: { guild_id: params.guildId } })
+	const GuildConfigs = await GetGuildConfigs(params.guildId)
+	const categories = Array.from(GuildConfigs.categories)
+	if (categories.length === 25)
+		throw ("Este servidor ha alcanzado el máximo número de categorías (25)")
 
-	if (GuildCategories.length > 20)
-		throw ("Este servidor ha alcanzado el máximo número de categorías (20)")
-
-	for (const category of GuildCategories) {
+	for (const category of categories) {
 		if (category.name.toLowerCase() === params.name.toLowerCase())
 			throw ("Una categoría con este nombre **ya existe** en este servidor.")
 	}
 
-	/** Create the category */
-	return await CategoryModel.create({
-		guild_id: params.guildId,
+	const new_category: Category = {
+		id: uuidv4(),
 		name: params.name,
 		description: params.description
+	}
+
+	categories.push(new_category)
+
+	console.log("[CATEGORIES] Guardando nueva categoría...")
+	await GuildConfigs.update({
+		categories: categories
 	})
+	console.log("[CATEGORIES] La categoría ha sido guardada.")
+
+	return new_category
+
 }
 
-export async function EditCategory(params: { guildId: Snowflake, name: string, description: string | null, categoryId: number }): Promise<TournamentCategory> {
+export async function EditCategory(params: { guildId: Snowflake, name: string, description: string | null, categoryId: string }): Promise<Category> {
 
-	if (isNaN(params.categoryId))
-		throw ("Ocurrió un error al intentar editar esta categoría. Asegúrate de **usar las opciones del autocompletado**.")
-
-	if (isInvalidName(params.name))
-		throw ("El **nombre de la categoría** no puede exceder los **150 caracteres**.")
-
-	const category = await GetCategoryFromGuild(params.categoryId, params.guildId)
+	const categories = await GetAllGuildCategories(params.guildId)
+	const category = categories.find(category => category.id === params.categoryId)
 
 	if (!category)
-		throw ("Esta categoría no existe en este servidor.")
+		throw ("La categoría que ingresaste no pertenece a este servidor, no ha sido creada, o no es una opción del **autocompletado**.")
 
-	return await category.update({
-		name: params.name,
-		description: params.description ?? category.description
-	})
+	if (isInvalidName(params.name))
+		throw ("El **nombre de la categoría** no puede exceder los **64 caracteres**.")
+
+	if (isInvalidDescription(params.description))
+		throw ("La descripción de esta categoría excede el límite de caracteres (512).")
+
+	/** Replace the values in  the found category */
+	category.name = params.name
+	category.description = params.description
+
+	/** Filter out the category we are editing from the array */
+	const newCategories = categories.filter(_category => _category.id !== category.id)
+
+	/** Push in the new edited category */
+	newCategories.push(category)
+
+	/** Replace the guild categories array with the new categories */
+	const _ = await UpdateCategories(params.guildId, newCategories).catch(console.error)
+	if (!_) throw ("Ocurrió un error intentando editar esta categoría.")
+
+	return category
 }
 
-export async function GetAllGuildCategories(guildId: Snowflake) {
-	return await CategoryModel.findAll({ where: { guild_id: guildId } })
+export async function GetAllGuildCategories(guildId: Snowflake): Promise<Category[]> {
+	const guild = await GetGuildConfigs(guildId)
+
+	return Array.from(guild.categories)
 }
 
-async function GetCategoryFromGuild(categoryId: number, guildId: Snowflake) {
-	return await CategoryModel.findOne({
-		where: {
-			guild_id: guildId,
-			id: categoryId
-		}
-	})
+async function GetCategoryFromGuild(categoryId: string, guildId: Snowflake): Promise<Category | undefined> {
+
+	const Guild = await GetGuildConfigs(guildId)
+
+	return Guild.categories.find(category => category.id === categoryId)
+
 }
 
 export async function SearchCategoryByNameAutocomplete(interaction: Subcommand.AutocompleteInteraction<'cached'>) {
@@ -1001,22 +1027,33 @@ export async function SearchCategoryByNameAutocomplete(interaction: Subcommand.A
 		categories.filter(category =>
 			category.name.toLowerCase().includes(interaction.options.getFocused(false))
 		).map(category => ({
-			name: category.name,
-			value: String(category.id)
+			name: category.name.slice(0, 50),
+			value: category.id
 		}))
 	)
 }
 
+export async function CheckIfCategoryBelongsToGuild(params: { guildId: Snowflake, category: string }): Promise<boolean> {
 
-export async function CheckIfCategoryBelongsToGuild(params: { guildId: Snowflake, category: number }) {
+	const Guild = await GetGuildConfigs(params.guildId)
 
-	if (isNaN(params.category)) return null
+	return Guild.categories.some(category => category.id === params.category)
+}
 
-	return await CategoryModel.findOne({
-		where: {
-			guild_id: params.guildId,
-			id: params.category
-		}
-	})
+async function UpdateCategories(guildId: Snowflake, categories: Category[]) {
+	const guild = await GetGuildConfigs(guildId)
+
+	try {
+		await guild.update({
+			categories: categories
+		})
+
+		return true
+	}
+	catch (e) {
+		console.error(e);
+
+		return false
+	}
 }
 //#endregion Database Category Methods

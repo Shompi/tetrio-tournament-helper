@@ -1,5 +1,5 @@
 import { Subcommand } from "@sapphire/plugin-subcommands";
-import { CreateCategory, EditCategory, GetAllGuildCategories, PrettyMsg } from "../helper-functions/index.js";
+import { CreateCategory, EditCategory, PrettyMsg } from "../helper-functions/index.js";
 import { Colors, PermissionFlagsBits } from "discord.js";
 
 export class CategoryCommands extends Subcommand {
@@ -35,13 +35,13 @@ export class CategoryCommands extends Subcommand {
 							name.setName('categoria')
 								.setDescription('El nombre de la categoría.')
 								.setRequired(true)
-								.setMaxLength(150)
+								.setMaxLength(64)
 								.setMinLength(1)
 						)
 						.addStringOption(desc =>
 							desc.setName('descripcion')
-								.setDescription('Descripción de esta categoria (Máximo 512 caracteres).')
-								.setMaxLength(512)
+								.setDescription('Descripción de esta categoria (Máximo 500 caracteres).')
+								.setMaxLength(500)
 						)
 				)
 				.addSubcommand(editar =>
@@ -49,10 +49,10 @@ export class CategoryCommands extends Subcommand {
 						.setDescription('Edita el nombre de una categoría.')
 						.addStringOption(categoria =>
 							categoria.setName('categoria')
-								.setDescription('El nombre o ID de la categoría que quieres editar.')
+								.setDescription('Categoría que quieres editar.')
 								.setAutocomplete(true)
 								.setRequired(true)
-								.setMaxLength(150)
+								.setMaxLength(64)
 								.setMinLength(1)
 						)
 						.addStringOption(name =>
@@ -60,12 +60,12 @@ export class CategoryCommands extends Subcommand {
 								.setDescription('Nuevo nombre de la categoría.')
 								.setRequired(true)
 								.setMinLength(1)
-								.setMaxLength(150)
+								.setMaxLength(64)
 						)
 						.addStringOption(desc =>
 							desc.setName('descripcion')
 								.setDescription('Nueva descripción de esta categoría.')
-								.setMaxLength(512)
+								.setMaxLength(500)
 						)
 			), { idHints: ["1202465127618576404"] }
 		)
@@ -87,8 +87,6 @@ export class CategoryCommands extends Subcommand {
 				name: options.name,
 				description: options.description
 			})
-
-			console.log("[CATEGORIES] La categoría ha sido creada.")
 
 			return void await interaction.editReply({
 				embeds: [

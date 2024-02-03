@@ -731,7 +731,8 @@ export class TournamentCommands extends Subcommand {
 		const options = {
 			name: interaction.options.getString("nombre", true),
 			game: interaction.options.getString("juego", true) as GameName,
-			category: parseInt(interaction.options.getString('categoria', false) ?? "-1"),
+			/** uuidV4 string id of the selected category */
+			category: interaction.options.getString('categoria'),
 			description: interaction.options.getString('descripcion', false),
 			rank_cap: interaction.options.getString('rank-cap', false),
 			tr_cap: interaction.options.getInteger('tr-cap', false),
@@ -741,9 +742,8 @@ export class TournamentCommands extends Subcommand {
 		}
 		let createdTournament: Tournament | null = null
 
-		if (options.category !== -1) {
-
-			/** Check if this category is from this guild */
+		/** Check if this category is from this guild */
+		if (options.category) {
 			const isValidCategory = await CheckIfCategoryBelongsToGuild({ category: options.category, guildId: interaction.guildId })
 
 			if (!isValidCategory) {

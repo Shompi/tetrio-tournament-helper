@@ -8,6 +8,15 @@ const sequelize = new Sequelize({
 	//logging: (...msgs) => console.log(`[GUILDS DATABASE] => ${msgs.forEach(msg => console.log(msg))}`)
 });
 
+export type Category = {
+	/** ID of the category */
+	id: string
+	/** The name of this category (should have a maximum length of 64 chars) (UNIQUE) */
+	name: string
+	/** The description of this category (should have a maximum length of 500) */
+	description: null | string
+}
+
 export interface GuildConfigs extends Model<InferAttributes<GuildConfigs>, InferCreationAttributes<GuildConfigs>> {
 	// Some fields are optional when calling UserModel.create() or UserModel.build()
 	guild_id: Snowflake
@@ -17,6 +26,9 @@ export interface GuildConfigs extends Model<InferAttributes<GuildConfigs>, Infer
 
 	/** The roles that are allowed to use admin commands aswell as tournament commands on this guild  */
 	allowed_roles: Snowflake[]
+
+	/** The created categories that belong to this guild */
+	categories: Category[]
 }
 
 const GuildModel = sequelize.define<GuildConfigs>('Guild', {
@@ -37,6 +49,16 @@ const GuildModel = sequelize.define<GuildConfigs>('Guild', {
 		},
 		set(val) {
 			this.setDataValue('allowed_roles', JSON.stringify(val) as unknown as Snowflake[])
+		},
+	},
+	categories: {
+		type: DataTypes.TEXT,
+		defaultValue: "[]",
+		get() {
+			return JSON.parse(this.getDataValue('categories') as unknown as string) as Category[]
+		},
+		set(val) {
+			this.setDataValue('categories', JSON.stringify(val) as unknown as Category[])
 		},
 	}
 })

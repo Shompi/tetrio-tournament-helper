@@ -49,8 +49,8 @@ export interface Tournament extends Model<InferAttributes<Tournament>, InferCrea
 	/** Name of the tournament */
 	name: string;
 
-	/** Category of this tournament, if any */
-	category: number | null;
+	/** uuidV4 of this category, if any */
+	category: string | null;
 	game: GameName;
 
 	/** The description of this tournament, if any */
@@ -138,7 +138,7 @@ const TournamentModel = sequelize.define<Tournament>('Tournament', {
 	},
 
 	category: {
-		type: DataTypes.INTEGER,
+		type: DataTypes.STRING,
 		allowNull: true,
 		defaultValue: null,
 	},
