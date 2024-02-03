@@ -117,8 +117,8 @@ export class CategoryCommands extends Subcommand {
 		await interaction.deferReply()
 
 		const options = {
-			categoryId: parseInt(interaction.options.getString('nombre', true)),
-			name: interaction.options.getString('nombre', true),
+			categoryId: interaction.options.getString('categoria', true),
+			name: interaction.options.getString('nuevo-nombre', true),
 			description: interaction.options.getString('descripcion', false)
 		}
 
