@@ -190,7 +190,7 @@ export class CategoryCommands extends Subcommand {
 		return void await interaction.reply({
 			embeds: [
 				PrettyMsg({
-					description: `**Nombre de la categoría:** ${category.name}\n**Descripción:** ${category.description}`,
+					description: `**Nombre de la categoría:** ${category.name}\n**Descripción:** ${category.description}\n**UUID:** \`${category.id}\``,
 					color: Colors.Blue
 				})
 			]
