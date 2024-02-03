@@ -67,7 +67,7 @@ export class CategoryCommands extends Subcommand {
 								.setDescription('Nueva descripción de esta categoría.')
 								.setMaxLength(500)
 						)
-			), { idHints: ["1202465127618576404"] }
+				), { idHints: ["1202465127618576404"] }
 		)
 	}
 
@@ -135,7 +135,7 @@ export class CategoryCommands extends Subcommand {
 			return void await interaction.editReply({
 				embeds: [
 					PrettyMsg({
-						description: `✅ ¡La categoría ha sido editada exitósamente!\n\n**Nuevo nombre:** ${category.name}**`,
+						description: `✅ ¡La categoría ha sido editada exitósamente!\n\n**Nuevo nombre:** \`${category.name}\``,
 						color: Colors.Green
 					})
 				]
