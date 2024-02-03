@@ -114,6 +114,7 @@ export class AdminCommands extends Subcommand {
 						.setDescription('Muestra una lista de los torneos de este servidor.')
 						.addStringOption(category =>
 							category.setName('categoria')
+								.setAutocomplete(true)
 								.setDescription('Si usas esta opción, solo se mostrarán torneos pertenecientes a esta categoría.')
 								.setAutocomplete(true)
 						)
@@ -176,17 +177,17 @@ export class AdminCommands extends Subcommand {
 	public async chatInputListTournaments(interaction: Subcommand.ChatInputCommandInteraction<'cached'>) {
 
 		const options = {
-			category: parseInt(interaction.options.getString('categoria', false) ?? "notanumber")
+			category: interaction.options.getString('categoria')
 		}
 
-		const tournaments = isNaN(options.category) ? await GetAllTournaments(interaction.guildId)
-			: await GetAllTournamentsByCategory({ category: options.category, guildId: interaction.guildId })
+		const tournaments = options.category ? await GetAllTournaments(interaction.guildId)
+			: await GetAllTournamentsByCategory({ category: options.category!, guildId: interaction.guildId })
 
 		if (tournaments.length < 1)
-			return void await interaction.reply({ content: `No se ha creado ningún torneo en este servidor.` })
+			return void await interaction.reply({ content: `No se han encontrado torneos.` })
 
 
-		if (tournaments.length <= 10) {
+		if (tournaments.length <= 20) {
 			const description = tournaments.map(
 				(tournament) => `${tournament.id} - ${tournament.name}`
 			).join('\n')
@@ -205,7 +206,7 @@ export class AdminCommands extends Subcommand {
 				]
 			})
 		} else {
-			// Pagination here
+			return void await interaction.reply({ content: `Se han encontrado muchos torneos, la paginación para este comando será implementada en el futuro.` })
 		}
 	}
 }

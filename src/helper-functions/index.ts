@@ -760,7 +760,7 @@ export function IsTournamentEditable(tournament: Tournament) {
 	return tournament.status !== TournamentStatus.FINISHED
 }
 
-export async function GetAllTournamentsByCategory(params: { guildId: Snowflake, category: number }) {
+export async function GetAllTournamentsByCategory(params: { guildId: Snowflake, category: string }) {
 	return await TournamentModel.findAll({
 		where: {
 			guild_id: params.guildId,
