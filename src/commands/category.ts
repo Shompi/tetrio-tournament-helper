@@ -173,7 +173,7 @@ export class CategoryCommands extends Subcommand {
 
 	public async chatInputShowCategory(interaction: Subcommand.ChatInputCommandInteraction<'cached'>) {
 
-		const categoryId = interaction.options.getString('categoria', true)
+		const categoryId = interaction.options.getString('categoria')
 		const categories = await GetAllGuildCategories(interaction.guildId)
 
 		if (categories.length === 0)
