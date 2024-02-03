@@ -6,9 +6,9 @@ import { RegisteredPlayer, Tournament, TournamentModel, TournamentStatus, Tourna
 /** Sync the models */
 
 console.log("[SEQUELIZE] Sincronizando modelo TournamentModel");
-await TournamentModel.sync({ alter: true })
+await TournamentModel.sync()
 console.log("[SEQUELIZE] Sincronizando modelo GuildModel");
-await GuildModel.sync({ alter: true })
+await GuildModel.sync()
 console.log("[SEQUELIZE] Sincronizando modelo BlocklistModel");
 await BlocklistModel.sync()
 console.log("[SEQUELIZE] La sincronización de los modelos ha terminado.")
