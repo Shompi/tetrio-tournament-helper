@@ -191,7 +191,7 @@ export class CategoryCommands extends Subcommand {
 
 			/** List all categories of this guild */
 			const description = categories.map((category, idx) =>
-				`${(idx + 1).toString().padStart(2, '0')} - **${category.name}**`
+				`${(idx + 1).toString().padStart(2, '0')} - ${category.name}`
 			).join("\n")
 
 
