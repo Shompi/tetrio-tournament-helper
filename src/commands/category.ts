@@ -81,7 +81,6 @@ export class CategoryCommands extends Subcommand {
 								.setDescription('Nombre de la categoría.')
 								.setAutocomplete(true)
 								.setMaxLength(64)
-								.setRequired(true)
 						)
 				), { idHints: ["1202465127618576404"] }
 		)
