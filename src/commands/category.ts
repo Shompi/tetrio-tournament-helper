@@ -1,6 +1,7 @@
 import { Subcommand } from "@sapphire/plugin-subcommands";
-import { CreateCategory, EditCategory, GetCategoryFromGuild, PrettyMsg } from "../helper-functions/index.js";
+import { CreateCategory, EditCategory, GetAllGuildCategories, GetCategoryFromGuild, PrettyMsg } from "../helper-functions/index.js";
 import { Colors, PermissionFlagsBits } from "discord.js";
+import { codeBlock } from "@sapphire/utilities";
 
 export class CategoryCommands extends Subcommand {
 
@@ -174,26 +175,58 @@ export class CategoryCommands extends Subcommand {
 	public async chatInputShowCategory(interaction: Subcommand.ChatInputCommandInteraction<'cached'>) {
 
 		const categoryId = interaction.options.getString('categoria', true)
+		const categories = await GetAllGuildCategories(interaction.guildId)
 
-		const category = await GetCategoryFromGuild(categoryId, interaction.guildId)
-
-		if (!category)
+		if (categories.length === 0)
 			return void await interaction.reply({
 				embeds: [
 					PrettyMsg({
-						description: `La categoría que ingresaste no existe en este servidor. Asegúrate de utilizar una de las opciones del autocompletado.`,
-						color: Colors.Yellow
+						description: "Este servidor no tiene ninguna categoría.\nPuedes crear nuevas categorias utilizando el comando `/categorias crear`",
+						color: Colors.Blue
 					})
 				]
 			})
 
-		return void await interaction.reply({
-			embeds: [
-				PrettyMsg({
-					description: `**Nombre de la categoría:** ${category.name}\n**Descripción:** ${category.description}\n**UUID:** \`${category.id}\``,
-					color: Colors.Blue
-				})
-			]
-		})
+
+		if (!categoryId) {
+
+			/** List all categories of this guild */
+			const description = categories.map((category, idx) =>
+				`${(idx + 1).toString().padStart(2, '0')} - **${category.name}**`
+			).join("\n")
+
+
+			return void await interaction.reply({
+				embeds: [
+					PrettyMsg({
+						description: codeBlock(description),
+						color: Colors.Blue
+					})
+				]
+			})
+
+		} else {
+
+			const category = categories.find(category => category.id === categoryId)
+
+			if (!category) return void await interaction.reply({
+				embeds: [
+					PrettyMsg({
+						description: `❌ No se encontró una categoría con ese nombre.`,
+						color: Colors.Red
+					})
+				]
+			})
+
+			// Success
+			return void await interaction.reply({
+				embeds: [
+					PrettyMsg({
+						description: `**Nombre de la categoría:** ${category.name}\n**Descripción:** ${category.description}\n**UUID:** \`${category.id}\``,
+						color: Colors.Blue
+					})
+				]
+			})
+		}
 	}
 }
