@@ -21,9 +21,11 @@
     "dotenv": "^16.3.1",
     "sequelize": "^6.35.1",
     "sqlite3": "^5.1.6",
-    "undici": "^5.28.1"
+    "undici": "^5.28.1",
+    "uuid": "^9.0.1"
   },
   "devDependencies": {
+    "@types/uuid": "^9.0.8",
     "typescript": "^5.3.2"
   }
 }
