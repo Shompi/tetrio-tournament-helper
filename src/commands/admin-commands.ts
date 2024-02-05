@@ -9,7 +9,7 @@ import {
 } from "discord.js";
 
 import {
-	GetAllTournaments,
+	GetAllTournamentsFromGuild,
 	GetAllTournamentsByCategory,
 	PrettyMsg,
 	SearchTournamentByNameAutocomplete,
@@ -180,7 +180,7 @@ export class AdminCommands extends Subcommand {
 			category: interaction.options.getString('categoria')
 		}
 
-		const tournaments = options.category ? await GetAllTournaments(interaction.guildId)
+		const tournaments = options.category ? await GetAllTournamentsFromGuild(interaction.guildId)
 			: await GetAllTournamentsByCategory({ category: options.category!, guildId: interaction.guildId })
 
 		if (tournaments.length < 1)

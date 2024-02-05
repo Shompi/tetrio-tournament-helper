@@ -760,6 +760,14 @@ export function IsTournamentEditable(tournament: Tournament) {
 	return tournament.status !== TournamentStatus.FINISHED
 }
 
+export async function GetRandomTournament() {
+	return await TournamentModel.findOne({
+		where: {
+			status: TournamentStatus.FINISHED
+		}
+	})
+}
+
 export async function GetAllTournamentsByCategory(params: { guildId: Snowflake, category: string }) {
 	return await TournamentModel.findAll({
 		where: {
@@ -772,7 +780,7 @@ export async function GetAllTournamentsByCategory(params: { guildId: Snowflake, 
 }
 
 /** This function returns every tournament from a guild, regardless of status */
-export async function GetAllTournaments(guild_id: string) {
+export async function GetAllTournamentsFromGuild(guild_id: string) {
 
 	return await TournamentModel.findAll({
 		where: {
