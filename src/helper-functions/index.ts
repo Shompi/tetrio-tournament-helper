@@ -768,6 +768,11 @@ export async function GetRandomTournament() {
 	})
 }
 
+export async function GetTournamentById(id: number) {
+	return await TournamentModel.findByPk(id)
+
+}
+
 export async function GetAllTournamentsByCategory(params: { guildId: Snowflake, category: string }) {
 	return await TournamentModel.findAll({
 		where: {
@@ -1019,11 +1024,11 @@ export async function GetAllGuildCategories(guildId: Snowflake): Promise<Categor
 	return Array.from(guild.categories)
 }
 
-export async function GetCategoryFromGuild(categoryId: string, guildId: Snowflake): Promise<Category | undefined> {
+export async function GetCategoryFromGuild(categoryId: string, guildId: Snowflake): Promise<Category | null> {
 
 	const Guild = await GetGuildConfigs(guildId)
 
-	return Guild.categories.find(category => category.id === categoryId)
+	return Guild.categories.find(category => category.id === categoryId) ?? null
 
 }
 
@@ -1041,11 +1046,11 @@ export async function SearchCategoryByNameAutocomplete(interaction: Subcommand.A
 	)
 }
 
-export async function CheckIfCategoryBelongsToGuild(params: { guildId: Snowflake, category: string }): Promise<boolean> {
+export async function CheckIfCategoryBelongsToGuild(params: { guildId: Snowflake, categoryId: string }): Promise<boolean> {
 
 	const Guild = await GetGuildConfigs(params.guildId)
 
-	return Guild.categories.some(category => category.id === params.category)
+	return Guild.categories.some(category => category.id === params.categoryId)
 }
 
 async function UpdateCategories(guildId: Snowflake, categories: Category[]) {

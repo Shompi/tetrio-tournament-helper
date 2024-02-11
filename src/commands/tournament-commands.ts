@@ -744,7 +744,7 @@ export class TournamentCommands extends Subcommand {
 
 		/** Check if this category is from this guild */
 		if (options.category) {
-			const isValidCategory = await CheckIfCategoryBelongsToGuild({ category: options.category, guildId: interaction.guildId })
+			const isValidCategory = await CheckIfCategoryBelongsToGuild({ categoryId: options.category, guildId: interaction.guildId })
 
 			if (!isValidCategory) {
 				return void await interaction.reply({
