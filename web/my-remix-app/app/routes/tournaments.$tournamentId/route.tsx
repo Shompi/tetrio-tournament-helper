@@ -59,7 +59,8 @@ export default function Tournament() {
   const { tournament, organizer, winner, guild } = useLoaderData<typeof loader>()
 
   return (
-    <div style={{ fontFamily: "system-ui, sans-serif", lineHeight: "1.8", }} className="flex flex-col bg-gradient-to-b from-sky-300 to-sky-950 py-24 px-14 min-w-[1100px]">
+    // system-ui default font
+    <div style={{ fontFamily: "nexa, sans-serif", lineHeight: "1.5", }} className="flex flex-col bg-gradient-to-b from-sky-300 to-sky-950 py-24 px-14 min-w-[1100px]">
       {/* Center content */}
       <div className="bg-sky-900 text-center py-12 px-24 text-white rounded-3xl shadow-lg shadow-sky-950">
         <h1 className="text-6xl font-bold text-balance">{tournament.name}</h1>
