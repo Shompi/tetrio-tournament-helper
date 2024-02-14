@@ -6,3 +6,8 @@
 	font-family: "Nexa";
 	src: url("../public/fonts/Nexa-ExtraLight.ttf");
 }
+
+@font-face {
+	font-family: "NexaHeavy";
+	src: url("../public/fonts/Nexa-Heavy.ttf");
+}

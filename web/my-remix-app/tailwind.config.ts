@@ -5,10 +5,10 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        nexa: ['"Nexa"', "sans-serif"]
-      }
+        nexa: ['"Nexa"', "sans-serif"],
+        nexaHeavy: ['"NexaHeavy"', "sans-serif"],
+      },
     },
-  },
-  plugins: [],
+    plugins: [],
+  }
 } satisfies Config
-
