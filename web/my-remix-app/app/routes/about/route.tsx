@@ -10,10 +10,10 @@ export const meta: MetaFunction = ({ data }) => {
 
 export default function About() {
 	return (
-		<div>
+		<div className="h-screen w-screen bg-slate-700">
 			<Header />
-			<section className="fixed flex flex-col font-nexa font-bold text-slate-300 w-screen h-screen bg-slate-700">
-				<main className="w-screen mt-32">
+			<section className="flex flex-col font-nexa font-bold text-slate-300">
+				<main className="w-screen mt-8">
 					<div id="introduction" className="flex flex-col gap-y-6 items-center text-2xl">
 						<h1 className="text-8xl">Hello!</h1>
 						<p className="text-3xl">Welcome to <code className="text-blue-500">tetrio-tournament-helper</code> bot webpage</p>

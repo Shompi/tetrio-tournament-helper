@@ -5,7 +5,7 @@ const profileInfo = {
 	username: "ShompiFlen",
 	github: "https://github.com/Shompi",
 	twitter: "https://x.com/ShompiFlen",
-	youtube: "https://youtube.com/ShompiFlen"
+	youtube: "https://youtube.com/@ShompiFlen"
 }
 
 export default function ProfileCard() {
@@ -18,9 +18,9 @@ export default function ProfileCard() {
 				<p className="font-nexaHeavy ml-6 text-5xl">SHOMPIFLEN</p>
 			</div>
 			<div className="flex flex-row gap-x-10 justify-center">
-				<Link to={profileInfo.github}>GITHUB</Link>
-				<Link to={profileInfo.twitter}>TWITTER</Link>
-				<Link to={profileInfo.youtube} aria-description="Mostly Tetris® stuff">YOUTUBE</Link>
+				<Link to={profileInfo.github} className="hover:animate-pulse">GITHUB</Link>
+				<Link to={profileInfo.twitter} className="hover:animate-pulse">TWITTER</Link>
+				<Link to={profileInfo.youtube} className="hover:animate-pulse" aria-description="Mostly Tetris® stuff">YOUTUBE</Link>
 			</div>
 		</div>
 	)
