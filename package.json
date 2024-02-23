@@ -12,6 +12,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@sapphire/decorators": "^6.0.4",
     "@sapphire/framework": "^4.8.2",
     "@sapphire/plugin-api": "^6.1.1",
     "@sapphire/plugin-hmr": "^2.0.3",

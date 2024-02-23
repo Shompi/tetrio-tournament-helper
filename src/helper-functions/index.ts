@@ -753,7 +753,13 @@ export async function UnblockUser(userId: Snowflake) {
 	return true
 }
 
-//#region Tournament Related Methods
+//#region Tournament Methods
+
+export async function GetTournamentCount() {
+	return await TournamentModel.count({
+		col: "id"
+	})
+}
 
 /** Wether or not this tournament can be edited (Is not FINISHED) */
 export function IsTournamentEditable(tournament: Tournament) {
