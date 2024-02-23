@@ -4,7 +4,7 @@ import { GetTournamentCount } from '../helper-functions/index.js';
 import { ApplicationCommandOptionType } from 'discord.js';
 
 @ApplyOptions<Route.Options>({
-	route: 'hello-world',
+	route: 'stats',
 	name: "stats"
 })
 export class BotStatsRoute extends Route {
