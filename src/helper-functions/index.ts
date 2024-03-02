@@ -882,6 +882,11 @@ export async function GetTournament(id: number) {
 	return await TournamentModel.findByPk(id)
 }
 
+// TODO: #2 Make this function return more tournaments or use pagination / Cursor
+export async function GetAllTournaments() {
+	return await TournamentModel.findAll({ limit: 10 })
+}
+
 export async function SearchTournamentById(id: number) {
 	return await TournamentModel.findByPk(id)
 }
