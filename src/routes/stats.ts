@@ -43,6 +43,9 @@ export class BotStatsRoute extends Route {
 
 						return {
 							is_subcommand: true,
+							name: option.name,
+							description: option.description,
+							type: option.type,
 							options: option.options?.map(option => ({
 								name: option.name,
 								description: option.description,
