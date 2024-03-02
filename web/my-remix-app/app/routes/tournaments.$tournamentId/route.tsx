@@ -58,7 +58,7 @@ export async function loader({ params }: LoaderFunctionArgs) {
   const id = params.tournamentId
 
   console.log(`ID ${id}`)
-  const response = await fetch(`http://localhost:6969/tournaments?id=${id}`).catch(() => null)
+  const response = await fetch(`http://localhost:6969/tournament?id=${id}`).catch(() => null)
 
   if (!response) return json({ tournament: null, organizer: null, winner: null, guild: null })
 
