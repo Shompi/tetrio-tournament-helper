@@ -36,7 +36,7 @@ export class TournamentInformation extends Route {
 	public constructor(context: Route.LoaderContext, options: Route.Options) {
 		super(context, {
 			...options,
-			route: 'tournaments',
+			route: 'tournament',
 		});
 	}
 
