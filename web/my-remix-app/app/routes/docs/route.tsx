@@ -25,9 +25,7 @@ export async function loader() {
 
 export default function Documentation() {
 	const stats = useLoaderData<typeof loader>()
-
-	console.log(stats?.commands)
-
+	
 	return (
 		<div className="flex flex-col min-h-screen bg-black">
 			<Header />
