@@ -18,7 +18,7 @@ const client = new SapphireClient({
 		listenOptions: {
 			port: 6969
 		}
-	}
+	},
 });
 
 client.login(process.env.BOT_TOKEN);
