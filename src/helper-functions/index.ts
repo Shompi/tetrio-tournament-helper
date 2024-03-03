@@ -703,19 +703,23 @@ export async function SendMessageToChannel(interaction: CommandInteraction<'cach
 
 	const channel = await GetGuildLogsChannel(interaction.guild)
 	if (!channel) return
-
-	channel.send({
-		embeds: [
-			PrettyMsg({
-				description: content,
-				color: Colors[color],
-				author: {
-					name: interaction.client.user.displayName,
-					iconURL: interaction.client.user.displayAvatarURL({ size: 256 })
-				}
-			})
-		]
-	})
+	try {
+		await channel.send({
+			embeds: [
+				PrettyMsg({
+					description: content,
+					color: Colors[color],
+					author: {
+						name: interaction.client.user.displayName,
+						iconURL: interaction.client.user.displayAvatarURL({ size: 256 })
+					}
+				})
+			]
+		})
+	} catch(e) {
+		console.error(e)
+		return null
+	}
 }
 
 export async function GetUserFromBlocklist(userId: Snowflake) {
