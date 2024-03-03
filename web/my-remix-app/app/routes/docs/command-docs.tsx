@@ -40,13 +40,12 @@ export default function CommandDocs({ commands }: Commands) {
 												)
 											} else {
 												return (
-													<div key={option.name} className="font-nexa">
+													<div key={option.name} className="font-nexa py-2">
 														<p className="font-semibold">{option.name}</p>
 														<p>{option.description}</p>
 													</div> 
 												)
 											}
-
 										})
 									}
 								</div>
