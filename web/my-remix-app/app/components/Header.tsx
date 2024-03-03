@@ -2,7 +2,7 @@ import { Link } from "@remix-run/react";
 
 export default function Header() {
 	return (
-		<header className="flex flex-row justify-around text-slate-300 min-h-8">
+		<header className="flex flex-row justify-around bg-black text-slate-300 min-h-8">
 			<div className="p-4 flex flex-col justify-center">
 				<p className="font-semibold text-2xl font-nexa">HOME</p>
 			</div>
