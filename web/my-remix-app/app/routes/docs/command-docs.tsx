@@ -11,9 +11,9 @@ export default function CommandDocs({ commands }: Commands) {
 					{
 						commands.map(command =>
 							// First command section
-							<div key={command.name} className="p-4">
+							<div key={command.name} className="py-4">
 								{/* command name */}
-								<p className="font-nexa text-4xl font-semibold">{"/"}{command.name}</p>
+								<p className="font-nexa text-4xl font-semibold sticky top-0 z-10 bg-black">{"/"}{command.name}</p>
 								<p className="text-xl">{command.description}</p>
 								{/* Root Command section */}
 								<div id="command-options" className="py-2 divide-y divide-blue-600">
@@ -23,14 +23,14 @@ export default function CommandDocs({ commands }: Commands) {
 												return (
 													<div key={option.name} className="font-nexa py-2">
 														{/* subcommand name */}
-														<p className="font-semibold text-xl pt-1">{option.name} <span className="text-slate-500">{"(subcomando)"}</span></p>
-														<p>{option.description}</p>
+														<p className="pl-2 font-semibold text-xl pt-1 bg-black sticky top-9">{option.name} <span className="text-slate-500">{"(subcomando)"}</span></p>
+														<p className="pl-2">{option.description}</p>
 																	{/* subcommand options section */}
 														<div className="py-2 pl-4">
 															{
 																option.options.map(option =>
 																	<div key={option.name} className="py-1">
-																		<p className="font-semibold">{option.name} <span className="text-slate-500">{"(opción)"}</span></p>
+																		<p className="font-semibold"> {"-"} {option.name} <span className="text-slate-500">{"(opción)"}</span></p>
 																		<p className="">{option.description}</p>
 																	</div>
 																)
