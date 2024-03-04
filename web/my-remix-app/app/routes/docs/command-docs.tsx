@@ -13,7 +13,7 @@ export default function CommandDocs({ commands }: Commands) {
 							// First command section
 							<div key={command.name} className="py-4">
 								{/* command name */}
-								<p className="font-nexa text-4xl font-semibold sticky top-0 z-10 bg-black">{"/"}{command.name}</p>
+								<p className="font-nexa text-4xl font-semibold sticky top-0 z-10 bg-black">{"/"}{command.name} <span className="text-slate-500">{"(comando base)"}</span></p>
 								<p className="text-xl">{command.description}</p>
 								{/* Root Command section */}
 								<div id="command-options" className="py-2 divide-y divide-blue-600">
@@ -39,9 +39,10 @@ export default function CommandDocs({ commands }: Commands) {
 													</div> 
 												)
 											} else {
+												// Commands with no subcommands
 												return (
 													<div key={option.name} className="font-nexa py-2">
-														<p className="font-semibold">{option.name}</p>
+														<p className="font-semibold">{option.name}<span className="text-slate-500">{"(opción)"}</span></p>
 														<p>{option.description}</p>
 													</div> 
 												)
