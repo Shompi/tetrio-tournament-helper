@@ -34,6 +34,7 @@ export class BotStatsRoute extends Route {
 				emoji_count: client.emojis.cache.size,
 				shard_status: client.ws.status,
 				verified: client.user?.verified ?? false,
+				member_count: client.guilds.cache.reduce((a, b) => a + b.memberCount, 0),
 			},
 			commands: commands?.map(command => ({
 				name: command.name,

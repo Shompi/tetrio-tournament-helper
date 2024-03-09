@@ -17,7 +17,8 @@ export type StatsAPIResponse = {
 		tournament_count: number,
 		emoji_count: number,
 		// shard_status: unknown,
-		verified: boolean
+		verified: boolean,
+		member_count: number,
 	},
 	/** Im too lazy to type this shaiza */
 	commands: unknown[]

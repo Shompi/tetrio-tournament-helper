@@ -1,7 +1,7 @@
 import StatCard from "./stat-card";
 import { StatsAPIResponse } from "./types";
 
-export default function BotInfo(props: StatsAPIResponse) {
+export default function StatsInfo(props: StatsAPIResponse) {
 	return (
 		<section id="bot-info" className="flex flex-col items-center text-slate-200 font-nexa mt-12 px-2">
 			<div>
@@ -16,7 +16,7 @@ export default function BotInfo(props: StatsAPIResponse) {
 					<div id="stats-box" className="flex flex-row gap-x-2 text-slate-200">
 						<p><span className="font-semibold">{props.stats.guild_count}</span> Servidores</p>
 						<p><span className="font-semibold">{props.stats.tournament_count}</span> Torneos</p>
-						<p><span className="font-semibold">{props.stats.user_count}</span> Usuarios</p>
+						<p><span className="font-semibold">{props.stats.member_count}</span> Members</p>
 					</div>
 				</div>
 			</div>

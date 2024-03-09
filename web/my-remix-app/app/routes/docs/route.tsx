@@ -3,7 +3,7 @@ import { StatsAPIResponse } from "./types";
 import { useLoaderData } from "@remix-run/react";
 import Header from "../../components/Header";
 import Unavailable from "./unavailable";
-import BotInfo from "./stats";
+import StatsInfo from "./stats";
 import CommandDocs from "./command-docs";
 
 export const meta: MetaFunction = () => {
@@ -33,7 +33,7 @@ export default function Documentation() {
 				{
 					stats ?
 						<main className="flex flex-col">
-							<BotInfo
+							<StatsInfo
 								avatar={stats!.avatar}
 								average_ping={stats!.average_ping}
 								display_name={stats!.display_name}
